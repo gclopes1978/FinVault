@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  # ==========================================
+  # 1. RabbitMQ (Message Broker) + Painel Web
+  # ==========================================
+  finvault-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: finvault-rabbitmq
+    ports:
+      - "5672:5672"   # Porta padrão para o .NET comunicar (gRPC/MassTransit)
+      - "15672:15672" # Porta para o painel de gestão no Browser
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - finvault-network
+
+  # ==========================================
+  # 2. SQL Server (Current Account / Payroll)
+  # ==========================================
+  finvault-sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: finvault-sqlserver
+    ports:
+      - "1433:1433"
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "V@ult_Matrix_Crypto_99!" # Altera depois se quiseres, precisa de maiúsculas, minúsculas e símbolos
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - finvault-network
+
+  # ==========================================
+  # 3. Oracle XE (Savings / Pension Plans)
+  # ==========================================
+  finvault-oracle:
+    image: gvenzl/oracle-xe:latest
+    container_name: finvault-oracle
+    ports:
+      - "1521:1521"
+    environment:
+      APP_USER: finvault_user
+      APP_PASSWORD: "V@ult_Matrix_Crypto_99!"
+      ORACLE_PASSWORD: "V@ult_Matrix_Crypto_99!"
+    volumes:
+      - oracle_data:/opt/oracle/oradata
+    networks:
+      - finvault-network
+
+# Volumes para os dados não desaparecerem quando desligas os contentores
+volumes:
+  rabbitmq_data:
+  sqlserver_data:
+  oracle_data:
+
+networks:
+  finvault-network:
+    driver: bridge
