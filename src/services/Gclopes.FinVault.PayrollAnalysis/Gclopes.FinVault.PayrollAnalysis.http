@@ -1,0 +1,6 @@
+@Gclopes.FinVault.PayrollAnalysis_HostAddress = http://localhost:5235
+
+GET {{Gclopes.FinVault.PayrollAnalysis_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
