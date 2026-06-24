@@ -1,62 +1,86 @@
-version: '3.8'
-
 services:
-  # ==========================================
-  # 1. RabbitMQ (Message Broker) + Painel Web
-  # ==========================================
+
+  # =========================================================================
+  # 1. RabbitMQ (Message Broker) + Web Management Dashboard
+  # =========================================================================
   finvault-rabbitmq:
+    # Official RabbitMQ image with management plugin pre-installed
     image: rabbitmq:3-management
+    # Container name for easy identification within Docker
     container_name: finvault-rabbitmq
+    # Port mapping: "host_port:container_port"
     ports:
-      - "5672:5672"   # Porta padrão para o .NET comunicar (gRPC/MassTransit)
-      - "15672:15672" # Porta para o painel de gestão no Browser
+      - "5672:5672"   # AMQP default port for .NET application communication (MassTransit)
+      - "15672:15672" # HTTP port to access the management UI via Browser (http://localhost:15672)
+    # Environment variables to configure default broker credentials
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: guest  # Default username for login and API connection
+      RABBITMQ_DEFAULT_PASS: guest  # Default password for the username above
+    # Persist broker data (queues, messages, exchanges) to a Docker volume
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
+    # Attach this container to the shared internal network
     networks:
       - finvault-network
 
-  # ==========================================
-  # 2. SQL Server (Current Account / Payroll)
-  # ==========================================
+  # =========================================================================
+  # 2. SQL Server (Database for Current Account / Payroll)
+  # =========================================================================
   finvault-sqlserver:
+    # Official Microsoft SQL Server 2022 image (latest stable release)
     image: mcr.microsoft.com/mssql/server:2022-latest
+    # Container name for easy identification within Docker
     container_name: finvault-sqlserver
+    # Map the default SQL Server port to the host machine for SSMS or EF Core connection
     ports:
-      - "1433:1433"
+      - "1433:1433"   # Port 1433 exposed locally on localhost
+    # Required environment variables for SQL Server initialization
     environment:
-      ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: "V@ult_Matrix_Crypto_99!" # Altera depois se quiseres, precisa de maiúsculas, minúsculas e símbolos
+      ACCEPT_EULA: "Y"                              # Accept the End User License Agreement (Required)
+      MSSQL_SA_PASSWORD: "V@ult_Matrix_Crypto_99!" # System Administrator ('sa') password
+    # Map the data directory to persist .mdf and .ldf database files on host storage
     volumes:
       - sqlserver_data:/var/opt/mssql
+    # Attach SQL Server to the shared internal network
     networks:
       - finvault-network
 
-  # ==========================================
-  # 3. Oracle XE (Savings / Pension Plans)
-  # ==========================================
+  # =========================================================================
+  # 3. Oracle Database Free (Database for Savings / Pension Plans)
+  # =========================================================================
   finvault-oracle:
-    image: gvenzl/oracle-xe:latest
+    # Official Oracle Database Free edition optimized for development
+    image: gvenzl/oracle-free:latest
+    # Container name for easy identification within Docker
     container_name: finvault-oracle
+    # Map the default Oracle port for external connections (DBeaver, SQL Developer, EF Core)
     ports:
-      - "1521:1521"
+      - "1521:1521"   # Port 1521 exposed locally on localhost
+    # Environment variables to automatically bootstrap the application user on startup
     environment:
-      APP_USER: finvault_user
-      APP_PASSWORD: "V@ult_Matrix_Crypto_99!"
-      ORACLE_PASSWORD: "V@ult_Matrix_Crypto_99!"
+      APP_USER: finvault_user                      # Custom application schema/user to be created
+      ORACLE_PASSWORD: "V@ult_M@ster_P@55w.rd!"    # Master password for system accounts (SYS, SYSTEM)
+      APP_USER_PASSWORD: "V@ult_Matrix_Crypto_99!" # Password required for the custom 'APP_USER'
+    # Map the internal data directory to persist Oracle database files on host storage
     volumes:
       - oracle_data:/opt/oracle/oradata
+    # Attach Oracle to the shared internal network
     networks:
       - finvault-network
 
-# Volumes para os dados não desaparecerem quando desligas os contentores
+# =========================================================================
+# Global Volumes Section: Named volumes used by the services above
+# Ensures database and broker state persist across container lifecycles
+# =========================================================================
 volumes:
-  rabbitmq_data:
-  sqlserver_data:
-  oracle_data:
+  rabbitmq_data:   # Managed Docker volume for RabbitMQ state
+  sqlserver_data:  # Managed Docker volume for SQL Server files
+  oracle_data:     # Managed Docker volume for Oracle database files
 
+# =========================================================================
+# Global Networks Section: Isolated virtual network
+# Allows containers to discover and communicate with each other using service names
+# =========================================================================
 networks:
   finvault-network:
-    driver: bridge
+    driver: bridge # Standard bridge driver for local single-host networking
