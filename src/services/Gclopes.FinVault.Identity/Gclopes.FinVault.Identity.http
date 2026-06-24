@@ -1,0 +1,6 @@
+@Gclopes.FinVault.Identity_HostAddress = http://localhost:5196
+
+GET {{Gclopes.FinVault.Identity_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
