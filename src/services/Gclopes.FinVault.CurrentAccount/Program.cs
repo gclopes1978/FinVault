@@ -1,24 +1,36 @@
-using Gclopes.FinVault.CurrentAccount.Data;
 using Microsoft.EntityFrameworkCore;
+using Gclopes.FinVault.CurrentAccount.Data;
+using Gclopes.FinVault.CurrentAccount.Endpoints;
+using Gclopes.FinVault.CurrentAccount.Services.Interfaces;
+using Gclopes.FinVault.CurrentAccount.Services.Implementations;
 
-var builder = WebApplication.CreateBuilder(args);
+namespace Gclopes.FinVault.CurrentAccount;
 
-// Add services to the container.
-builder.Services.AddOpenApi();
-
-// Configure EF CORE: register DbContext to use the SQL Server
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-
-var app = builder.Build();
-
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+public class Program
 {
-    app.MapOpenApi();
+    public static void Main(string[] args)
+    {
+        var builder = WebApplication.CreateBuilder(args);
+
+        // Configure OpenAPI/Swagger documentation
+        builder.Services.AddEndpointsApiExplorer();
+        builder.Services.AddOpenApi();
+
+        // Configure the Application Database Context with SQL Server
+        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+            options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+        // Register the financial movement service interfaces and implementations
+        builder.Services.AddScoped<IMovementService, MovementService>();
+
+        var app = builder.Build();
+
+        // Enable OpenAPI documentation mapping for all environments
+        app.MapOpenApi();
+
+        // Configure application routing endpoints
+        app.MapMovementEndpoints();
+
+        app.Run();
+    }
 }
-
-app.UseHttpsRedirection();
-
-
-app.Run();

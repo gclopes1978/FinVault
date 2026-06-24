@@ -1,11 +1,13 @@
-﻿namespace Gclopes.FinVault.CurrentAccount.Data
+﻿namespace Gclopes.FinVault.CurrentAccount.Data;
+
+public class Movement
 {
-    public class Movement
-    {
-        public Guid Id { get; set; } = Guid.NewGuid();
-        public string Description { get; set; } = string.Empty;
-        public decimal Amount { get; set; }
-        public string Type { get; set; } = string.Empty; // "Credit" ou "Debit"
-        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-    }
+    public Guid Id { get; set; }
+    public decimal Amount { get; set; }
+    public string Type { get; set; } = string.Empty; // "Credit" or "Debit"
+    public string Description { get; set; } = string.Empty;
+    public string Category { get; set; } = string.Empty;
+    public DateTime TransactionDate { get; set; } 
+    public DateTime ValueDate { get; set; }
+    public DateTime CreatedAt { get; set; }
 }
