@@ -1,10 +1,16 @@
 /* To learn more about Typescript configuration file: https://www.typescriptlang.org/docs/handbook/tsconfig-json.html. */
-/* To learn more about Angular compiler options: https://angular.dev/reference/configs/angular-compiler-options. */
 {
+  // Inherit the base TypeScript compiler configuration settings from the workspace root file
   "extends": "./tsconfig.json",
+  // Define explicit compilation options tailored for running test files in the workspace
   "compilerOptions": {
+    // Specify the target output directory layout where compiled test JavaScript files will be emitted
     "outDir": "./out-tsc/spec",
+    // Explicitly isolate the source code entry root directory path to align output generation layout
+    "rootDir": "./src",
+    // Inject global type declarations from Vitest into the compiler execution environment context
     "types": ["vitest/globals"]
   },
-  "include": ["src/**/*.d.ts", "src/**/*.spec.ts"]
+  // Restrict the compiler scope to scan and process only matching test files and definition maps
+  "include": ["src/**/*.spec.ts", "src/**/*.d.ts"]
 }
