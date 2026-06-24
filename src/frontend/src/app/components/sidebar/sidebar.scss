@@ -1,0 +1,79 @@
+// Apply styling properties to the main sidebar outer container wrapper
+.app-sidebar {
+  // Enforce a structural column layout desktop width boundary of exactly 240px
+  width: 240px;
+  // Calculate full viewport height subtractive tracking to avoid header overlaps
+  height: calc(100vh - 60px);
+  // Set the canvas area surface background to a deep premium midnight navy tone
+  background-color: #0f172a;
+  // Set a soft matching light slate blue accent color profile for the interior elements
+  color: #94a3b8;
+  // Lock the component position layout context strictly fixed to the viewport window
+  position: fixed;
+  // Displace vertical alignment axis positioning down by 60px below the header bar
+  top: 60px;
+  // Align the main block component flush against the left side boundary coordinate
+  left: 0;
+  // Layer index configuration designed to process content underneath primary headers
+  z-index: 90;
+  // Introduce a clean symmetrical vertical internal structural padding gap of 20px
+  padding: 20px 0;
+  // Configure global animation tracking settings to smooth out mobile menu translations
+  transition: all 0.3s ease;
+
+  // Apply specific nested layout properties to the navigation tree root structure
+  .sidebar-nav {
+    // Access target child unordered listing block configurations
+    ul {
+      // Strips standard default listing index bullet shapes away from the markup node
+      list-style: none;
+      // Reset interior indentation margins down to absolute zero boundaries
+      padding: 0;
+      // Wipe exterior offset spacing clean to maintain grid execution alignment
+      margin: 0;
+
+      // Access target individual listing element blocks in the DOM context loop
+      li {
+        // Apply comfortable bounding insulation padding offsets around list elements
+        padding: 4px 16px;
+
+        // Apply visual styling properties directly to the interactive navigation hyperlinks
+        .nav-link {
+          // Deploy flex properties to organize tracking icon elements and label strings
+          display: flex;
+          // Centrally lock internal list icons and labels along the vertical axis track
+          align-items: center;
+          // Insulate the text button bounds internally using vertical and horizontal values
+          padding: 12px 16px;
+          // Match link text visibility directly to the base light slate blue color framework
+          color: #94a3b8;
+          // Wipe default underline accent decorations clear off the interactive text link
+          text-decoration: none;
+          // Apply a neat smooth rounded shape profile factor to the link interaction bounds
+          border-radius: 6px;
+          // Enforce interactive pointer hand graphic rendering upon mouse cursor entry
+          cursor: pointer;
+          // Smoothly animate color switches and ambient back-drop transformations smoothly
+          transition: background-color 0.2s, color 0.2s;
+
+          // Catch interactive cursor entry hover states on active link rows
+          &:hover {
+            // Darken interactive element background up to an explicit lighter navy hue
+            background-color: #1e293b;
+            // Shift targeted hyperlink text color out into a sharp bright light gray tone
+            color: #f8fafc;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Initialize a responsive media query target to catch tablet and mobile breakpoints
+@media (max-width: 768px) {
+  // Target style overrides directly inside the sidebar wrapper context on mobile grids
+  .app-sidebar {
+    // Translate the column element 100% left off-screen to keep viewports clean by default
+    transform: translateX(-100%);
+  }
+}

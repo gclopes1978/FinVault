@@ -1,0 +1,68 @@
+// Apply styling properties to the main layout content wrapper block
+.main-layout-container {
+  // Use CSS Flexbox layout model to align the sidebar and content horizontally
+  display: flex;
+  // Apply a top margin of 60px to push content down below the fixed header bar
+  margin-top: 60px;
+  // Enforce a minimum viewport height subtracting the exact height of the top header
+  min-height: calc(100vh - 60px);
+}
+
+// Apply styling properties to the main content body text area section
+.content-body {
+  // Allow this layout element to grow and expand to fill all remaining flex space
+  flex: 1;
+  // Push content left margin by 240px to safely clear the fixed desktop sidebar position
+  margin-left: 240px;
+  // Add a standard internal padding of 32px on all sides for cleaner spacing
+  padding: 32px;
+  // Define a soft light grey background color for the application content canvas
+  background-color: #f8fafc;
+  // Dynamically compute the container width subtracting the static desktop sidebar width
+  width: calc(100% - 240px);
+  // Guarantee that the main body takes up at least the full height of the viewport
+  min-height: calc(100vh - 60px);
+  // Smooth out changes to margins and widths when transitioning between layout breakpoints
+  transition: margin-left 0.3s ease, width 0.3s ease;
+
+  // Apply contextual nested design properties to the inner page-card wrapper element
+  .page-card {
+    // Set a clean pure white background color inside the card block boundaries
+    background: #ffffff;
+    // Add an inner internal padding of 24px for balanced text distribution
+    padding: 24px;
+    // Apply a smooth subtle corner radius border effect to the card edges
+    border-radius: 8px;
+    // Outline the card boundaries with a very light solid border color profile
+    border: 1px solid #e2e8f0;
+
+    // Apply specific structural typographic overrides to the main header tag
+    h1 {
+      // Remove default top margin spacing inherited from standard browser stylesheets
+      margin-top: 0;
+      // Set the header font color to a very dark navy professional blue shade
+      color: #0f172a;
+      // Define a prominent header size scale configuration of 1.5rem units
+      font-size: 1.5rem;
+    }
+
+    // Apply specific typographic layout properties to the description text
+    p {
+      // Set the body text paragraph color to a soft readable grey shade
+      color: #64748b;
+    }
+  }
+}
+
+// Initialize a responsive media query target to catch tablet and mobile breakpoints
+@media (max-width: 768px) {
+  // Apply visual overrides to the content body when active on smaller screens
+  .content-body {
+    // Remove the left margin completely since the sidebar collapses on mobile viewports
+    margin-left: 0;
+    // Force the content container width to take up the full available grid span
+    width: 100%;
+    // Reduce inner internal text padding to 16px to better fit mobile screen sizes
+    padding: 16px;
+  }
+}

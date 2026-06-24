@@ -1,0 +1,83 @@
+// Apply styling properties to the main header wrapper tag
+.app-header {
+  // Establish a fixed vertical layout height profile of exactly 60px
+  height: 60px;
+  // Apply a solid crisp white background tone across the entire bar surface
+  background-color: #ffffff;
+  // Outline a subtle light gray border trace along the bottom edge area
+  border-bottom: 1px solid #e2e8f0;
+  // Activate CSS Flexbox module layout parameters for interior element tracking
+  display: flex;
+  // Push the internal child blocks directly away into opposite horizontal edges
+  justify-content: space-between;
+  // Centrally align all interior child elements perfectly on the vertical track
+  align-items: center;
+  // Inject a secure horizontal interior padding safety margin of 24px
+  padding: 0 24px;
+  // Anchor the entire component bar position fixed to the absolute viewport grid
+  position: fixed;
+  // Align the structural alignment boundary flush against the top edge area
+  top: 0;
+  // Stretch the alignment boundary flush against the right side window trim
+  right: 0;
+  // Stretch the alignment boundary flush against the left side window trim
+  left: 0;
+  // Elevate the layout layer priority to float safely over secondary content
+  z-index: 100;
+
+  // Apply visual styling properties to the text logo title area wrapper
+  .app-title {
+    // Elevate the typography scale to a comfortable 1.25rem grid size
+    font-size: 1.25rem;
+    // Enforce a heavy bold thickness layout to give the branding visual weight
+    font-weight: 700;
+    // Set the branding text color profile to a sharp corporate dark slate tone
+    color: #1e293b;
+    // Compress the tracking interval between characters to sharpen title contrast
+    letter-spacing: -0.025em;
+  }
+
+  // Apply layout styling properties to the user profile badge block area
+  .user-profile {
+    // Enforce a flex container configuration to align the avatar icon and text label
+    display: flex;
+    // Align both the graphic placeholder avatar and text name on the horizontal axis
+    align-items: center;
+    // Inject a clean horizontal gap tracking interval of 10px between content
+    gap: 10px;
+
+    // Apply strict design parameters to the custom graphic icon placeholder avatar
+    .avatar-placeholder {
+      // Establish a matching width scale profile of exactly 32px boundary
+      width: 32px;
+      // Establish a matching height scale profile of exactly 32px boundary
+      height: 32px;
+      // Paint the interior background workspace with a vibrant solid blue accent
+      background-color: #3b82f6;
+      // Apply a contrasting crisp pure white shade to the interior text letter
+      color: #ffffff;
+      // Enforce a 50% circular border clipping ratio to generate a perfect round circle
+      border-radius: 50%;
+      // Activate flex model controls inside the circle to handle the center initials
+      display: flex;
+      // Center align the graphic text initials perfectly on the horizontal tracking index
+      align-items: center;
+      // Center align the graphic text initials perfectly on the vertical tracking index
+      justify-content: center;
+      // Apply a solid semi-bold typographic font weight to clarify visual tracking
+      font-weight: 600;
+      // Restrict the font scale index inside the circle workspace down to 0.875rem
+      font-size: 0.875rem;
+    }
+
+    // Apply structural typography overrides directly to the username string label
+    .username {
+      // Set the typographic scale down to a clean readable 0.875rem size index
+      font-size: 0.875rem;
+      // Shift text tone down to a subtle muted corporate charcoal gray hue profile
+      color: #475569;
+      // Apply a balanced medium font weight layout tier to prevent over-bolding
+      font-weight: 500;
+    }
+  }
+}

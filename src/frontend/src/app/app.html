@@ -1,12 +1,12 @@
-<div class="finvault-container">
-  <header class="main-header">
-    <h1>FinVault</h1>
-    <small>Integrated Financial Management System</small>
-  </header>
+<app-header></app-header>
 
-  <main class="content-area">
-    <router-outlet></router-outlet>
-    
-    <p class="status-msg">Frontend base structure successfully initialized!</p>
+<div class="main-layout-container">
+  <app-sidebar></app-sidebar>
+  
+  <main class="content-body">
+    <div class="page-card">
+      <h1>Welcome to FinVault Dashboard</h1>
+      <p>Select an option from the sidebar to manage your accounts and identity settings.</p>
+    </div>
   </main>
 </div>
