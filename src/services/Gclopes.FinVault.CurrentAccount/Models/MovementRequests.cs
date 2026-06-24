@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Gclopes.FinVault.CurrentAccount.Models;
+﻿namespace Gclopes.FinVault.CurrentAccount.Models;
 
 public record CreateMovementRequest(
     decimal Amount,

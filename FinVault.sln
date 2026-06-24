@@ -5,8 +5,6 @@ VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gclopes.FinVault.Gateway", "src\Gclopes.FinVault.Gateway\Gclopes.FinVault.Gateway.csproj", "{847B0643-D935-489B-9F8F-524788BAEA03}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "services", "services", "{984BB9B3-3FA3-BE33-9484-CAC21695A33C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gclopes.FinVault.CurrentAccount", "src\services\Gclopes.FinVault.CurrentAccount\Gclopes.FinVault.CurrentAccount.csproj", "{2BA1F7DA-F757-437C-93D2-280C9BECE811}"
@@ -16,6 +14,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gclopes.FinVault.SavingsCertificates", "src\services\Gclopes.FinVault.SavingsCertificates\Gclopes.FinVault.SavingsCertificates.csproj", "{A6A91BBD-2167-4A13-A1B0-59AD947924CF}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gclopes.FinVault.PensionPlans", "src\services\Gclopes.FinVault.PensionPlans\Gclopes.FinVault.PensionPlans.csproj", "{4D53D43B-B8E8-40CD-9120-F392B60FE0C7}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Gateways", "Gateways", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gclopes.FinVault.Gateway", "src\gateways\Gclopes.FinVault.Gateway\Gclopes.FinVault.Gateway.csproj", "{7129C73B-12EA-0F54-EF28-40D7228E51F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -27,18 +29,6 @@ Global
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{847B0643-D935-489B-9F8F-524788BAEA03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{847B0643-D935-489B-9F8F-524788BAEA03}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{847B0643-D935-489B-9F8F-524788BAEA03}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{847B0643-D935-489B-9F8F-524788BAEA03}.Debug|x64.Build.0 = Debug|Any CPU
-		{847B0643-D935-489B-9F8F-524788BAEA03}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{847B0643-D935-489B-9F8F-524788BAEA03}.Debug|x86.Build.0 = Debug|Any CPU
-		{847B0643-D935-489B-9F8F-524788BAEA03}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{847B0643-D935-489B-9F8F-524788BAEA03}.Release|Any CPU.Build.0 = Release|Any CPU
-		{847B0643-D935-489B-9F8F-524788BAEA03}.Release|x64.ActiveCfg = Release|Any CPU
-		{847B0643-D935-489B-9F8F-524788BAEA03}.Release|x64.Build.0 = Release|Any CPU
-		{847B0643-D935-489B-9F8F-524788BAEA03}.Release|x86.ActiveCfg = Release|Any CPU
-		{847B0643-D935-489B-9F8F-524788BAEA03}.Release|x86.Build.0 = Release|Any CPU
 		{2BA1F7DA-F757-437C-93D2-280C9BECE811}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2BA1F7DA-F757-437C-93D2-280C9BECE811}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2BA1F7DA-F757-437C-93D2-280C9BECE811}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -87,16 +77,32 @@ Global
 		{4D53D43B-B8E8-40CD-9120-F392B60FE0C7}.Release|x64.Build.0 = Release|Any CPU
 		{4D53D43B-B8E8-40CD-9120-F392B60FE0C7}.Release|x86.ActiveCfg = Release|Any CPU
 		{4D53D43B-B8E8-40CD-9120-F392B60FE0C7}.Release|x86.Build.0 = Release|Any CPU
+		{7129C73B-12EA-0F54-EF28-40D7228E51F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7129C73B-12EA-0F54-EF28-40D7228E51F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7129C73B-12EA-0F54-EF28-40D7228E51F6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{7129C73B-12EA-0F54-EF28-40D7228E51F6}.Debug|x64.Build.0 = Debug|Any CPU
+		{7129C73B-12EA-0F54-EF28-40D7228E51F6}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{7129C73B-12EA-0F54-EF28-40D7228E51F6}.Debug|x86.Build.0 = Debug|Any CPU
+		{7129C73B-12EA-0F54-EF28-40D7228E51F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7129C73B-12EA-0F54-EF28-40D7228E51F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7129C73B-12EA-0F54-EF28-40D7228E51F6}.Release|x64.ActiveCfg = Release|Any CPU
+		{7129C73B-12EA-0F54-EF28-40D7228E51F6}.Release|x64.Build.0 = Release|Any CPU
+		{7129C73B-12EA-0F54-EF28-40D7228E51F6}.Release|x86.ActiveCfg = Release|Any CPU
+		{7129C73B-12EA-0F54-EF28-40D7228E51F6}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{847B0643-D935-489B-9F8F-524788BAEA03} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{984BB9B3-3FA3-BE33-9484-CAC21695A33C} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
 		{2BA1F7DA-F757-437C-93D2-280C9BECE811} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
 		{B57F9B0B-CAF3-42B6-A9BF-4532341D5FCA} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
 		{A6A91BBD-2167-4A13-A1B0-59AD947924CF} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
 		{4D53D43B-B8E8-40CD-9120-F392B60FE0C7} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
+		{02EA681E-C7D8-13C7-8484-4AC65E1B71E8} = {827E0CD3-B72D-47B6-A68D-7590B98EB39B}
+		{7129C73B-12EA-0F54-EF28-40D7228E51F6} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E2EBD18F-BBA2-4863-AD05-D189E40FB315}
 	EndGlobalSection
 EndGlobal
