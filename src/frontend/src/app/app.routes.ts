@@ -1,13 +1,24 @@
-// Import the Routes configuration type from the core Angular router module
 import { Routes } from '@angular/router';
 
+// Define the comprehensive application tracking route navigation map configuration schema
 export const routes: Routes = [
   {
-    // Define the default empty path route to automatically catch root applications URLs
     path: '',
-    // Use dynamic lazy loading to import the DashboardComponent asynchronously upon request
-    loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.DashboardComponent),
-    // Define matching configuration criteria to require an absolute exact path matching check
+    redirectTo: 'dashboard',
     pathMatch: 'full'
+  },
+  {
+    // Point directly to the short name convention file for the dashboard component view module
+    path: 'dashboard',
+    loadComponent: () => import('./pages/dashboard/dashboard').then(m => m.DashboardComponent)
+  },
+  {
+    // Register the statement view resource path maps directing layout entry straight to the new page component
+    path: 'statement',
+    loadComponent: () => import('./pages/statement/statement').then(m => m.StatementComponent)
+  },
+  {
+    path: '**',
+    redirectTo: 'dashboard'
   }
 ];

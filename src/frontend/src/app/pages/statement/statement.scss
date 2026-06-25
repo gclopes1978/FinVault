@@ -1,0 +1,146 @@
+/* Base container configurations structuring the vertical layout sequence layers padding */
+.statement-container {
+  padding: 1.5rem;
+  font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  color: #333333;
+}
+
+/* Header typography layout alignment settings metrics values fields */
+.statement-header {
+  h1 {
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+    color: #1e293b;
+  }
+
+  p {
+    color: #64748b;
+    margin-bottom: 1.5rem;
+  }
+}
+
+/* Filter interactive console panel structural visualization configurations styles */
+.filter-panel {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+}
+
+.filter-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
+  label {
+    font-weight: 600;
+    color: #475569;
+    font-size: 0.9rem;
+  }
+}
+
+.filter-select {
+  padding: 0.5rem 2rem 0.5rem 0.75rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background-color: #ffffff;
+  font-size: 0.9rem;
+  color: #1e293b;
+  cursor: pointer;
+  outline: none;
+
+  &:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+  }
+}
+
+/* Table layout encapsulation mapping responsive scrolling over flow dimensions constraints */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  background-color: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.statement-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.95rem;
+
+  th {
+    background-color: #f1f5f9;
+    color: #475569;
+    padding: 1rem;
+    font-weight: 600;
+    border-bottom: 2px solid #e2e8f0;
+  }
+
+  td {
+    padding: 1rem;
+    border-bottom: 1px solid #e2e8f0;
+    color: #334155;
+  }
+}
+
+/* Alternating transactional row state row selection feedback styles */
+.transaction-row {
+  &:hover {
+    background-color: #f8fafc;
+  }
+}
+
+/* Helper functional metadata typography mapping rule schemas definitions */
+.text-mono {
+  font-family: monospace;
+  color: #64748b;
+}
+
+.text-bold {
+  font-weight: 600;
+}
+
+/* Operational color metrics highlighting accounting value properties flows */
+.amount-positive {
+  color: #16a34a;
+}
+
+.amount-negative {
+  color: #dc2626;
+}
+
+/* Uniform systemic status indicators visualization criteria schemas labels */
+.badge-income {
+  background-color: #dcfce7;
+  color: #15803d;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.badge-expense {
+  background-color: #fee2e2;
+  color: #b91c1c;
+  padding: 0.25rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+/* Empty fallback data state dashboard visual block component attributes mapping */
+.empty-state-box {
+  background-color: #ffffff;
+  border: 2px dashed #cbd5e1;
+  border-radius: 8px;
+  padding: 3rem;
+  text-align: center;
+  color: #64748b;
+  font-weight: 500;
+}

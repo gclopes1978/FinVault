@@ -1,0 +1,58 @@
+<div class="statement-container">
+  
+  <div class="statement-header">
+    <h1>Account Statement</h1>
+    <p>View and manage your historical account transactions and cash flow movements.</p>
+  </div>
+
+  <div class="filter-panel">
+    <div class="filter-group">
+      <label for="typeFilter">Filter by Type:</label>
+      <select 
+        id="typeFilter" 
+        [(ngModel)]="selectedTypeFilter" 
+        (change)="applyFilters()" 
+        class="filter-select">
+        <option value="All">All Transactions</option>
+        <option value="Income">Incomes (+)</option>
+        <option value="Expense">Expenses (-)</option>
+      </select>
+    </div>
+  </div>
+
+  <div *ngIf="filteredTransactions.length === 0" class="empty-state-box">
+    <p>No historical transactions were found matching the selected filter criteria profiles.</p>
+  </div>
+
+  <div *ngIf="filteredTransactions.length > 0" class="table-responsive">
+    <table class="statement-table">
+      <thead>
+        <tr>
+          <th>Transaction ID</th>
+          <th>Execution Date</th>
+          <th>Description Details</th>
+          <th>Type</th>
+          <th>Amount Value</th>
+          <th>Available Balance</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let tx of filteredTransactions" class="transaction-row">
+          <td class="text-mono">{{ tx.id }}</td>
+          <td>{{ tx.date | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td class="text-bold">{{ tx.description }}</td>
+          <td>
+            <span [ngClass]="{'badge-income': tx.type === 'Income', 'badge-expense': tx.type === 'Expense'}">
+              {{ tx.type }}
+            </span>
+          </td>
+          <td [ngClass]="{'amount-positive': tx.type === 'Income', 'amount-negative': tx.type === 'Expense'}" class="text-bold">
+            {{ tx.type === 'Income' ? '+' : '-' }} {{ tx.amount | currency: 'EUR' }}
+          </td>
+          <td class="text-bold">{{ tx.balanceAfter | currency: 'EUR' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
