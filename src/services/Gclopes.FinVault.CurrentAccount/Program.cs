@@ -1,8 +1,10 @@
+using FluentValidation;
 using Gclopes.FinVault.CurrentAccount.Data;
 using Gclopes.FinVault.CurrentAccount.Endpoints;
 using Gclopes.FinVault.CurrentAccount.Middlewares;
 using Gclopes.FinVault.CurrentAccount.Services.Implementations;
 using Gclopes.FinVault.CurrentAccount.Services.Interfaces;
+using Gclopes.FinVault.CurrentAccount.Validators;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gclopes.FinVault.CurrentAccount;
@@ -30,6 +32,9 @@ public class Program
 
         // Register the financial movement service interfaces and implementations
         builder.Services.AddScoped<IMovementService, MovementService>();
+
+        // Register all FluentValidation validators from this assembly
+        builder.Services.AddValidatorsFromAssemblyContaining<CreateMovementRequestValidator>();
 
         var app = builder.Build();
         // Intercept and route outbound error traffic profiles through the registered global exceptional framework middleware
