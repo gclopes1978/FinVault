@@ -43,8 +43,16 @@ services:
       - sqlserver_data:/var/opt/mssql
     # Attach SQL Server to the shared internal network
     networks:
-      - finvault-network
-
+      finvault-network:
+        aliases:
+          - sqlserver-host
+    # Establish proactive health monitoring to verify SQL Server engine readiness before unblocking dependants
+    healthcheck:
+      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "V@ult_Matrix_Crypto_99!", "-C", "-Q", "SELECT 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   # =========================================================================
   # 3. Oracle Database Free (Database for Savings / Pension Plans)
   # =========================================================================
@@ -66,7 +74,31 @@ services:
       - oracle_data:/opt/oracle/oradata
     # Attach Oracle to the shared internal network
     networks:
+      finvault-network:
+        aliases:
+          - oracle-host
+
+  # =========================================================================
+  # 4. CurrentAccount Backend Microservice Container Service (.NET 9)
+  # =========================================================================
+  currentaccount-service:
+    image: gclopes1978/finvault-currentaccount:latest
+    container_name: finvault-currentaccount-api
+    build:
+      context: .
+      dockerfile: src/services/Gclopes.FinVault.CurrentAccount/Dockerfile
+    ports:
+      - "7001:8080" # Maps local external gateway HTTP traffic into default .NET Linux container runtime ports
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=sqlserver-host;Database=FinVaultCurrentAccountDb;User Id=sa;Password=V@ult_Matrix_Crypto_99!;Encrypt=False;
+    networks:
       - finvault-network
+    # Restrict service bootstrap orchestration sequences until backing data layer targets report healthy operational status
+    depends_on:
+      finvault-sqlserver:
+        condition: service_healthy
+    restart: on-failure
 
 # =========================================================================
 # Global Volumes Section: Named volumes used by the services above
