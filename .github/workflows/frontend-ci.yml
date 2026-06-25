@@ -32,7 +32,7 @@ jobs:
       working-directory: src/frontend
 
     - name: Run Linting
-      run: npm run lint -- --if-present
+      run: npm run --if-present lint
       working-directory: src/frontend
 
     - name: Build production application
