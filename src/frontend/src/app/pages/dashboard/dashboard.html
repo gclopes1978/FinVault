@@ -1,0 +1,30 @@
+<div class="dashboard-container">
+  
+  <header class="dashboard-header">
+    <h1>Dashboard</h1>
+    <p class="text-muted">Welcome back! Here is your financial overview for today.</p>
+  </header>
+
+  <div class="metrics-grid">
+    
+    <div class="metric-card balance">
+      <span class="card-label">Current Balance</span>
+      <h2 class="card-value">{{ currentBalance | currency:'EUR':'symbol':'1.2-2' }}</h2>
+      <span class="card-status positive">✓ Vault Secured</span>
+    </div>
+
+    <div class="metric-card income">
+      <span class="card-label">Monthly Income</span>
+      <h2 class="card-value">{{ monthlyIncome | currency:'EUR':'symbol':'1.2-2' }}</h2>
+      <span class="card-status positive">▲ +12% vs last month</span>
+    </div>
+
+    <div class="metric-card expenses">
+      <span class="card-label">Monthly Expenses</span>
+      <h2 class="card-value">{{ monthlyExpenses | currency:'EUR':'symbol':'1.2-2' }}</h2>
+      <span class="card-status neutral">● Controlled spending</span>
+    </div>
+
+  </div>
+
+</div>

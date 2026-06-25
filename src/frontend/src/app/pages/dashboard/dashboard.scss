@@ -1,0 +1,139 @@
+// Apply structured layout controls to the root dashboard outer framing block
+.dashboard-container {
+  // Inject internal defensive bounding insulation padding around the page workspace
+  padding: 8px;
+
+  // Apply layout styling guidelines to the introduction top header section
+  .dashboard-header {
+    // Inject a clean vertical bottom separation gap below the title text
+    margin-bottom: 24px;
+
+    // Apply specific typography parameters to the main workspace title tag
+    h1 {
+      // Set the font sizing scale comfortably up to a sharp 1.75rem level
+      font-size: 1.75rem;
+      // Apply a solid heavy weight tracking thickness to give the page title weight
+      font-weight: 700;
+      // Direct text visibility into a deep dominant corporate slate dark tone
+      color: #0f172a;
+      // Clean up default exterior heading layout spacing overheads down to zero
+      margin: 0 0 4px 0;
+    }
+
+    // Apply specific typography parameters to the introduction subtitle block
+    .text-muted {
+      // Scale font down to a secondary comfortable reading index of 0.875rem
+      font-size: 0.875rem;
+      // Shift typography tone down to a soft muted corporate grayish slate tint
+      color: #64748b;
+      // Wipe default paragraph bounding margins clear to protect structural tracking
+      margin: 0;
+    }
+  }
+
+  // Activate CSS Grid module layouts to organize the metric overview summary columns
+  .metrics-grid {
+    // Trigger standard CSS grid orchestration layout mapping parameter layers
+    display: grid;
+    // Map out three uniform fractional width layouts across wide desktop viewports
+    grid-template-columns: repeat(3, 1fr);
+    // Inject a clean balanced spacing gutter interval of 24px between column tracks
+    gap: 24px;
+
+    // Apply universal base design configurations to each nested overview tracking card
+    .metric-card {
+      // Paint the physical base canvas color with a solid crisp absolute white tone
+      background-color: #ffffff;
+      // Form a clean subtle border enclosure trace boundary along the perimeter edge
+      border: 1px solid #e2e8f0;
+      // Shape subtle rounding geometry contours onto the bounding corner profiles
+      border-radius: 12px;
+      // Inject comfortable internal spatial balancing padding inside card coordinates
+      padding: 24px;
+      // Activate flexbox behaviors to control stacked vertical element tracking flows
+      display: flex;
+      // Direct children blocks to organize vertically sequentially down the stack index
+      flex-direction: column;
+      // Inject a structured interior structural element tracking interval gap of 8px
+      gap: 8px;
+      // Smoothly process interactive background translation properties under mouse triggers
+      transition: transform 0.2s, box-shadow 0.2s;
+
+      // Capture interactive mouse entry behaviors over the targeted card blocks
+      &:hover {
+        // Displace the physical layout layer slightly upwards to simulate interaction
+        transform: translateY(-2px);
+        // Cast an elegant ambient drop shadow depth directly beneath the card body
+        box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+      }
+
+      // Configure individual left accent indicators based on the financial card context
+      &.balance { border-left: 4px solid #3b82f6; }   // Vibrant Blue for primary asset worth
+      &.income { border-left: 4px solid #10b981; }    // Vibrant Green for inbound resource gain
+      &.expenses { border-left: 4px solid #ef4444; }  // Vibrant Red for outbound drainage tracking
+
+      // Apply typography styling metrics to the metadata information string labels
+      .card-label {
+        // Lower font sizing index down to a clean secondary tracking metric of 0.875rem
+        font-size: 0.875rem;
+        // Apply a bold medium structural weight profile to solidify character tracking
+        font-weight: 500;
+        // Adjust copy color values out to a soft readable muted slate gray tone
+        color: #64748b;
+        // Transform the entire tracking label string cleanly into upper case format
+        text-transform: uppercase;
+        // Broaden character spacing parameters slightly to sharpen scanning visibility
+        letter-spacing: 0.05em;
+      }
+
+      // Apply intense presentation metrics to the financial data calculation output
+      .card-value {
+        // Expand typography scale up to an impactful eye-catching 2rem index profile
+        font-size: 2rem;
+        // Anchor structural thickness with an intense extra-bold weighting configuration
+        font-weight: 800;
+        // Render characters using a sharp high-contrast midnight charcoal color hue
+        color: #1e293b;
+        // Erase default heading line heights and spatial margins from the page canvas
+        margin: 0;
+        // Enforce tight line bounding rules to avoid text overflow spatial issues
+        line-height: 1.2;
+      }
+
+      // Apply contextual style rules to the verification system status badges
+      .card-status {
+        // Compress text layout down onto a micro scale specification of 0.75rem
+        font-size: 0.75rem;
+        // Inject a semi-bold text thickness rating to reinforce status presence
+        font-weight: 600;
+        // Zero out exterior layout separation boundaries across the tracking grid
+        margin-top: 4px;
+
+        // Apply a clean emerald tint when financial indicators report growth trends
+        &.positive { color: #10b981; }
+        // Apply a clean gray-blue slate tint when reporting stable neutral balances
+        &.neutral { color: #64748b; }
+      }
+    }
+  }
+}
+
+// Introduce responsive media query break targets to re-adjust layouts on smaller monitors
+@media (max-width: 1024px) {
+  // Re-configure grid specifications when executing under tighter desktop layout constraints
+  .dashboard-container .metrics-grid {
+    // Compress layout grids down into a dual-column format to protect card boundaries
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+// Introduce responsive media query break targets to handle mobile web grid execution environments
+@media (max-width: 768px) {
+  // Re-configure layout matrices entirely down to a linear row format on phone displays
+  .dashboard-container .metrics-grid {
+    // Downscale columns down to a simple singular full-width column pattern sequence
+    grid-template-columns: 1fr;
+    // Compress intermediate spacing down to 16px to conserve restricted display rooms
+    gap: 16px;
+  }
+}

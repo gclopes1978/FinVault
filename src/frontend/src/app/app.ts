@@ -1,23 +1,23 @@
 // Import the core Component decorator from the Angular framework
 import { Component } from '@angular/core';
-// Import the custom HeaderComponent class from its local directory file path
+// Import the RouterOutlet directive to enable dynamic sub-page rendering slots
+import { RouterOutlet } from '@angular/router';
+// Import the custom layout shell Header component for global brand presentation
 import { HeaderComponent } from './components/header/header';
-// Import the custom SidebarComponent class from its local directory file path
+// Import the custom layout shell Sidebar component for application routing controls
 import { SidebarComponent } from './components/sidebar/sidebar';
 
 @Component({
-  // Define the custom HTML selector tag used to render this root component
+  // Define the custom unique HTML selector tag utilized to render the core root application
   selector: 'app-root',
-  // Enable standalone component mode to manage its own imports without NgModules
+  // Enable standalone mode to allow this component to manage its imports directly
   standalone: true,
-  // Inject the required Header and Sidebar components into this component context
-  imports: [HeaderComponent, SidebarComponent],
-  // Specify the external relative file path containing the component's HTML template
+  // Inject required routing modules and internal layout components into template visibility scope
+  imports: [RouterOutlet, HeaderComponent, SidebarComponent],
+  // Specify the external relative file path containing the primary structural template
   templateUrl: './app.html',
-  // Specify the external relative file path containing the component's SCSS styles
+  // Specify the external relative file path housing the global layout style rules
   styleUrl: './app.scss'
 })
-// Export the main AppComponent class so it can be bootstrapped by main.ts
-export class AppComponent {
-  // Main core application shell orchestrating layout structure
-}
+// Export the primary AppComponent class targeting bootstrap initiation
+export class AppComponent {}
