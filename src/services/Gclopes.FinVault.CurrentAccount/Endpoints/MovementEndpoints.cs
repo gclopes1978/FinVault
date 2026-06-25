@@ -1,4 +1,5 @@
-﻿using Gclopes.FinVault.CurrentAccount.Models;
+﻿using FluentValidation;
+using Gclopes.FinVault.CurrentAccount.Models;
 using Gclopes.FinVault.CurrentAccount.Services.Interfaces;
 
 namespace Gclopes.FinVault.CurrentAccount.Endpoints;
@@ -23,18 +24,18 @@ public static class MovementEndpoints
     }
 
     // Handles the creation of a new financial movement
-    private static async Task<IResult> RegisterMovementAsync(CreateMovementRequest request, IMovementService movementService)
+    private static async Task<IResult> RegisterMovementAsync(CreateMovementRequest request, IValidator<CreateMovementRequest> validator, IMovementService movementService)
     {
-        if (string.IsNullOrWhiteSpace(request.Description))
+        // Execute the automated FluentValidation check
+        var validationResult = await validator.ValidateAsync(request);
+
+        if (!validationResult.IsValid)
         {
-            return Results.BadRequest("Description is required.");
+            // Returns a standard 400 Bad Request with a structured dictionary of errors matching the DoD
+            return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
-        if (string.IsNullOrWhiteSpace(request.Type) || (request.Type != "Credit" && request.Type != "Debit"))
-        {
-            return Results.BadRequest("Type must be either 'Credit' or 'Debit'.");
-        }
-
+        // If validation passes, proceed to the service layer logic
         var result = await movementService.RegisterMovementAsync(request);
         return Results.Created($"/api/movements/{result.Id}", result);
     }
