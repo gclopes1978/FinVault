@@ -1,0 +1,39 @@
+name: Backend CI
+
+# Trigger the workflow on pull requests targeting the main branch
+on:
+  pull_request:
+    branches: [ main ]
+    # Optional: trigger only if backend files change to optimize build times
+    paths:
+      - 'src/services/**'
+      - '*.sln'
+      - '.github/workflows/backend-ci.yml'
+
+jobs:
+  build-and-test:
+    # Configure the runner to use a Linux environment as per technical tasks
+    runs-on: ubuntu-latest
+
+    steps:
+    # Step 1: Checkout the repository code
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Step 2: Setup .NET SDK execution environment (Targeting .NET 9.0)
+    - name: Setup .NET SDK
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '9.0.x'
+
+    # Step 3: Restore dependencies using NuGet
+    - name: Restore dependencies
+      run: dotnet restore
+
+    # Step 4: Build the solution without re-restoring dependencies
+    - name: Build solution
+      run: dotnet build --no-restore --configuration Release
+
+    # Step 5: Execute Automated Tests (if any test projects exist in the solution)
+    - name: Run Tests
+      run: dotnet test --no-build --configuration Release --verbosity normal
