@@ -9,11 +9,12 @@ public class MovementService(ApplicationDbContext context) : IMovementService
 {
     private readonly ApplicationDbContext _context = context;
 
-    public async Task<MovementResponse> RegisterMovementAsync(CreateMovementRequest request)
+    public async Task<MovementResponse> RegisterMovementAsync(CreateMovementRequest request, string userId)
     {
         var movement = new Movement
         {
             Id = Guid.NewGuid(),
+            UserId = userId,
             Amount = request.Amount,
             Type = request.Type,
             Description = request.Description,
@@ -38,11 +39,12 @@ public class MovementService(ApplicationDbContext context) : IMovementService
         );
     }
 
-    public async Task<IEnumerable<MovementResponse>> GetAllMovementsAsync()
+    public async Task<IEnumerable<MovementResponse>> GetAllMovementsAsync(string userId)
     {
         var movements = await _context.Movements
-            .OrderByDescending(m => m.TransactionDate)
-            .ToListAsync();
+        .Where(m => m.UserId == userId)
+        .OrderByDescending(m => m.TransactionDate)
+        .ToListAsync();
 
         return movements.Select(m => new MovementResponse(
             m.Id,
