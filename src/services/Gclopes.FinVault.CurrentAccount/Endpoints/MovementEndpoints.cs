@@ -1,16 +1,17 @@
 ﻿using FluentValidation;
 using Gclopes.FinVault.CurrentAccount.Models;
 using Gclopes.FinVault.CurrentAccount.Services.Interfaces;
+using System.Security.Claims;
 
 namespace Gclopes.FinVault.CurrentAccount.Endpoints;
 
 public static class MovementEndpoints
 {
-    // Extends IEndpointRouteBuilder to map all movement-related routes cleanly
     public static void MapMovementEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/movements")
-                       .WithTags("Movements");
+                       .WithTags("Movements")
+                       .RequireAuthorization();
 
         // POST /api/movements - Register a new financial movement using the service layer
         group.MapPost("/", RegisterMovementAsync)
@@ -24,7 +25,11 @@ public static class MovementEndpoints
     }
 
     // Handles the creation of a new financial movement
-    private static async Task<IResult> RegisterMovementAsync(CreateMovementRequest request, IValidator<CreateMovementRequest> validator, IMovementService movementService)
+    private static async Task<IResult> RegisterMovementAsync(
+        CreateMovementRequest request,
+        IValidator<CreateMovementRequest> validator,
+        IMovementService movementService,
+        ClaimsPrincipal user)
     {
         // Execute the automated FluentValidation check
         var validationResult = await validator.ValidateAsync(request);
@@ -35,15 +40,30 @@ public static class MovementEndpoints
             return Results.ValidationProblem(validationResult.ToDictionary());
         }
 
-        // If validation passes, proceed to the service layer logic
-        var result = await movementService.RegisterMovementAsync(request);
+        // Extract UserId from token claims
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+        if (string.IsNullOrEmpty(userId))
+        {
+            return Results.Unauthorized();
+        }
+
+        // If validation passes, proceed to the service layer logic passing the userId
+        var result = await movementService.RegisterMovementAsync(request, userId);
+
         return Results.Created($"/api/movements/{result.Id}", result);
     }
 
     // Handles the retrieval of all recorded movements
-    private static async Task<IResult> GetMovementsAsync(IMovementService movementService)
+    private static async Task<IResult> GetMovementsAsync(
+        IMovementService movementService,
+        ClaimsPrincipal user)
     {
-        var result = await movementService.GetAllMovementsAsync();
+        // Extract UserId from token claims
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+        var result = await movementService.GetAllMovementsAsync(userId);
         return Results.Ok(result);
     }
 }
