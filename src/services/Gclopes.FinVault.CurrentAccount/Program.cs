@@ -5,7 +5,10 @@ using Gclopes.FinVault.CurrentAccount.Middlewares;
 using Gclopes.FinVault.CurrentAccount.Services.Implementations;
 using Gclopes.FinVault.CurrentAccount.Services.Interfaces;
 using Gclopes.FinVault.CurrentAccount.Validators;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 namespace Gclopes.FinVault.CurrentAccount;
 
@@ -36,6 +39,25 @@ public class Program
         // Register all FluentValidation validators from this assembly
         builder.Services.AddValidatorsFromAssemblyContaining<CreateMovementRequestValidator>();
 
+        builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                        .AddJwtBearer(options =>
+                        {
+                            options.TokenValidationParameters = new TokenValidationParameters
+                            {
+                                ValidateIssuer = true,
+                                ValidateAudience = true,
+                                ValidateLifetime = true,
+                                ValidateIssuerSigningKey = true,
+                                ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                                ValidAudience = builder.Configuration["Jwt:Audience"],
+                                IssuerSigningKey = new SymmetricSecurityKey(
+                                    Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ??
+                                    throw new InvalidOperationException("JWT Key is missing!")))
+                            };
+                        });
+
+        builder.Services.AddAuthorization();
+
         var app = builder.Build();
         // Intercept and route outbound error traffic profiles through the registered global exceptional framework middleware
         app.UseExceptionHandler();
@@ -51,6 +73,7 @@ public class Program
 
 
         app.UseHttpsRedirection();
+        app.UseAuthentication();
         app.UseAuthorization();
         app.MapControllers();
 
