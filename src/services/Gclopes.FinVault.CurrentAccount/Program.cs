@@ -48,11 +48,11 @@ public class Program
                                 ValidateAudience = true,
                                 ValidateLifetime = true,
                                 ValidateIssuerSigningKey = true,
-                                ValidIssuer = builder.Configuration["Jwt:Issuer"],
-                                ValidAudience = builder.Configuration["Jwt:Audience"],
+                                ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                                ValidAudience = builder.Configuration["JwtSettings:Audience"],
                                 IssuerSigningKey = new SymmetricSecurityKey(
-                                    Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"] ??
-                                    throw new InvalidOperationException("JWT Key is missing!")))
+                                    Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"] ??
+                                    throw new InvalidOperationException("JwtSettings Secret is missing!")))
                             };
                         });
 
