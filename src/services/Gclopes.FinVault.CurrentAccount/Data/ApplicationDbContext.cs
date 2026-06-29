@@ -31,22 +31,25 @@ namespace Gclopes.FinVault.CurrentAccount.Data
         // Configure explicit model constraint criteria configurations during initial creation assembly execution
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            // Target the AuditLog schema properties to set strict mapping configuration policies
+            // AuditLog configuration
             modelBuilder.Entity<AuditLog>(entity =>
             {
-                // Establish the primary unique cluster index tracking identity key constraints
                 entity.HasKey(e => e.Id);
-                // Require the target entity context tracking metadata identity string name configuration
                 entity.Property(e => e.EntityName).IsRequired().HasMaxLength(100);
-                // Require the execution transaction operational mutation description status string name
                 entity.Property(e => e.Action).IsRequired().HasMaxLength(50);
-                // Require the executing actor identity logging record tracking string name fields
                 entity.Property(e => e.UserId).IsRequired().HasMaxLength(100);
-                // Enforce mandatory entry settings over the payload text data storage mapping layer
                 entity.Property(e => e.ChangesPayload).IsRequired();
             });
 
-            // Pass execution workflows onward downstream directly into the fundamental assembly generation process
+            // Movement configuration (fixing the decimal precision warning)
+            modelBuilder.Entity<Movement>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Amount).HasPrecision(18, 2);
+                entity.Property(e => e.UserId).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Type).IsRequired().HasMaxLength(10);
+            });
+
             base.OnModelCreating(modelBuilder);
         }
     }
