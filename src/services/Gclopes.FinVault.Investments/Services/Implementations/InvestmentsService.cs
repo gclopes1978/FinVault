@@ -44,7 +44,7 @@ public class InvestmentsService(
             .ToListAsync(cancellationToken);
 
         // 2. Buscar transações da Trading 212 (Tabela Raw)
-        var t212Transactions = await _dbContext.TransactionTrading212s
+        var t212Transactions = await _dbContext.Trading212Transactions
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
@@ -157,7 +157,7 @@ public class InvestmentsService(
         var records = await _trading212CsvImporter.ParseCsvAsync(csvStream, cancellationToken);
         int importedCount = 0;
 
-        HashSet<string> existingT212Ids = await _dbContext.TransactionTrading212s
+        HashSet<string> existingT212Ids = await _dbContext.Trading212Transactions
             .Select(t => t.T212Id)
             .ToHashSetAsync(cancellationToken);
 
@@ -166,7 +166,7 @@ public class InvestmentsService(
             if (existingT212Ids.Contains(record.Id))
                 continue;
 
-            var t212Transaction = new TransactionTrading212
+            var t212Transaction = new Trading212Transaction
             {
                 T212Id = record.Id,
                 Action = record.Action,
@@ -185,7 +185,7 @@ public class InvestmentsService(
                 CurrencyWithholdingTax = record.CurrencyWithholdingTax,
                 CreatedAt = DateTime.UtcNow
             };
-            _dbContext.TransactionTrading212s.Add(t212Transaction);
+            _dbContext.Trading212Transactions.Add(t212Transaction);
 
             existingT212Ids.Add(record.Id);
 

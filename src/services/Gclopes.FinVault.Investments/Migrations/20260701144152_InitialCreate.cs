@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace Gclopes.FinVault.Investments.Migrations
 {
     /// <inheritdoc />
-    public partial class InitialInvestmentsCreate : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -31,7 +31,7 @@ namespace Gclopes.FinVault.Investments.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "TransactionTrading212s",
+                name: "Trading212Transactions",
                 columns: table => new
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
@@ -55,7 +55,7 @@ namespace Gclopes.FinVault.Investments.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_TransactionTrading212s", x => x.Id);
+                    table.PrimaryKey("PK_Trading212Transactions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -84,8 +84,8 @@ namespace Gclopes.FinVault.Investments.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_TransactionTrading212s_T212Id",
-                table: "TransactionTrading212s",
+                name: "IX_Trading212Transactions_T212Id",
+                table: "Trading212Transactions",
                 column: "T212Id",
                 unique: true);
 
@@ -103,7 +103,7 @@ namespace Gclopes.FinVault.Investments.Migrations
                 name: "Positions");
 
             migrationBuilder.DropTable(
-                name: "TransactionTrading212s");
+                name: "Trading212Transactions");
 
             migrationBuilder.DropTable(
                 name: "XtbTransactions");

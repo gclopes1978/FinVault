@@ -7,7 +7,7 @@ public class FinVaultInvestmentsDb(DbContextOptions<FinVaultInvestmentsDb> optio
 {
     public DbSet<Position> Positions { get; set; }
     public DbSet<XtbTransaction> XtbTransactions { get; set; }
-    public DbSet<TransactionTrading212> TransactionTrading212s { get; set; }
+    public DbSet<Trading212Transaction> Trading212Transactions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -43,7 +43,7 @@ public class FinVaultInvestmentsDb(DbContextOptions<FinVaultInvestmentsDb> optio
             entity.HasIndex(e => e.Id).IsUnique();
         });
 
-        modelBuilder.Entity<TransactionTrading212>(entity =>
+        modelBuilder.Entity<Trading212Transaction>(entity =>
         {
             // Primary Key
             entity.HasKey(e => e.Id);
