@@ -65,7 +65,7 @@ namespace Gclopes.FinVault.Investments.Migrations
                     b.ToTable("Positions");
                 });
 
-            modelBuilder.Entity("Gclopes.FinVault.Investments.Data.Entities.TransactionTrading212", b =>
+            modelBuilder.Entity("Gclopes.FinVault.Investments.Data.Entities.Trading212Transaction", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -148,7 +148,7 @@ namespace Gclopes.FinVault.Investments.Migrations
                     b.HasIndex("T212Id")
                         .IsUnique();
 
-                    b.ToTable("TransactionTrading212s");
+                    b.ToTable("Trading212Transactions");
                 });
 
             modelBuilder.Entity("Gclopes.FinVault.Investments.Data.Entities.XtbTransaction", b =>

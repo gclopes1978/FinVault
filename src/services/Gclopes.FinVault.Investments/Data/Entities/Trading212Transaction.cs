@@ -1,6 +1,6 @@
 ﻿namespace Gclopes.FinVault.Investments.Data.Entities;
 
-public class TransactionTrading212
+public class Trading212Transaction
 {
     public int Id { get; set; } // Chave Primária gerada pela BD
     public string T212Id { get; set; } = string.Empty; // O ID que vem do CSV da T212
