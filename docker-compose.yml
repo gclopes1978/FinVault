@@ -101,7 +101,7 @@ services:
   # 5. Current Account Microservice (.NET 9)
   # =========================================================================
   currentaccount-service:
-    image: gclopes1978/finvault-currentaccount:latest
+    image: finvault-currentaccount:latest
     container_name: finvault-currentaccount-api
     build:
       context: .
@@ -183,22 +183,19 @@ services:
     restart: on-failure
 
   # =========================================================================
-  # 9. Investimentos Microservice (.NET 9)
-  # Trading 212 API + XTB CSV import
+  # 9. Investments Microservice (.NET 9)
+  # Trading 212 CSV Import + XTB CSV import
   # =========================================================================
-  investimentos-service:
-    image: gclopes1978/finvault-investimentos:latest
-    container_name: finvault-investimentos-api
+  investments-service:
+    container_name: finvault-investments-api
     build:
       context: .
-      dockerfile: src/services/Gclopes.FinVault.Investimentos/Dockerfile
+      dockerfile: src/services/Gclopes.FinVault.Investments/Dockerfile
     ports:
       - "7005:8080"
     environment:
       - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
       - ConnectionStrings__DefaultConnection=${SQLSERVER_CONNECTION_INVESTIMENTOS}
-      - Trading212__ApiKey=${TRADING212_API_KEY}
-      - Trading212__ApiUrl=${TRADING212_API_URL}
     networks:
       - finvault-network
     depends_on:

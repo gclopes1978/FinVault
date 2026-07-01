@@ -5,12 +5,8 @@ using Microsoft.EntityFrameworkCore;
 namespace Gclopes.FinVault.CurrentAccount.Data
 {
     // Define the core application database context class managing tracking data mappings
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
-        // Initialize the base configuration constructor linking entity framework core database parameters
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
-        {
-        }
 
         // Map the structural AuditLog data model out into a dedicated tracking database table schema
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
