@@ -1,32 +1,27 @@
 services:
 
-  # =========================================================================
-  # 1. RabbitMQ (Message Broker) + Web Management Dashboard
-  # =========================================================================
-  finvault-rabbitmq:
-    image: rabbitmq:3-management
-    container_name: finvault-rabbitmq
-    ports:
-      - "5672:5672"    # AMQP — MassTransit / pika (Python)
-      - "15672:15672"  # Management UI → http://localhost:15672
-    environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-    networks:
-      - finvault-network
-    healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-      start_period: 20s
+  # finvault-rabbitmq:
+  #   image: rabbitmq:3-management
+  #   container_name: finvault-rabbitmq
+  #   ports:
+  #     - "5672:5672"
+  #     - "15672:15672"
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+  #     RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+  #   volumes:
+  #     - rabbitmq_data:/var/lib/rabbitmq
+  #   networks:
+  #     finvault-network:
+  #       aliases:
+  #         - rabbitmq-host
+  #   healthcheck:
+  #     test: ["CMD", "rabbitmq-diagnostics", "ping"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
+  #     start_period: 20s
 
-  # =========================================================================
-  # 2. SQL Server 2022
-  # Bases de dados: CurrentAccount · PPR · CertAforro · Investimentos
-  # =========================================================================
   finvault-sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
     container_name: finvault-sqlserver
@@ -34,7 +29,7 @@ services:
       - "1433:1433"
     environment:
       ACCEPT_EULA: "Y"
-      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      MSSQL_SA_PASSWORD: "${MSSQL_SA_PASSWORD}"
     volumes:
       - sqlserver_data:/var/opt/mssql
     networks:
@@ -42,15 +37,11 @@ services:
         aliases:
           - sqlserver-host
     healthcheck:
-      test: ["CMD", "/opt/mssql-tools18/bin/sqlcmd", "-S", "localhost", "-U", "sa", "-P", "${MSSQL_SA_PASSWORD}", "-C", "-Q", "SELECT 1"]
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P '${MSSQL_SA_PASSWORD}' -C -Q 'SELECT 1'"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 10s
-
-  # =========================================================================
-  # 3. Oracle XE (Folha Salarial)
-  # =========================================================================
+      start_period: 20s
   finvault-oracle:
     image: gvenzl/oracle-free:latest
     container_name: finvault-oracle
@@ -73,33 +64,6 @@ services:
       retries: 5
       start_period: 60s
 
-  # =========================================================================
-  # 4. API Gateway (YARP · .NET 9)
-  # =========================================================================
-  finvault-gateway:
-    image: gclopes1978/finvault-gateway:latest
-    container_name: finvault-gateway
-    build:
-      context: .
-      dockerfile: src/gateway/Gclopes.FinVault.Gateway/Dockerfile
-    ports:
-      - "5000:8080"   # Ponto único de entrada para o Angular
-    environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - JWT__Secret=${JWT_SECRET}
-      - JWT__Issuer=${JWT_ISSUER}
-      - JWT__Audience=${JWT_AUDIENCE}
-      - JWT__ExpiryMinutes=${JWT_EXPIRY_MINUTES}
-    networks:
-      - finvault-network
-    depends_on:
-      finvault-sqlserver:
-        condition: service_healthy
-    restart: on-failure
-
-  # =========================================================================
-  # 5. Current Account Microservice (.NET 9)
-  # =========================================================================
   currentaccount-service:
     image: finvault-currentaccount:latest
     container_name: finvault-currentaccount-api
@@ -109,83 +73,17 @@ services:
     ports:
       - "7001:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - ConnectionStrings__DefaultConnection=${SQLSERVER_CONNECTION_CURRENTACCOUNT}
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_CURRENTACCOUNT}
     networks:
-      - finvault-network
+      finvault-network:
+        aliases:
+          - currentaccount-api
     depends_on:
       finvault-sqlserver:
         condition: service_healthy
     restart: on-failure
 
-  # =========================================================================
-  # 6. Payroll Microservice (.NET 9)
-  # =========================================================================
-  folhasalarial-service:
-    image: gclopes1978/finvault-folhasalarial:latest
-    container_name: finvault-folhasalarial-api
-    build:
-      context: .
-      dockerfile: src/services/Gclopes.FinVault.FolhaSalarial/Dockerfile
-    ports:
-      - "7002:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - ConnectionStrings__DefaultConnection=${ORACLE_CONNECTION_FOLHASALARIAL}
-    networks:
-      - finvault-network
-    depends_on:
-      finvault-oracle:
-        condition: service_healthy
-    restart: on-failure
-
-  # =========================================================================
-  # 7. PPR Microservice (.NET 9)
-  # Lusitânia Vida + AR Banco Invest
-  # =========================================================================
-  ppr-service:
-    image: gclopes1978/finvault-ppr:latest
-    container_name: finvault-ppr-api
-    build:
-      context: .
-      dockerfile: src/services/Gclopes.FinVault.PPR/Dockerfile
-    ports:
-      - "7003:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - ConnectionStrings__DefaultConnection=${SQLSERVER_CONNECTION_PPR}
-    networks:
-      - finvault-network
-    depends_on:
-      finvault-sqlserver:
-        condition: service_healthy
-    restart: on-failure
-
-  # =========================================================================
-  # 8. Certificados de Aforro Microservice (.NET 9)
-  # =========================================================================
-  certaforro-service:
-    image: gclopes1978/finvault-certaforro:latest
-    container_name: finvault-certaforro-api
-    build:
-      context: .
-      dockerfile: src/services/Gclopes.FinVault.CertAforro/Dockerfile
-    ports:
-      - "7004:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - ConnectionStrings__DefaultConnection=${SQLSERVER_CONNECTION_CERTAFORRO}
-    networks:
-      - finvault-network
-    depends_on:
-      finvault-sqlserver:
-        condition: service_healthy
-    restart: on-failure
-
-  # =========================================================================
-  # 9. Investments Microservice (.NET 9)
-  # Trading 212 CSV Import + XTB CSV import
-  # =========================================================================
   investments-service:
     container_name: finvault-investments-api
     build:
@@ -194,89 +92,24 @@ services:
     ports:
       - "7005:8080"
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - ConnectionStrings__DefaultConnection=${SQLSERVER_CONNECTION_INVESTIMENTOS}
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      # A LINHA ABAIXO ESTAVA EM FALTA
+      ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_INVESTMENTS}
     networks:
-      - finvault-network
+      finvault-network:
+        aliases:
+          - investments-api
     depends_on:
       finvault-sqlserver:
         condition: service_healthy
     restart: on-failure
 
-  # =========================================================================
-  # 10. Open Banking Microservice (.NET 9)
-  # Nordigen / GoCardless PSD2 — ActivoBank
-  # =========================================================================
-  openbanking-service:
-    image: gclopes1978/finvault-openbanking:latest
-    container_name: finvault-openbanking-api
-    build:
-      context: .
-      dockerfile: src/services/Gclopes.FinVault.OpenBanking/Dockerfile
-    ports:
-      - "7006:8080"
-    environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - Nordigen__SecretId=${NORDIGEN_SECRET_ID}
-      - Nordigen__SecretKey=${NORDIGEN_SECRET_KEY}
-      - Nordigen__ApiUrl=${NORDIGEN_API_URL}
-      - Nordigen__InstitutionId=${NORDIGEN_ACTIVOBANK_INSTITUTION_ID}
-    networks:
-      - finvault-network
-    restart: on-failure
-
-  # =========================================================================
-  # 11. PDF Parser Service (Python · pdfplumber)
-  # Classifica e extrai dados de todos os PDFs
-  # =========================================================================
-  pdfparser-service:
-    image: gclopes1978/finvault-pdfparser:latest
-    container_name: finvault-pdfparser
-    build:
-      context: .
-      dockerfile: src/services/Gclopes.FinVault.PdfParser/Dockerfile
-    ports:
-      - "7007:8000"   # Uvicorn / FastAPI
-    environment:
-      - CURRENTACCOUNT_SERVICE_URL=http://currentaccount-service:8080
-      - FOLHASALARIAL_SERVICE_URL=http://folhasalarial-service:8080
-      - PPR_SERVICE_URL=http://ppr-service:8080
-      - CERTAFORRO_SERVICE_URL=http://certaforro-service:8080
-    networks:
-      - finvault-network
-    restart: on-failure
-
-  # =========================================================================
-  # 12. Cotações Service (Python · yfinance · CoinGecko · OpenFIGI)
-  # =========================================================================
-  cotacoes-service:
-    image: gclopes1978/finvault-cotacoes:latest
-    container_name: finvault-cotacoes
-    build:
-      context: .
-      dockerfile: src/services/Gclopes.FinVault.Cotacoes/Dockerfile
-    ports:
-      - "7008:8000"   # Uvicorn / FastAPI
-    environment:
-      - COINGECKO_API_KEY=${COINGECKO_API_KEY}
-      - COINGECKO_API_URL=${COINGECKO_API_URL}
-      - ALPHA_VANTAGE_API_KEY=${ALPHA_VANTAGE_API_KEY}
-      - OPENFIGI_API_KEY=${OPENFIGI_API_KEY}
-    networks:
-      - finvault-network
-    restart: on-failure
-
-# =============================================================================
-# Volumes — persistência de dados entre reinicios dos containers
-# =============================================================================
 volumes:
-  rabbitmq_data:
+  # rabbitmq_data:
   sqlserver_data:
   oracle_data:
 
-# =============================================================================
-# Networks — rede interna isolada entre todos os serviços
-# =============================================================================
 networks:
   finvault-network:
+    name: finvault-network
     driver: bridge

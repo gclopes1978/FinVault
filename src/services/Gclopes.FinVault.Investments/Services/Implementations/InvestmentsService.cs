@@ -88,21 +88,24 @@ public class InvestmentsService(
         var records = await _xtbCsvImporter.ParseCsvAsync(csvStream, cancellationToken);
         int importedCount = 0;
 
-        // 1. Buscar todos os IDs que já existem na NOVA tabela XtbTransactions
+        // 1. Buscar todos os IDs que já existem na tabela XtbTransactions
         var existingXtbIds = await _dbContext.XtbTransactions
             .Select(t => t.Id)
             .ToHashSetAsync(cancellationToken);
 
+        // 2. Pré-carregar todas as Positions existentes da XTB para um dicionário em memória
+        var existingPositions = await _dbContext.Positions
+            .Where(p => p.Source == BrokerSource.XTB)
+            .ToDictionaryAsync(p => p.Symbol, cancellationToken);
+
         foreach (var record in records)
         {
-            // 2. DEDUPLICAÇÃO: Se o ID do CSV já existe na BD, saltamos a linha
             if (existingXtbIds.Contains(record.Id))
                 continue;
 
-            // 3. GUARDAR NA TABELA DE RAW DATA (XtbTransaction)
             var xtbTransaction = new XtbTransaction
             {
-                Id = record.Id, // O ID que vem do CSV da XTB
+                Id = record.Id,
                 Type = record.Type,
                 Ticker = record.Ticker,
                 Instrument = record.Instrument,
@@ -113,22 +116,15 @@ public class InvestmentsService(
                 CreatedAt = DateTime.UtcNow
             };
             _dbContext.XtbTransactions.Add(xtbTransaction);
-
-            // Adicionamos ao HashSet em memória para o caso de o CSV ter o mesmo ID repetido nas linhas
             existingXtbIds.Add(record.Id);
 
-            // 4. ATUALIZAR A TABELA POSITION (O teu Dashboard)
-            var position = await _dbContext.Positions
-                .FirstOrDefaultAsync(p => p.Symbol == record.Ticker && p.Source == BrokerSource.XTB, cancellationToken);
-
-            if (position == null)
+            // 3. Consultar o dicionário em memória em vez da BD
+            if (!existingPositions.TryGetValue(record.Ticker, out var position))
             {
                 position = new Position
                 {
                     Symbol = record.Ticker,
                     Source = BrokerSource.XTB,
-                    // ATENÇÃO: O teu CSV da XTB não tem "Quantidade" nem "Preço Unitário". 
-                    // Fica a 0 por agora. Só poderás preencher isto se importares outro ficheiro da XTB que tenha esses dados.
                     Quantity = 0,
                     AverageCost = 0,
                     CurrentPrice = 0,
@@ -136,10 +132,10 @@ public class InvestmentsService(
                     CreatedAt = DateTime.UtcNow
                 };
                 _dbContext.Positions.Add(position);
+                existingPositions[record.Ticker] = position; // regista já no dicionário
             }
             else
             {
-                // Se a posição já existe, apenas atualizamos a data para saber que foi sincronizada recentemente
                 position.LastUpdated = DateTime.UtcNow;
             }
 
@@ -161,6 +157,9 @@ public class InvestmentsService(
             .Select(t => t.T212Id)
             .ToHashSetAsync(cancellationToken);
 
+        var existingPositions = await _dbContext.Positions
+            .Where(p => p.Source == BrokerSource.Trading212)
+            .ToDictionaryAsync(p => p.Symbol, cancellationToken);
         foreach (Trading212CsvRecord record in records)
         {
             if (existingT212Ids.Contains(record.Id))
@@ -187,38 +186,24 @@ public class InvestmentsService(
             };
             _dbContext.Trading212Transactions.Add(t212Transaction);
 
-            existingT212Ids.Add(record.Id);
-
-            var position = await _dbContext.Positions
-                .FirstOrDefaultAsync(p => p.Symbol == record.Ticker && p.Source == BrokerSource.Trading212, cancellationToken);
-
-            if (position == null)
+            if (!existingPositions.TryGetValue(record.Ticker, out var position))
             {
                 position = new Position
                 {
                     Symbol = record.Ticker,
                     Source = BrokerSource.Trading212,
-                    Quantity = record.NumberOfShares,
-                    CurrentPrice = record.PricePerShare,
-                    AverageCost = record.PricePerShare,
+                    Quantity = 0,
+                    AverageCost = 0,
+                    CurrentPrice = 0,
                     LastUpdated = DateTime.UtcNow,
                     CreatedAt = DateTime.UtcNow
                 };
                 _dbContext.Positions.Add(position);
+                existingPositions[record.Ticker] = position; // regista já no dicionário
             }
             else
             {
-                // ATENÇÃO À LÓGICA AQUI:
-                // Se estás a importar um histórico antigo, NÃO deves sobrescrever a Quantity atual.
-                // Se estás a importar o estado mais recente, deves sobrescrever.
-                // Por segurança (para não estragar o teu portfolio atual com imports de 2022), 
-                // apenas atualizamos a data da última sincronização, mantendo os dados que lá estão.
                 position.LastUpdated = DateTime.UtcNow;
-
-                // Se quiseres que o import substitua SEMPRE o estado atual, descomenta as 3 linhas abaixo:
-                // position.Quantity = record.NumberOfShares;
-                // position.CurrentPrice = record.PricePerShare;
-                // position.AverageCost = record.PricePerShare; 
             }
 
             importedCount++;

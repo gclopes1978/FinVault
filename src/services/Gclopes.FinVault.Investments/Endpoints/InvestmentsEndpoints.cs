@@ -12,12 +12,14 @@ public static class InvestmentsEndpoints
 
         group.MapPost("/import/xtb", ImportXtbAsync)
             .WithName("ImportXtbCsv")
+            .DisableAntiforgery()
             .WithOpenApi()
             .Produces<ImportCsvResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest);
 
         group.MapPost("/import/trading212", ImportTrading212Async)
             .WithName("ImportTrading212Csv")
+            .DisableAntiforgery()
             .WithOpenApi()
             .Produces<ImportCsvResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest);
