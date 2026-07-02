@@ -1,26 +1,63 @@
 services:
+  document-ingestion:
+    build:
+      context: ./src/services/Gclopes.FinVault.DocumentIngestion
+      dockerfile: Dockerfile
+    container_name: document-ingestion
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+    ports:
+      - "7050:8080" # Maps local port 7050 to the .NET 9 container port 8080
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - StorageSettings__Path=/app/uploadPdf
+    volumes:
+      - ./data/uploads:/app/uploadPdf
+    depends_on:
+      - finvault-rabbitmq
+    networks:
+      - finvault-network
 
-  # finvault-rabbitmq:
-  #   image: rabbitmq:3-management
-  #   container_name: finvault-rabbitmq
-  #   ports:
-  #     - "5672:5672"
-  #     - "15672:15672"
-  #   environment:
-  #     RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-  #     RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
-  #   volumes:
-  #     - rabbitmq_data:/var/lib/rabbitmq
-  #   networks:
-  #     finvault-network:
-  #       aliases:
-  #         - rabbitmq-host
-  #   healthcheck:
-  #     test: ["CMD", "rabbitmq-diagnostics", "ping"]
-  #     interval: 10s
-  #     timeout: 5s
-  #     retries: 5
-  #     start_period: 20s
+  finvault-gateway:
+    build:
+      context: ./src/gateways/Gclopes.FinVault.Gateway
+      dockerfile: Dockerfile
+    container_name: finvault-gateway
+    ports:
+      - "5000:8080" # Maps public port 5000 to Gateway's .NET 9 port 8080
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    depends_on:
+      - document-ingestion
+    networks:
+      - finvault-network
+
+  finvault-rabbitmq:
+    image: rabbitmq:3-management
+    container_name: finvault-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      finvault-network:
+        aliases:
+          - rabbitmq-host
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
 
   finvault-sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -105,7 +142,7 @@ services:
     restart: on-failure
 
 volumes:
-  # rabbitmq_data:
+  rabbitmq_data:
   sqlserver_data:
   oracle_data:
 
