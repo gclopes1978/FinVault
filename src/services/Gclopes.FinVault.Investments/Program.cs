@@ -11,8 +11,11 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddOpenApi();
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
+builder.Services.AddOpenApi();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
@@ -24,9 +27,34 @@ builder.Services.AddCors(options =>
 });
 
 // Database configuration
+//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+// Certifica-te que usas a chave definida no teu .env
+// Substitui a linha do connectionString por esta:
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (string.IsNullOrEmpty(connectionString))
+{
+    throw new InvalidOperationException("Connection string 'SQLSERVER_CONNECTION_INVESTMENTS' not found.");
+}
+
 builder.Services.AddDbContext<FinVaultInvestmentsDb>(options =>
-    options.UseSqlServer(connectionString));
+    options.UseSqlServer(connectionString, sqlOptions =>
+    {
+        sqlOptions.EnableRetryOnFailure(
+            maxRetryCount: 5,
+            maxRetryDelay: TimeSpan.FromSeconds(30),
+            errorNumbersToAdd: null);
+    }));
+//builder.Services.AddDbContext<FinVaultInvestmentsDb>(options =>
+//    options.UseSqlServer(
+//        connectionString,
+//        sqlOptions =>
+//        {
+//            sqlOptions.EnableRetryOnFailure(
+//                maxRetryCount: 5,
+//                maxRetryDelay: TimeSpan.FromSeconds(30),
+//                errorNumbersToAdd: null);
+//        }));
 
 // Register services
 builder.Services.AddScoped<IInvestmentsService, InvestmentsService>();
@@ -55,11 +83,10 @@ var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    // Enable the underlying application engine middleware payload processor to serve generated Swagger JSON documents
     app.UseSwagger();
-    // Enable core UI dashboard presentation assets to easily explore interactive live gateway API documentation
     app.UseSwaggerUI();
 }
+app.MapOpenApi();
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
@@ -67,5 +94,14 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapInvestmentsEndpoints();
+
+
+// Garantir a criação da BD no arranque
+using (var scope = app.Services.CreateScope())
+{
+    var dbContext = scope.ServiceProvider.GetRequiredService<FinVaultInvestmentsDb>();
+    // Cria a base de dados e aplica migrações se necessário
+    dbContext.Database.EnsureCreated();
+}
 
 app.Run();

@@ -17,7 +17,7 @@ public class FinVaultInvestmentsDb(DbContextOptions<FinVaultInvestmentsDb> optio
         modelBuilder.Entity<Position>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Symbol).HasMaxLength(10).IsRequired();
+            entity.Property(e => e.Symbol).HasMaxLength(32).IsRequired();
             entity.Property(e => e.Source).HasMaxLength(20).IsRequired();
             entity.Property(e => e.Quantity).HasPrecision(18, 8);
             entity.Property(e => e.AverageCost).HasPrecision(18, 8);
@@ -32,12 +32,12 @@ public class FinVaultInvestmentsDb(DbContextOptions<FinVaultInvestmentsDb> optio
             // IMPORTANTE: Diz ao EF Core que NÃO é auto-incremento, pois vimos do CSV
             entity.Property(e => e.Id).ValueGeneratedNever();
 
-            entity.Property(e => e.Type).HasMaxLength(20).IsRequired();
-            entity.Property(e => e.Ticker).HasMaxLength(20).IsRequired();
-            entity.Property(e => e.Instrument).HasMaxLength(50);
+            entity.Property(e => e.Type).HasMaxLength(128).IsRequired();
+            entity.Property(e => e.Ticker).HasMaxLength(32).IsRequired();
+            entity.Property(e => e.Instrument).HasMaxLength(128);
             entity.Property(e => e.Amount).HasPrecision(18, 8);
-            entity.Property(e => e.Comment).HasMaxLength(500);
-            entity.Property(e => e.Product).HasMaxLength(50);
+            entity.Property(e => e.Comment).HasMaxLength(512);
+            entity.Property(e => e.Product).HasMaxLength(128);
 
             // Criar um índice para a pesquisa ser ainda mais rápida
             entity.HasIndex(e => e.Id).IsUnique();
@@ -55,11 +55,11 @@ public class FinVaultInvestmentsDb(DbContextOptions<FinVaultInvestmentsDb> optio
             entity.HasIndex(e => e.T212Id).IsUnique();
 
             // Strings de Texto
-            entity.Property(e => e.Action).IsRequired().HasMaxLength(50); // Ex: "Market buy", "Dividend"
+            entity.Property(e => e.Action).IsRequired().HasMaxLength(64); // Ex: "Market buy", "Dividend"
             entity.Property(e => e.Isin).IsRequired().HasMaxLength(12);   // O padrão ISIN mundial tem exatamente 12 chars
-            entity.Property(e => e.Ticker).IsRequired().HasMaxLength(20); // Ex: "AAPL", "MSFT_US"
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
-            entity.Property(e => e.Notes).HasMaxLength(1000);             // Nullable por definição na entidade
+            entity.Property(e => e.Ticker).IsRequired().HasMaxLength(32); // Ex: "AAPL", "MSFT_US"
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(256);
+            entity.Property(e => e.Notes).HasMaxLength(1024);             // Nullable por definição na entidade
 
             // Códigos de Moeda (ISO 4217 - EUR, USD, GBP...)
             entity.Property(e => e.CurrencyPricePerShare).IsRequired().HasMaxLength(3);
