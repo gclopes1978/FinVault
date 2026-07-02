@@ -1,0 +1,6 @@
+@Gclopes.FinVault.DocumentIngestion_HostAddress = http://localhost:5049
+
+GET {{Gclopes.FinVault.DocumentIngestion_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
