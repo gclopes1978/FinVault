@@ -1,666 +1,0 @@
-document-ingestion        | Unhandled exception. System.InvalidOperationException: RABBITMQ_USER is missing
-finvault-oracle           | CONTAINER: starting up...
-finvault-sqlserver        | SQL Server 2022 will run as non-root by default.
-finvault-oracle           | CONTAINER: first database startup, initializing...
-finvault-investments-api  | info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-finvault-oracle           | CONTAINER: uncompressing database data files, please wait...
-finvault-investments-api  |       Executed DbCommand (668ms) [Parameters=[], CommandType='Text', CommandTimeout='60']
-finvault-sqlserver        | This container is running as user mssql.
-finvault-oracle           | CONTAINER: done uncompressing database data files, duration: 9 seconds.
-finvault-investments-api  |       CREATE DATABASE [FinVaultInvestmentsDb];
-finvault-oracle           | CONTAINER: starting up Oracle Database...
-finvault-oracle           | 
-finvault-sqlserver        | To learn more visit https://go.microsoft.com/fwlink/?linkid=2099216.
-document-ingestion        |    at Program.<Main>$(String[] args) in /src/Program.cs:line 14
-finvault-sqlserver        | 2026-07-02 13:41:12.51 Server      Setup step is copying system data file 'C:\templatedata\master.mdf' to '/var/opt/mssql/data/master.mdf'.
-finvault-oracle           | LSNRCTL for Linux: Version 23.26.2.0.0 - Production on 02-JUL-2026 13:41:15
-finvault-sqlserver        | 2026-07-02 13:41:12.59 Server      Did not find an existing master data file /var/opt/mssql/data/master.mdf, copying the missing default master and other system database files. If you have moved the database location, but not moved the database files, startup may fail. To repair: shutdown SQL Server, move the master database to configured location, and restart.
-finvault-investments-api  | info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-finvault-sqlserver        | 2026-07-02 13:41:12.60 Server      Setup step is copying system data file 'C:\templatedata\mastlog.ldf' to '/var/opt/mssql/data/mastlog.ldf'.
-finvault-sqlserver        | 2026-07-02 13:41:12.62 Server      Setup step is copying system data file 'C:\templatedata\model.mdf' to '/var/opt/mssql/data/model.mdf'.
-finvault-investments-api  |       Executed DbCommand (466ms) [Parameters=[], CommandType='Text', CommandTimeout='60']
-finvault-sqlserver        | 2026-07-02 13:41:12.74 Server      Setup step is copying system data file 'C:\templatedata\modellog.ldf' to '/var/opt/mssql/data/modellog.ldf'.
-finvault-sqlserver        | 2026-07-02 13:41:12.79 Server      Setup step is copying system data file 'C:\templatedata\msdbdata.mdf' to '/var/opt/mssql/data/msdbdata.mdf'.
-finvault-investments-api  |       IF SERVERPROPERTY('EngineEdition') <> 5
-finvault-oracle           | 
-finvault-oracle           | Copyright (c) 1991, 2026, Oracle.  All rights reserved.
-finvault-oracle           | 
-finvault-sqlserver        | 2026-07-02 13:41:12.83 Server      Setup step is copying system data file 'C:\templatedata\msdblog.ldf' to '/var/opt/mssql/data/msdblog.ldf'.
-finvault-oracle           | Starting /opt/oracle/product/26ai/dbhomeFree/bin/tnslsnr: please wait...
-finvault-sqlserver        | 2026-07-02 13:41:12.84 Server      Setup step is FORCE copying system data file 'C:\templatedata\model_replicatedmaster.mdf' to '/var/opt/mssql/data/model_replicatedmaster.mdf'.
-finvault-oracle           | 
-finvault-sqlserver        | 2026-07-02 13:41:12.86 Server      Setup step is FORCE copying system data file 'C:\templatedata\model_replicatedmaster.ldf' to '/var/opt/mssql/data/model_replicatedmaster.ldf'.
-finvault-sqlserver        | 2026-07-02 13:41:12.88 Server      Setup step is FORCE copying system data file 'C:\templatedata\model_msdbdata.mdf' to '/var/opt/mssql/data/model_msdbdata.mdf'.
-finvault-sqlserver        | 2026-07-02 13:41:12.96 Server      Setup step is FORCE copying system data file 'C:\templatedata\model_msdblog.ldf' to '/var/opt/mssql/data/model_msdblog.ldf'.
-finvault-oracle           | TNSLSNR for Linux: Version 23.26.2.0.0 - Production
-finvault-sqlserver        | 2026-07-02 13:41:13.10 Server      Microsoft SQL Server 2022 (RTM-CU25) (KB5081477) - 16.0.4255.1 (X64) 
-finvault-sqlserver        | 	Apr 23 2026 22:38:54 
-finvault-sqlserver        | 	Copyright (C) 2022 Microsoft Corporation
-finvault-sqlserver        | 	Developer Edition (64-bit) on Linux (Ubuntu 22.04.5 LTS) <X64>
-finvault-sqlserver        | 2026-07-02 13:41:13.10 Server      UTC adjustment: 0:00
-finvault-investments-api  |       BEGIN
-finvault-investments-api  |           ALTER DATABASE [FinVaultInvestmentsDb] SET READ_COMMITTED_SNAPSHOT ON;
-finvault-investments-api  |       END;
-finvault-sqlserver        | 2026-07-02 13:41:13.10 Server      (c) Microsoft Corporation.
-finvault-oracle           | System parameter file is /opt/oracle/product/26ai/dbhomeFree/network/admin/listener.ora
-finvault-sqlserver        | 2026-07-02 13:41:13.10 Server      All rights reserved.
-finvault-investments-api  | info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-finvault-oracle           | Log messages written to /opt/oracle/diag/tnslsnr/e273d7cf2803/listener/alert/log.xml
-finvault-oracle           | Listening on: (DESCRIPTION=(ADDRESS=(PROTOCOL=ipc)(KEY=EXTPROC_FOR_FREE)))
-finvault-sqlserver        | 2026-07-02 13:41:13.10 Server      Server process ID is 536.
-finvault-oracle           | Listening on: (DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=e273d7cf2803)(PORT=1521)))
-finvault-investments-api  |       Executed DbCommand (6ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-finvault-investments-api  |       SELECT 1
-finvault-oracle           | 
-finvault-sqlserver        | 2026-07-02 13:41:13.10 Server      Logging SQL Server messages in file '/var/opt/mssql/log/errorlog'.
-finvault-oracle           | Connecting to (DESCRIPTION=(ADDRESS=(PROTOCOL=IPC)(KEY=EXTPROC_FOR_FREE)))
-finvault-oracle           | STATUS of the LISTENER
-finvault-oracle           | ------------------------
-finvault-oracle           | Alias                     LISTENER
-finvault-sqlserver        | 2026-07-02 13:41:13.11 Server      Registry startup parameters: 
-finvault-sqlserver        | 	 -d /var/opt/mssql/data/master.mdf
-finvault-oracle           | Version                   TNSLSNR for Linux: Version 23.26.2.0.0 - Production
-finvault-sqlserver        | 	 -l /var/opt/mssql/data/mastlog.ldf
-finvault-oracle           | Start Date                02-JUL-2026 13:41:19
-finvault-sqlserver        | 	 -e /var/opt/mssql/log/errorlog
-finvault-oracle           | Uptime                    0 days 0 hr. 0 min. 3 sec
-finvault-oracle           | Trace Level               off
-finvault-sqlserver        | 2026-07-02 13:41:14.87 Server      SQL Server detected 1 sockets with 8 cores per socket and 16 logical processors per socket, 16 total logical processors; using 16 logical processors based on SQL Server licensing. This is an informational message; no user action is required.
-finvault-oracle           | Security                  ON: Local OS Authentication
-finvault-investments-api  | info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-finvault-oracle           | SNMP                      OFF
-finvault-investments-api  |       Executed DbCommand (8ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-finvault-investments-api  |       CREATE TABLE [Positions] (
-finvault-investments-api  |           [Id] int NOT NULL IDENTITY,
-finvault-oracle           | Default Service           FREE
-finvault-investments-api  |           [Symbol] nvarchar(32) NOT NULL,
-finvault-investments-api  |           [Source] int NOT NULL,
-finvault-sqlserver        | 2026-07-02 13:41:14.87 Server      SQL Server is starting at normal priority base (=7). This is an informational message only. No user action is required.
-finvault-oracle           | Listener Parameter File   /opt/oracle/product/26ai/dbhomeFree/network/admin/listener.ora
-finvault-investments-api  |           [Quantity] decimal(18,8) NOT NULL,
-finvault-investments-api  |           [AverageCost] decimal(18,8) NOT NULL,
-finvault-investments-api  |           [CurrentPrice] decimal(18,8) NOT NULL,
-finvault-investments-api  |           [LastUpdated] datetime2 NOT NULL,
-finvault-investments-api  |           [CreatedAt] datetime2 NOT NULL,
-finvault-investments-api     |           CONSTRAINT [PK_Positions] PRIMARY KEY ([Id])
-finvault-investments-api     |       );
-finvault-currentaccount-api  | warn: Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository[60]
-finvault-rabbitmq            | 2026-07-02 13:41:14.251093+00:00 [notice] <0.44.0> Application syslog exited with reason: stopped
-finvault-sqlserver        | 2026-07-02 13:41:14.87 Server      Detected 12684 MB of RAM, 11768 MB of available memory, 11768 MB of available page file. This is an informational message; no user action is required.
-finvault-sqlserver           | 2026-07-02 13:41:14.87 Server      Using conventional memory in the memory manager.
-finvault-investments-api     | info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-finvault-currentaccount-api  |       Storing keys in a directory '/root/.aspnet/DataProtection-Keys' that may not be persisted outside of the container. Protected data will be unavailable when container is destroyed. For more information go to https://aka.ms/aspnet/dataprotectionwarning
-finvault-rabbitmq            | 2026-07-02 13:41:14.276892+00:00 [notice] <0.254.0> Logging: switching to configured handler(s); following messages may not be visible in this log output
-finvault-oracle           | Listener Log File         /opt/oracle/diag/tnslsnr/e273d7cf2803/listener/alert/log.xml
-finvault-oracle              | Listening Endpoints Summary...
-finvault-sqlserver           | 2026-07-02 13:41:14.88 Server      Detected pause instruction latency: 106 cycles.
-finvault-currentaccount-api  | warn: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[35]
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:14.278383+00:00 [notice] <0.254.0> Logging: configured log handlers are now ACTIVE[0m
-finvault-currentaccount-api  |       No XML encryptor configured. Key {d99b48c0-e7e9-42e3-b42a-fa0410bdf9eb} may be persisted to storage in unencrypted form.
-finvault-currentaccount-api  | info: Microsoft.Hosting.Lifetime[14]
-finvault-sqlserver           | 2026-07-02 13:41:14.88 Server      SQL Server detected the following NUMA node configuration (NUMA Node number 0, Processor Group number 0, CPU Mask 0x000000000000ffff).
-finvault-rabbitmq            | 2026-07-02 13:41:14.321575+00:00 [info] <0.254.0> ra: starting system quorum_queues[0m
-finvault-rabbitmq            | 2026-07-02 13:41:14.321728+00:00 [info] <0.254.0> starting Ra system: quorum_queues in directory: /var/lib/rabbitmq/mnesia/rabbit@b0552c0b89e4/quorum/rabbit@b0552c0b89e4[0m
-finvault-oracle              |   (DESCRIPTION=(ADDRESS=(PROTOCOL=ipc)(KEY=EXTPROC_FOR_FREE)))
-finvault-oracle              |   (DESCRIPTION=(ADDRESS=(PROTOCOL=tcp)(HOST=e273d7cf2803)(PORT=1521)))
-finvault-oracle              | The listener supports no services
-finvault-oracle              | The command completed successfully
-finvault-investments-api     |       Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-finvault-investments-api     |       CREATE TABLE [Trading212Transactions] (
-finvault-currentaccount-api  |       Now listening on: http://[::]:8080
-finvault-currentaccount-api  | info: Microsoft.Hosting.Lifetime[0]
-finvault-rabbitmq            | 2026-07-02 13:41:14.582263+00:00 [info] <0.270.0> ra system 'quorum_queues' running pre init for 0 registered servers[0m
-finvault-investments-api     |           [Id] int NOT NULL IDENTITY,
-finvault-investments-api     |           [T212Id] nvarchar(50) NOT NULL,
-finvault-currentaccount-api  |       Application started. Press Ctrl+C to shut down.
-finvault-oracle              | ORACLE instance started.
-finvault-currentaccount-api  | info: Microsoft.Hosting.Lifetime[0]
-finvault-currentaccount-api  |       Hosting environment: Development
-finvault-oracle              | 
-finvault-oracle              | Total System Global Area 1603392928 bytes
-finvault-oracle              | Fixed Size		    5027232 bytes
-finvault-currentaccount-api  | info: Microsoft.Hosting.Lifetime[0]
-finvault-investments-api     |           [Action] nvarchar(64) NOT NULL,
-finvault-sqlserver           | 2026-07-02 13:41:14.89 Server      Page exclusion bitmap is enabled.
-finvault-oracle              | Variable Size		  587202560 bytes
-finvault-investments-api     |           [Time] datetime2 NOT NULL,
-finvault-rabbitmq            | 2026-07-02 13:41:14.626169+00:00 [info] <0.271.0> ra: meta data store initialised for system quorum_queues. 0 record(s) recovered[0m
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:14.696260+00:00 [notice] <0.276.0> WAL: ra_log_wal init, open tbls: ra_log_open_mem_tables, closed tbls: ra_log_closed_mem_tables[0m
-finvault-currentaccount-api  |       Content root path: /app
-finvault-investments-api     |           [Isin] nvarchar(12) NOT NULL,
-finvault-investments-api     |           [Ticker] nvarchar(32) NOT NULL,
-finvault-investments-api     |           [Name] nvarchar(256) NOT NULL,
-finvault-sqlserver           | 2026-07-02 13:41:14.96 Server      Buffer pool extension is not supported on Linux platform.
-finvault-investments-api     |           [Notes] nvarchar(1024) NULL,
-finvault-investments-api     |           [NumberOfShares] decimal(18,8) NOT NULL,
-finvault-oracle              | Database Buffers	 1006632960 bytes
-finvault-sqlserver           | 2026-07-02 13:41:14.97 Server      Buffer Pool: Allocating 16777216 bytes for 1876696 hashPages.
-finvault-oracle              | Redo Buffers		    4530176 bytes
-finvault-rabbitmq            | 2026-07-02 13:41:15.014496+00:00 [info] <0.254.0> ra: starting system coordination[0m
-finvault-rabbitmq            | 2026-07-02 13:41:15.014592+00:00 [info] <0.254.0> starting Ra system: coordination in directory: /var/lib/rabbitmq/mnesia/rabbit@b0552c0b89e4/coordination/rabbit@b0552c0b89e4[0m
-finvault-rabbitmq            | 2026-07-02 13:41:15.017401+00:00 [info] <0.284.0> ra system 'coordination' running pre init for 0 registered servers[0m
-finvault-rabbitmq            | 2026-07-02 13:41:15.018632+00:00 [info] <0.285.0> ra: meta data store initialised for system coordination. 0 record(s) recovered[0m
-finvault-investments-api     |           [PricePerShare] decimal(18,8) NOT NULL,
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:15.018804+00:00 [notice] <0.290.0> WAL: ra_coordination_log_wal init, open tbls: ra_coordination_log_open_mem_tables, closed tbls: ra_coordination_log_closed_mem_tables[0m
-finvault-investments-api     |           [CurrencyPricePerShare] nvarchar(3) NOT NULL,
-finvault-investments-api     |           [ExchangeRate] decimal(18,8) NOT NULL,
-finvault-investments-api     |           [Total] decimal(18,8) NOT NULL,
-finvault-investments-api     |           [CurrencyTotal] nvarchar(3) NOT NULL,
-finvault-sqlserver           | 2026-07-02 13:41:15.14 Server      Buffer pool extension is already disabled. No action is necessary.
-finvault-sqlserver           | 2026-07-02 13:41:17.88 Server      Installing Client TLS certificates to the store.
-finvault-investments-api     |           [WithholdingTax] decimal(18,8) NOT NULL,
-finvault-investments-api     |           [CurrencyWithholdingTax] nvarchar(3) NOT NULL,
-finvault-investments-api     |           [CreatedAt] datetime2 NOT NULL,
-finvault-sqlserver           | 2026-07-02 13:41:17.89 Server      CPU vectorization level(s) detected:  SSE SSE2 SSE3 SSSE3 SSE41 SSE42 AVX AVX2 POPCNT BMI1 BMI2 AVX512 (F CD BW DQ VL IFMA VBMI VBMI2 VNNI BITALG VPOQCNTDQ VP2INTERSECT)
-finvault-investments-api     |           CONSTRAINT [PK_Trading212Transactions] PRIMARY KEY ([Id])
-finvault-rabbitmq            | 2026-07-02 13:41:15.099873+00:00 [info] <0.254.0> ra: starting system coordination[0m
-finvault-sqlserver           | 2026-07-02 13:41:17.93 Server      Successfully initialized the TLS configuration. Allowed TLS protocol versions are ['1.0 1.1 1.2']. Allowed TLS ciphers are ['ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES128-SHA256:ECDHE-ECDSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA:ECDHE-ECDSA-AES128-SHA:AES256-GCM-SHA384:AES128-GCM-SHA256:AES256-SHA256:AES128-SHA256:AES256-SHA:AES128-SHA:!DHE-RSA-AES256-GCM-SHA384:!DHE-RSA-AES128-GCM-SHA256:!DHE-RSA-AES256-SHA:!DHE-RSA-AES128-SHA'].
-finvault-sqlserver           | 2026-07-02 13:41:17.96 Server      Query Store settings initialized with enabled = 1, 
-finvault-sqlserver           | 2026-07-02 13:41:17.96 Server      The maximum number of dedicated administrator connections for this instance is '1'
-finvault-investments-api     |       );
-finvault-investments-api     | info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-finvault-investments-api     |       Executed DbCommand (2ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-finvault-investments-api     |       CREATE TABLE [XtbTransactions] (
-finvault-rabbitmq            | 2026-07-02 13:41:15.099995+00:00 [info] <0.254.0> starting Ra system: coordination in directory: /var/lib/rabbitmq/mnesia/rabbit@b0552c0b89e4/coordination/rabbit@b0552c0b89e4[0m
-finvault-rabbitmq            | 2026-07-02 13:41:15.778010+00:00 [info] <0.254.0> Waiting for Khepri leader for 30000 ms, 9 retries left[0m
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:16.219517+00:00 [notice] <0.294.0> RabbitMQ metadata store: candidate -> leader in term: 1 machine version: 1[0m
-finvault-investments-api     |           [Id] int NOT NULL,
-finvault-sqlserver           | 2026-07-02 13:41:17.97 Server      Node configuration: node 0: CPU mask: 0x000000000000ffff:0 Active CPU mask: 0x000000000000ffff:0. This message provides a description of the NUMA configuration for this computer. This is an informational message only. No user action is required.
-finvault-sqlserver           | 2026-07-02 13:41:18.00 Server      Using dynamic lock allocation.  Initial allocation of 2500 Lock blocks and 5000 Lock Owner blocks per node.  This is an informational message only.  No user action is required.
-finvault-rabbitmq            | 2026-07-02 13:41:16.233890+00:00 [info] <0.254.0> Khepri leader elected[0m
-finvault-rabbitmq            | 2026-07-02 13:41:16.233984+00:00 [info] <0.254.0> Waiting for Khepri projections for 30000 ms, 9 retries left[0m
-finvault-sqlserver           | 2026-07-02 13:41:18.00 Server      Lock partitioning is enabled.  This is an informational message only. No user action is required.
-finvault-oracle              | Database mounted.
-finvault-sqlserver           | 2026-07-02 13:41:18.04 Server      In-Memory OLTP initialized on standard machine.
-finvault-sqlserver           | 2026-07-02 13:41:18.08 Server      CLR version v4.0.30319 loaded.
-finvault-sqlserver           | 2026-07-02 13:41:18.28 Server      Common language runtime (CLR) functionality initialized.
-finvault-oracle              | Database opened.
-finvault-investments-api     |           [Type] nvarchar(128) NOT NULL,
-finvault-sqlserver           | 2026-07-02 13:41:18.43 Server      [INFO] Created Extended Events session 'hkenginexesession'
-finvault-oracle              | 
-finvault-rabbitmq            | 2026-07-02 13:41:18.289213+00:00 [info] <0.254.0> [0m
-finvault-investments-api     |           [Ticker] nvarchar(32) NOT NULL,
-finvault-investments-api     |           [Instrument] nvarchar(128) NOT NULL,
-finvault-sqlserver           | 2026-07-02 13:41:18.43 Server      Database Instant File Initialization: enabled. For security and performance considerations see the topic 'Database Instant File Initialization' in SQL Server Books Online. This is an informational message only. No user action is required.
-finvault-sqlserver           | ForceFlush is enabled for this instance. 
-finvault-sqlserver           | 2026-07-02 13:41:18.44 Server      Total Log Writer threads: 2. This is an informational message; no user action is required.
-finvault-sqlserver           | 2026-07-02 13:41:18.45 Server      clwb is selected for pmem flush operation.
-finvault-sqlserver           | 2026-07-02 13:41:18.46 Server      Software Usage Metrics is disabled.
-finvault-rabbitmq            | 2026-07-02 13:41:18.289213+00:00 [info] <0.254.0>  Starting RabbitMQ 3.13.7 on Erlang 26.2.5.16 [jit][0m
-finvault-oracle              | CONTAINER: Resetting SYS and SYSTEM passwords.
-finvault-rabbitmq            | 2026-07-02 13:41:18.289213+00:00 [info] <0.254.0>  Copyright (c) 2007-2024 Broadcom Inc and/or its subsidiaries[0m
-finvault-oracle              | 
-finvault-investments-api     |           [TransactionDate] datetime2 NOT NULL,
-finvault-investments-api     |           [Amount] decimal(18,8) NOT NULL,
-finvault-rabbitmq            | 2026-07-02 13:41:18.289213+00:00 [info] <0.254.0>  Licensed under the MPL 2.0. Website: https://rabbitmq.com[0m
-finvault-rabbitmq            | 
-finvault-rabbitmq            |   ##  ##      RabbitMQ 3.13.7
-finvault-sqlserver           | Failed to open password policy registry path. Using default password policy values.2026-07-02 13:41:18.47 spid43s     [1]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-finvault-sqlserver           | 2026-07-02 13:41:18.47 spid43s     Starting up database 'master'.
-finvault-rabbitmq            |   ##  ##
-finvault-rabbitmq            |   ##########  Copyright (c) 2007-2024 Broadcom Inc and/or its subsidiaries
-finvault-rabbitmq            |   ######  ##
-finvault-sqlserver           | ForceFlush feature is enabled for log durability.
-finvault-investments-api     |           [Comment] nvarchar(512) NOT NULL,
-finvault-investments-api     |           [Product] nvarchar(128) NOT NULL,
-finvault-rabbitmq            |   ##########  Licensed under the MPL 2.0. Website: https://rabbitmq.com
-finvault-rabbitmq            | 
-finvault-sqlserver           | BulkAdmin AllowedPathsList cleared (path filtering disabled)2026-07-02 13:41:18.67 spid43s     Converting database 'master' from version 927 to the current version 957.
-finvault-sqlserver           | 2026-07-02 13:41:18.67 spid43s     Database 'master' running the upgrade step from version 927 to version 928.
-finvault-investments-api     |           [CreatedAt] datetime2 NOT NULL,
-finvault-oracle              | User altered.
-finvault-investments-api     |           CONSTRAINT [PK_XtbTransactions] PRIMARY KEY ([Id])
-finvault-oracle              | 
-finvault-rabbitmq            |   Erlang:      26.2.5.16 [jit]
-finvault-oracle              | 
-finvault-rabbitmq            |   TLS Library: OpenSSL - OpenSSL 3.1.8 11 Feb 2025
-finvault-oracle              | User altered.
-finvault-rabbitmq            |   Release series support status: see https://www.rabbitmq.com/release-information
-finvault-oracle              | 
-finvault-rabbitmq            | 
-finvault-oracle              | CONTAINER: Creating app user for default pluggable database.
-finvault-rabbitmq            |   Doc guides:  https://www.rabbitmq.com/docs
-finvault-sqlserver           | 2026-07-02 13:41:18.89 Server      External governance manager initialized
-finvault-sqlserver           | 2026-07-02 13:41:18.91 spid43s     Database 'master' running the upgrade step from version 928 to version 929.
-finvault-sqlserver           | 2026-07-02 13:41:18.97 spid43s     Database 'master' running the upgrade step from version 929 to version 930.
-finvault-rabbitmq            |   Support:     https://www.rabbitmq.com/docs/contact
-finvault-oracle              | 
-finvault-oracle              | Session altered.
-finvault-investments-api     |       );
-finvault-rabbitmq            |   Tutorials:   https://www.rabbitmq.com/tutorials
-finvault-rabbitmq            |   Monitoring:  https://www.rabbitmq.com/docs/monitoring
-finvault-rabbitmq            |   Upgrading:   https://www.rabbitmq.com/docs/upgrade
-finvault-sqlserver           | 2026-07-02 13:41:19.03 spid43s     Database 'master' running the upgrade step from version 930 to version 931.
-finvault-oracle              | 
-finvault-rabbitmq            | 
-finvault-investments-api     | info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-finvault-rabbitmq            |   Logs: <stdout>
-finvault-investments-api     |       Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-finvault-investments-api     |       CREATE UNIQUE INDEX [IX_Positions_Symbol_Source] ON [Positions] ([Symbol], [Source]);
-finvault-investments-api     | info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-finvault-sqlserver           | 2026-07-02 13:41:19.09 spid43s     Database 'master' running the upgrade step from version 931 to version 932.
-finvault-rabbitmq            | 
-finvault-sqlserver           | 2026-07-02 13:41:19.14 spid43s     Database 'master' running the upgrade step from version 932 to version 933.
-finvault-sqlserver           | 2026-07-02 13:41:19.22 spid43s     Database 'master' running the upgrade step from version 933 to version 934.
-finvault-rabbitmq            |   Config file(s): /etc/rabbitmq/conf.d/10-defaults.conf
-finvault-oracle              | 
-finvault-sqlserver           | 2026-07-02 13:41:19.25 spid43s     Database 'master' running the upgrade step from version 934 to version 935.
-finvault-investments-api     |       Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-finvault-rabbitmq            | 
-finvault-investments-api     |       CREATE UNIQUE INDEX [IX_Trading212Transactions_T212Id] ON [Trading212Transactions] ([T212Id]);
-finvault-sqlserver           | 2026-07-02 13:41:19.45 spid43s     Database 'master' running the upgrade step from version 935 to version 936.
-finvault-oracle              | User created.
-finvault-sqlserver           | 2026-07-02 13:41:19.51 spid43s     Database 'master' running the upgrade step from version 936 to version 937.
-finvault-sqlserver           | 2026-07-02 13:41:19.57 spid43s     Database 'master' running the upgrade step from version 937 to version 938.
-finvault-oracle              | 
-finvault-oracle              | 
-finvault-sqlserver           | 2026-07-02 13:41:19.69 spid43s     Database 'master' running the upgrade step from version 938 to version 939.
-finvault-investments-api     | info: Microsoft.EntityFrameworkCore.Database.Command[20101]
-finvault-oracle              | Grant succeeded.
-finvault-oracle              | 
-finvault-sqlserver           | 2026-07-02 13:41:19.77 spid43s     Database 'master' running the upgrade step from version 939 to version 940.
-finvault-investments-api     |       Executed DbCommand (1ms) [Parameters=[], CommandType='Text', CommandTimeout='30']
-finvault-investments-api     |       CREATE UNIQUE INDEX [IX_XtbTransactions_Id] ON [XtbTransactions] ([Id]);
-finvault-oracle              | CONTAINER: DONE: Creating app user for default pluggable database.
-finvault-oracle              | 
-finvault-sqlserver           | 2026-07-02 13:41:19.82 spid43s     Database 'master' running the upgrade step from version 940 to version 941.
-finvault-investments-api     | warn: Microsoft.AspNetCore.DataProtection.Repositories.FileSystemXmlRepository[60]
-finvault-oracle              | #########################
-finvault-investments-api     |       Storing keys in a directory '/root/.aspnet/DataProtection-Keys' that may not be persisted outside of the container. Protected data will be unavailable when container is destroyed. For more information go to https://aka.ms/aspnet/dataprotectionwarning
-finvault-investments-api     | warn: Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager[35]
-finvault-sqlserver           | 2026-07-02 13:41:19.88 spid43s     Database 'master' running the upgrade step from version 941 to version 942.
-finvault-sqlserver           | 2026-07-02 13:41:19.96 spid43s     Database 'master' running the upgrade step from version 942 to version 943.
-finvault-sqlserver           | 2026-07-02 13:41:20.16 spid43s     Database 'master' running the upgrade step from version 943 to version 944.
-finvault-rabbitmq            |   Starting broker...2026-07-02 13:41:18.290699+00:00 [info] <0.254.0> [0m
-finvault-sqlserver           | 2026-07-02 13:41:20.25 spid43s     Database 'master' running the upgrade step from version 944 to version 945.
-finvault-rabbitmq            | 2026-07-02 13:41:18.290699+00:00 [info] <0.254.0>  node           : rabbit@b0552c0b89e4[0m
-finvault-rabbitmq            | 2026-07-02 13:41:18.290699+00:00 [info] <0.254.0>  home dir       : /var/lib/rabbitmq[0m
-finvault-investments-api     |       No XML encryptor configured. Key {ab52cad6-415d-4d5a-9b38-4715bac11f1c} may be persisted to storage in unencrypted form.
-finvault-rabbitmq            | 2026-07-02 13:41:18.290699+00:00 [info] <0.254.0>  config file(s) : /etc/rabbitmq/conf.d/10-defaults.conf[0m
-finvault-sqlserver           | 2026-07-02 13:41:20.35 spid43s     Database 'master' running the upgrade step from version 945 to version 946.
-finvault-rabbitmq            | 2026-07-02 13:41:18.290699+00:00 [info] <0.254.0>  cookie hash    : LDblKCB41PLtNiFJnjCbog==[0m
-finvault-oracle              | DATABASE IS READY TO USE!
-finvault-investments-api     | info: Microsoft.Hosting.Lifetime[14]
-finvault-oracle              | #########################
-finvault-oracle              | 
-finvault-investments-api     |       Now listening on: http://[::]:8080
-finvault-sqlserver           | 2026-07-02 13:41:20.42 spid43s     Database 'master' running the upgrade step from version 946 to version 947.
-finvault-rabbitmq            | 2026-07-02 13:41:18.290699+00:00 [info] <0.254.0>  log(s)         : <stdout>[0m
-finvault-sqlserver           | 2026-07-02 13:41:20.49 spid43s     Database 'master' running the upgrade step from version 947 to version 948.
-finvault-rabbitmq            | 2026-07-02 13:41:18.290699+00:00 [info] <0.254.0>  data dir       : /var/lib/rabbitmq/mnesia/rabbit@b0552c0b89e4[0m
-finvault-sqlserver           | 2026-07-02 13:41:20.53 spid43s     Database 'master' running the upgrade step from version 948 to version 949.
-finvault-rabbitmq            | 2026-07-02 13:41:19.171754+00:00 [info] <0.254.0> Running boot step pre_boot defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:19.171850+00:00 [info] <0.254.0> Running boot step rabbit_global_counters defined by app rabbit[0m
-finvault-oracle              | ####################################################################
-finvault-sqlserver           | 2026-07-02 13:41:20.59 spid43s     Database 'master' running the upgrade step from version 949 to version 950.
-finvault-oracle              | CONTAINER: The following output is now from the alert_FREE.log file:
-finvault-sqlserver           | 2026-07-02 13:41:20.66 spid43s     Database 'master' running the upgrade step from version 950 to version 951.
-finvault-rabbitmq            | 2026-07-02 13:41:19.172470+00:00 [info] <0.254.0> Running boot step rabbit_osiris_metrics defined by app rabbit[0m
-finvault-oracle              | ####################################################################
-finvault-rabbitmq            | 2026-07-02 13:41:19.172640+00:00 [info] <0.254.0> Running boot step rabbit_core_metrics defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:19.173726+00:00 [info] <0.254.0> Running boot step rabbit_alarm defined by app rabbit[0m
-finvault-oracle              | ===========================================================
-finvault-rabbitmq            | 2026-07-02 13:41:19.200316+00:00 [info] <0.331.0> Memory high watermark set to 6341 MiB (6649721651 bytes) of 15854 MiB (16624304128 bytes) total[0m
-finvault-oracle              | Dumping current patch information
-finvault-investments-api     | info: Microsoft.Hosting.Lifetime[0]
-finvault-investments-api     |       Application started. Press Ctrl+C to shut down.
-finvault-investments-api     | info: Microsoft.Hosting.Lifetime[0]
-finvault-rabbitmq            | 2026-07-02 13:41:19.204030+00:00 [info] <0.333.0> Enabling free disk space monitoring (disk free space: 982583390208, total memory: 16624304128)[0m
-finvault-investments-api     |       Hosting environment: Development
-finvault-investments-api     | info: Microsoft.Hosting.Lifetime[0]
-finvault-sqlserver           | 2026-07-02 13:41:20.74 spid43s     Database 'master' running the upgrade step from version 951 to version 952.
-finvault-sqlserver           | 2026-07-02 13:41:20.81 spid43s     Database 'master' running the upgrade step from version 952 to version 953.
-finvault-sqlserver           | 2026-07-02 13:41:20.87 spid43s     Database 'master' running the upgrade step from version 953 to version 954.
-finvault-sqlserver           | 2026-07-02 13:41:20.95 spid43s     Database 'master' running the upgrade step from version 954 to version 955.
-finvault-investments-api     |       Content root path: /app
-finvault-oracle              | ===========================================================
-finvault-oracle              | Unable to obtain current patch information due to error: 20013
-finvault-oracle              | ===========================================================
-finvault-oracle              | FREEPDB1(3):Autotune of undo retention is turned on. 
-finvault-rabbitmq            | 2026-07-02 13:41:19.204120+00:00 [info] <0.333.0> Disk free limit set to 50MB[0m
-finvault-oracle              | 2026-07-02T13:41:45.770768+00:00
-finvault-rabbitmq            | 2026-07-02 13:41:19.206105+00:00 [info] <0.254.0> Running boot step code_server_cache defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:19.206240+00:00 [info] <0.254.0> Running boot step file_handle_cache defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:19.216640+00:00 [info] <0.336.0> Limiting to approx 1048479 file handles (943629 sockets)[0m
-finvault-sqlserver           | 2026-07-02 13:41:21.03 spid43s     Database 'master' running the upgrade step from version 955 to version 956.
-finvault-sqlserver           | 2026-07-02 13:41:21.19 spid43s     Database 'master' running the upgrade step from version 956 to version 957.
-finvault-oracle              | FREEPDB1(3):Opening pdb with Resource Manager plan: DEFAULT_PLAN
-finvault-sqlserver           | 2026-07-02 13:41:21.53 spid46s     [32767]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-finvault-sqlserver           | 2026-07-02 13:41:21.53 spid46s     Starting up database 'mssqlsystemresource'.
-finvault-sqlserver           | 2026-07-02 13:41:21.54 spid46s     The resource database build version is 16.00.4255. This is an informational message only. No user action is required.
-finvault-sqlserver           | 2026-07-02 13:41:21.56 spid46s     [3]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-finvault-rabbitmq            | 2026-07-02 13:41:19.216854+00:00 [info] <0.337.0> FHC read buffering: OFF[0m
-finvault-rabbitmq            | 2026-07-02 13:41:19.216894+00:00 [info] <0.337.0> FHC write buffering: ON[0m
-finvault-rabbitmq            | 2026-07-02 13:41:19.217960+00:00 [info] <0.254.0> Running boot step worker_pool defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:21.56 spid46s     Starting up database 'model'.
-finvault-oracle              | Completed: Pluggable database FREEPDB1 opened read write 
-finvault-sqlserver           | 2026-07-02 13:41:21.65 spid55s     Password policy update was successful.
-finvault-rabbitmq            | 2026-07-02 13:41:19.218093+00:00 [info] <0.317.0> Will use 16 processes for default worker pool[0m
-finvault-oracle              | Completed: ALTER DATABASE OPEN
-finvault-oracle              | 2026-07-02T13:42:44.284758+00:00
-finvault-sqlserver           | 2026-07-02 13:41:21.69 spid43s     [32762]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-finvault-oracle              | TABLE SYS.WRP$_REPORTS: ADDED AUTOLIST FRAGMENT SYS_P485 (3) VALUES (( 1506701350, TO_DATE(' 2026-06-29 00:00:00', 'syyyy-mm-dd hh24:mi:ss', 'nls_calendar=gregorian') ))
-finvault-sqlserver           | 2026-07-02 13:41:21.70 spid43s     Starting up database 'model_replicatedmaster'.
-finvault-oracle              | TABLE SYS.WRP$_REPORTS_DETAILS: ADDED AUTOLIST FRAGMENT SYS_P486 (3) VALUES (( 1506701350, TO_DATE(' 2026-06-29 00:00:00', 'syyyy-mm-dd hh24:mi:ss', 'nls_calendar=gregorian') ))
-finvault-oracle              | TABLE SYS.WRP$_REPORTS_TIME_BANDS: ADDED AUTOLIST FRAGMENT SYS_P489 (3) VALUES (( 1506701350, TO_DATE(' 2026-06-29 00:00:00', 'syyyy-mm-dd hh24:mi:ss', 'nls_calendar=gregorian') ))
-finvault-rabbitmq            | 2026-07-02 13:41:19.218176+00:00 [info] <0.317.0> Starting worker pool 'worker_pool' with 16 processes in it[0m
-finvault-rabbitmq            | 2026-07-02 13:41:19.218969+00:00 [info] <0.254.0> Running boot step database defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:21.71 spid46s     Converting database 'model' from version 927 to the current version 957.
-finvault-rabbitmq            | 2026-07-02 13:41:19.219394+00:00 [info] <0.254.0> Peer discovery: configured backend: rabbit_peer_discovery_classic_config[0m
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.220708+00:00 [notice] <0.318.0> Feature flags: attempt to enable `detailed_queues_endpoint`...[0m
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.288258+00:00 [notice] <0.318.0> Feature flags: `detailed_queues_endpoint` enabled[0m
-finvault-sqlserver           | 2026-07-02 13:41:21.71 spid46s     Database 'model' running the upgrade step from version 927 to version 928.
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.288433+00:00 [notice] <0.318.0> Feature flags: attempt to enable `quorum_queue_non_voters`...[0m
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.366749+00:00 [notice] <0.318.0> Feature flags: `quorum_queue_non_voters` enabled[0m
-finvault-sqlserver           | 2026-07-02 13:41:21.81 spid46s     Database 'model' running the upgrade step from version 928 to version 929.
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.366980+00:00 [notice] <0.318.0> Feature flags: attempt to enable `stream_update_config_command`...[0m
-finvault-sqlserver           | 2026-07-02 13:41:21.95 spid46s     Database 'model' running the upgrade step from version 929 to version 930.
-finvault-sqlserver           | 2026-07-02 13:41:21.96 spid43s     Converting database 'model_replicatedmaster' from version 927 to the current version 957.
-finvault-sqlserver           | 2026-07-02 13:41:21.96 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 927 to version 928.
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.432409+00:00 [notice] <0.318.0> Feature flags: `stream_update_config_command` enabled[0m
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.432629+00:00 [notice] <0.318.0> Feature flags: attempt to enable `stream_filtering`...[0m
-finvault-sqlserver           | 2026-07-02 13:41:22.07 spid46s     Database 'model' running the upgrade step from version 930 to version 931.
-finvault-sqlserver           | 2026-07-02 13:41:22.07 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 928 to version 929.
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.493322+00:00 [notice] <0.318.0> Feature flags: `stream_filtering` enabled[0m
-finvault-sqlserver           | 2026-07-02 13:41:22.12 spid55s     A self-generated certificate was successfully loaded for encryption.
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.493547+00:00 [notice] <0.318.0> Feature flags: attempt to enable `stream_sac_coordinator_unblock_group`...[0m
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.556368+00:00 [notice] <0.318.0> Feature flags: `stream_sac_coordinator_unblock_group` enabled[0m
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.556618+00:00 [notice] <0.318.0> Feature flags: attempt to enable `restart_streams`...[0m
-finvault-sqlserver           | 2026-07-02 13:41:22.12 spid55s     Server is listening on [ 'any' <ipv6> 1433] accept sockets 1.
-finvault-sqlserver           | 2026-07-02 13:41:22.12 spid55s     Server is listening on [ 'any' <ipv4> 1433] accept sockets 1.
-finvault-sqlserver           | 2026-07-02 13:41:22.13 Server      Server is listening on [ ::1 <ipv6> 1434] accept sockets 1.
-finvault-sqlserver           | 2026-07-02 13:41:22.13 Server      Server is listening on [ 127.0.0.1 <ipv4> 1434] accept sockets 1.
-finvault-sqlserver           | 2026-07-02 13:41:22.13 Server      Dedicated admin connection support was established for listening locally on port 1434.
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.615686+00:00 [notice] <0.318.0> Feature flags: `restart_streams` enabled[0m
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.616037+00:00 [notice] <0.318.0> Feature flags: attempt to enable `message_containers`...[0m
-finvault-sqlserver           | 2026-07-02 13:41:22.13 spid55s     Server is listening on [ ::1 <ipv6> 1431] accept sockets 1.
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.674339+00:00 [notice] <0.318.0> Feature flags: `message_containers` enabled[0m
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.674537+00:00 [notice] <0.318.0> Feature flags: attempt to enable `message_containers_deaths_v2`...[0m
-finvault-sqlserver           | 2026-07-02 13:41:22.13 spid55s     Server is listening on [ 127.0.0.1 <ipv4> 1431] accept sockets 1.
-finvault-sqlserver           | 2026-07-02 13:41:22.14 spid55s     SQL Server is now ready for client connections. This is an informational message; no user action is required.
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.727732+00:00 [notice] <0.318.0> Feature flags: `message_containers_deaths_v2` enabled[0m
-finvault-rabbitmq            | 2026-07-02 13:41:19.727939+00:00 [info] <0.254.0> DB: virgin node -> run peer discovery[0m
-finvault-sqlserver           | 2026-07-02 13:41:22.15 spid46s     Database 'model' running the upgrade step from version 931 to version 932.
-finvault-rabbitmq            | [38;5;214m2026-07-02 13:41:19.728014+00:00 [warning] <0.254.0> Classic peer discovery backend: list of nodes does not contain the local node [][0m
-finvault-sqlserver           | 2026-07-02 13:41:22.24 spid46s     Database 'model' running the upgrade step from version 932 to version 933.
-finvault-sqlserver           | 2026-07-02 13:41:22.30 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 929 to version 930.
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:41:19.738666+00:00 [notice] <0.44.0> Application mnesia exited with reason: stopped[0m
-finvault-sqlserver           | 2026-07-02 13:41:22.36 spid46s     Database 'model' running the upgrade step from version 933 to version 934.
-finvault-sqlserver           | 2026-07-02 13:41:22.41 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 930 to version 931.
-finvault-sqlserver           | 2026-07-02 13:41:22.48 spid46s     Database 'model' running the upgrade step from version 934 to version 935.
-finvault-sqlserver           | 2026-07-02 13:41:22.56 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 931 to version 932.
-finvault-rabbitmq            | 2026-07-02 13:41:20.148680+00:00 [info] <0.254.0> Waiting for Mnesia tables for 30000 ms, 9 retries left[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.148805+00:00 [info] <0.254.0> Successfully synced tables from a peer[0m
-finvault-sqlserver           | 2026-07-02 13:41:22.63 spid46s     Database 'model' running the upgrade step from version 935 to version 936.
-finvault-rabbitmq            | 2026-07-02 13:41:20.148886+00:00 [info] <0.254.0> Waiting for Mnesia tables for 30000 ms, 9 retries left[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.148972+00:00 [info] <0.254.0> Successfully synced tables from a peer[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.188641+00:00 [info] <0.254.0> Waiting for Mnesia tables for 30000 ms, 9 retries left[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.188812+00:00 [info] <0.254.0> Successfully synced tables from a peer[0m
-finvault-sqlserver           | 2026-07-02 13:41:22.68 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 932 to version 933.
-finvault-sqlserver           | 2026-07-02 13:41:22.73 spid46s     Database 'model' running the upgrade step from version 936 to version 937.
-finvault-sqlserver           | 2026-07-02 13:41:22.76 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 933 to version 934.
-finvault-sqlserver           | 2026-07-02 13:41:22.81 spid46s     Database 'model' running the upgrade step from version 937 to version 938.
-finvault-sqlserver           | 2026-07-02 13:41:22.86 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 934 to version 935.
-finvault-rabbitmq            | 2026-07-02 13:41:20.189026+00:00 [info] <0.254.0> Running boot step tracking_metadata_store defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:22.90 spid46s     Database 'model' running the upgrade step from version 938 to version 939.
-finvault-sqlserver           | 2026-07-02 13:41:22.95 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 935 to version 936.
-finvault-rabbitmq            | 2026-07-02 13:41:20.189144+00:00 [info] <0.572.0> Setting up a table for connection tracking on this node: tracked_connection[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.189203+00:00 [info] <0.572.0> Setting up a table for per-vhost connection counting on this node: tracked_connection_per_vhost[0m
-finvault-sqlserver           | 2026-07-02 13:41:22.99 Logon       Error: 18456, Severity: 14, State: 7.
-finvault-sqlserver           | 2026-07-02 13:41:22.99 Logon       Login failed for user 'sa'. Reason: An error occurred while evaluating the password. [CLIENT: 172.18.0.2]
-finvault-rabbitmq            | 2026-07-02 13:41:20.189249+00:00 [info] <0.572.0> Setting up a table for per-user connection counting on this node: tracked_connection_per_user[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.189274+00:00 [info] <0.572.0> Setting up a table for channel tracking on this node: tracked_channel[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.189310+00:00 [info] <0.572.0> Setting up a table for channel tracking on this node: tracked_channel_per_user[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.189419+00:00 [info] <0.254.0> Running boot step networking_metadata_store defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:23.00 spid46s     Database 'model' running the upgrade step from version 939 to version 940.
-finvault-sqlserver           | 2026-07-02 13:41:23.05 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 936 to version 937.
-finvault-rabbitmq            | 2026-07-02 13:41:20.189543+00:00 [info] <0.254.0> Running boot step feature_flags defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.189728+00:00 [info] <0.254.0> Running boot step codec_correctness_check defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:23.11 spid46s     Database 'model' running the upgrade step from version 940 to version 941.
-finvault-sqlserver           | 2026-07-02 13:41:23.18 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 937 to version 938.
-finvault-sqlserver           | 2026-07-02 13:41:23.24 spid46s     Database 'model' running the upgrade step from version 941 to version 942.
-finvault-sqlserver           | 2026-07-02 13:41:23.29 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 938 to version 939.
-finvault-sqlserver           | 2026-07-02 13:41:23.35 spid46s     Database 'model' running the upgrade step from version 942 to version 943.
-finvault-sqlserver           | 2026-07-02 13:41:23.38 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 939 to version 940.
-finvault-sqlserver           | 2026-07-02 13:41:23.46 spid46s     Database 'model' running the upgrade step from version 943 to version 944.
-finvault-sqlserver           | 2026-07-02 13:41:23.47 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 940 to version 941.
-finvault-rabbitmq            | 2026-07-02 13:41:20.189793+00:00 [info] <0.254.0> Running boot step external_infrastructure defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.189859+00:00 [info] <0.254.0> Running boot step rabbit_event defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:23.52 spid46s     Database 'model' running the upgrade step from version 944 to version 945.
-finvault-rabbitmq            | 2026-07-02 13:41:20.189978+00:00 [info] <0.254.0> Running boot step rabbit_registry defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.190041+00:00 [info] <0.254.0> Running boot step rabbit_auth_mechanism_amqplain defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:23.53 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 941 to version 942.
-finvault-rabbitmq            | 2026-07-02 13:41:20.190113+00:00 [info] <0.254.0> Running boot step rabbit_auth_mechanism_cr_demo defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.190151+00:00 [info] <0.254.0> Running boot step rabbit_auth_mechanism_plain defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:23.57 spid46s     Database 'model' running the upgrade step from version 945 to version 946.
-finvault-sqlserver           | 2026-07-02 13:41:23.59 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 942 to version 943.
-finvault-rabbitmq            | 2026-07-02 13:41:20.190245+00:00 [info] <0.254.0> Running boot step rabbit_exchange_type_direct defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:23.67 spid46s     Database 'model' running the upgrade step from version 946 to version 947.
-finvault-sqlserver           | 2026-07-02 13:41:23.78 spid46s     Database 'model' running the upgrade step from version 947 to version 948.
-finvault-sqlserver           | 2026-07-02 13:41:23.83 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 943 to version 944.
-finvault-rabbitmq            | 2026-07-02 13:41:20.190351+00:00 [info] <0.254.0> Running boot step rabbit_exchange_type_fanout defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:23.85 spid46s     Database 'model' running the upgrade step from version 948 to version 949.
-finvault-sqlserver           | 2026-07-02 13:41:23.91 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 944 to version 945.
-finvault-rabbitmq            | 2026-07-02 13:41:20.190431+00:00 [info] <0.254.0> Running boot step rabbit_exchange_type_headers defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:23.93 spid46s     Database 'model' running the upgrade step from version 949 to version 950.
-finvault-sqlserver           | 2026-07-02 13:41:23.97 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 945 to version 946.
-finvault-rabbitmq            | 2026-07-02 13:41:20.190486+00:00 [info] <0.254.0> Running boot step rabbit_exchange_type_topic defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.190520+00:00 [info] <0.254.0> Running boot step rabbit_mirror_queue_mode_all defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.190575+00:00 [info] <0.254.0> Running boot step rabbit_mirror_queue_mode_exactly defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.190617+00:00 [info] <0.254.0> Running boot step rabbit_mirror_queue_mode_nodes defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:23.99 spid46s     Database 'model' running the upgrade step from version 950 to version 951.
-finvault-sqlserver           | 2026-07-02 13:41:24.06 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 946 to version 947.
-finvault-rabbitmq            | 2026-07-02 13:41:20.190674+00:00 [info] <0.254.0> Running boot step rabbit_priority_queue defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.190703+00:00 [info] <0.254.0> Priority queues enabled, real BQ is rabbit_variable_queue[0m
-finvault-sqlserver           | 2026-07-02 13:41:24.07 spid46s     Database 'model' running the upgrade step from version 951 to version 952.
-finvault-sqlserver           | 2026-07-02 13:41:24.12 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 947 to version 948.
-finvault-sqlserver           | 2026-07-02 13:41:24.13 spid46s     Database 'model' running the upgrade step from version 952 to version 953.
-finvault-sqlserver           | 2026-07-02 13:41:24.20 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 948 to version 949.
-finvault-sqlserver           | 2026-07-02 13:41:24.22 spid46s     Database 'model' running the upgrade step from version 953 to version 954.
-finvault-sqlserver           | 2026-07-02 13:41:24.27 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 949 to version 950.
-finvault-sqlserver           | 2026-07-02 13:41:24.28 spid46s     Database 'model' running the upgrade step from version 954 to version 955.
-finvault-rabbitmq            | 2026-07-02 13:41:20.190771+00:00 [info] <0.254.0> Running boot step rabbit_queue_location_client_local defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.190859+00:00 [info] <0.254.0> Running boot step rabbit_queue_location_min_masters defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.190946+00:00 [info] <0.254.0> Running boot step rabbit_queue_location_random defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:24.34 spid46s     Database 'model' running the upgrade step from version 955 to version 956.
-finvault-sqlserver           | 2026-07-02 13:41:24.34 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 950 to version 951.
-finvault-sqlserver           | 2026-07-02 13:41:24.42 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 951 to version 952.
-finvault-rabbitmq            | 2026-07-02 13:41:20.191006+00:00 [info] <0.254.0> Running boot step kernel_ready defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:24.42 spid46s     Database 'model' running the upgrade step from version 956 to version 957.
-finvault-sqlserver           | 2026-07-02 13:41:24.48 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 952 to version 953.
-finvault-sqlserver           | 2026-07-02 13:41:24.64 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 953 to version 954.
-finvault-sqlserver           | 2026-07-02 13:41:24.73 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 954 to version 955.
-finvault-rabbitmq            | 2026-07-02 13:41:20.191032+00:00 [info] <0.254.0> Running boot step rabbit_sysmon_minder defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:24.81 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 955 to version 956.
-finvault-sqlserver           | 2026-07-02 13:41:24.93 spid43s     Database 'model_replicatedmaster' running the upgrade step from version 956 to version 957.
-finvault-sqlserver           | 2026-07-02 13:41:25.67 spid43s     [32761]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-finvault-rabbitmq            | 2026-07-02 13:41:20.191191+00:00 [info] <0.254.0> Running boot step rabbit_epmd_monitor defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.192422+00:00 [info] <0.580.0> epmd monitor knows us, inter-node communication (distribution) port: 25672[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.192521+00:00 [info] <0.254.0> Running boot step guid_generator defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.201537+00:00 [info] <0.254.0> Running boot step rabbit_node_monitor defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:25.68 spid43s     Starting up database 'model_msdb'.
-finvault-rabbitmq            | 2026-07-02 13:41:20.201847+00:00 [info] <0.584.0> Starting rabbit_node_monitor (in ignore mode)[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.201979+00:00 [info] <0.254.0> Running boot step delegate_sup defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:25.99 spid43s     Converting database 'model_msdb' from version 927 to the current version 957.
-finvault-rabbitmq            | 2026-07-02 13:41:20.202444+00:00 [info] <0.254.0> Running boot step rabbit_memory_monitor defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:25.99 spid43s     Database 'model_msdb' running the upgrade step from version 927 to version 928.
-finvault-rabbitmq            | 2026-07-02 13:41:20.202637+00:00 [info] <0.254.0> Running boot step rabbit_fifo_dlx_sup defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.202719+00:00 [info] <0.254.0> Running boot step core_initialized defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:26.15 spid43s     Database 'model_msdb' running the upgrade step from version 928 to version 929.
-finvault-sqlserver           | 2026-07-02 13:41:26.30 spid43s     Database 'model_msdb' running the upgrade step from version 929 to version 930.
-finvault-rabbitmq            | 2026-07-02 13:41:20.202758+00:00 [info] <0.254.0> Running boot step rabbit_channel_tracking_handler defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.202807+00:00 [info] <0.254.0> Running boot step rabbit_connection_tracking_handler defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.202853+00:00 [info] <0.254.0> Running boot step rabbit_definitions_hashing defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.202944+00:00 [info] <0.254.0> Running boot step rabbit_exchange_parameters defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:26.48 spid43s     Database 'model_msdb' running the upgrade step from version 930 to version 931.
-finvault-rabbitmq            | 2026-07-02 13:41:20.241754+00:00 [info] <0.254.0> Running boot step rabbit_mirror_queue_misc defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.242170+00:00 [info] <0.254.0> Running boot step rabbit_policies defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:26.57 spid43s     Database 'model_msdb' running the upgrade step from version 931 to version 932.
-finvault-rabbitmq            | 2026-07-02 13:41:20.242370+00:00 [info] <0.254.0> Running boot step rabbit_policy defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:26.66 spid43s     Database 'model_msdb' running the upgrade step from version 932 to version 933.
-finvault-sqlserver           | 2026-07-02 13:41:26.79 spid43s     Database 'model_msdb' running the upgrade step from version 933 to version 934.
-finvault-rabbitmq            | 2026-07-02 13:41:20.242432+00:00 [info] <0.254.0> Running boot step rabbit_queue_location_validator defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.242461+00:00 [info] <0.254.0> Running boot step rabbit_quorum_memory_manager defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.242526+00:00 [info] <0.254.0> Running boot step rabbit_quorum_queue defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.242694+00:00 [info] <0.254.0> Running boot step rabbit_stream_coordinator defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.242883+00:00 [info] <0.254.0> Running boot step rabbit_vhost_limit defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:26.87 spid43s     Database 'model_msdb' running the upgrade step from version 934 to version 935.
-finvault-sqlserver           | 2026-07-02 13:41:27.00 spid43s     Database 'model_msdb' running the upgrade step from version 935 to version 936.
-finvault-rabbitmq            | 2026-07-02 13:41:20.242969+00:00 [info] <0.254.0> Running boot step rabbit_federation_parameters defined by app rabbitmq_federation[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.243096+00:00 [info] <0.254.0> Running boot step rabbit_federation_supervisor defined by app rabbitmq_federation[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.253902+00:00 [info] <0.254.0> Running boot step rabbit_federation_queue defined by app rabbitmq_federation[0m
-finvault-sqlserver           | 2026-07-02 13:41:27.14 spid43s     Database 'model_msdb' running the upgrade step from version 936 to version 937.
-finvault-rabbitmq            | 2026-07-02 13:41:20.254046+00:00 [info] <0.254.0> Running boot step rabbit_federation_upstream_exchange defined by app rabbitmq_federation[0m
-finvault-sqlserver           | 2026-07-02 13:41:27.19 spid43s     Database 'model_msdb' running the upgrade step from version 937 to version 938.
-finvault-rabbitmq            | 2026-07-02 13:41:20.254090+00:00 [info] <0.254.0> Running boot step rabbit_mgmt_reset_handler defined by app rabbitmq_management[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.254120+00:00 [info] <0.254.0> Running boot step rabbit_mgmt_db_handler defined by app rabbitmq_management_agent[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.254139+00:00 [info] <0.254.0> Management plugin: using rates mode 'basic'[0m
-finvault-sqlserver           | 2026-07-02 13:41:27.31 spid43s     Database 'model_msdb' running the upgrade step from version 938 to version 939.
-finvault-sqlserver           | 2026-07-02 13:41:27.38 spid43s     Database 'model_msdb' running the upgrade step from version 939 to version 940.
-finvault-sqlserver           | 2026-07-02 13:41:27.45 spid43s     Database 'model_msdb' running the upgrade step from version 940 to version 941.
-finvault-rabbitmq            | 2026-07-02 13:41:20.254248+00:00 [info] <0.254.0> Running boot step recovery defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.267775+00:00 [info] <0.254.0> Running boot step empty_db_check defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.267866+00:00 [info] <0.254.0> Will seed default virtual host and user...[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.267930+00:00 [info] <0.254.0> Adding vhost '/' (description: 'Default virtual host', tags: [])[0m
-finvault-sqlserver           | 2026-07-02 13:41:27.56 spid43s     Database 'model_msdb' running the upgrade step from version 941 to version 942.
-finvault-sqlserver           | 2026-07-02 13:41:27.61 spid43s     Database 'model_msdb' running the upgrade step from version 942 to version 943.
-finvault-sqlserver           | 2026-07-02 13:41:27.78 spid43s     Database 'model_msdb' running the upgrade step from version 943 to version 944.
-finvault-rabbitmq            | 2026-07-02 13:41:20.375649+00:00 [info] <0.644.0> Making sure data directory '/var/lib/rabbitmq/mnesia/rabbit@b0552c0b89e4/msg_stores/vhosts/628WB79CIFDYO9LJI6DKMI09L' for vhost '/' exists[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.377440+00:00 [info] <0.644.0> Setting segment_entry_count for vhost '/' with 0 queues to '2048'[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.399117+00:00 [info] <0.644.0> Starting message stores for vhost '/'[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.399328+00:00 [info] <0.653.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_transient": using rabbit_msg_store_ets_index to provide index[0m
-finvault-sqlserver           | 2026-07-02 13:41:27.86 spid43s     Database 'model_msdb' running the upgrade step from version 944 to version 945.
-finvault-rabbitmq            | 2026-07-02 13:41:20.401040+00:00 [info] <0.644.0> Started message store of type transient for vhost '/'[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.401234+00:00 [info] <0.657.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent": using rabbit_msg_store_ets_index to provide index[0m
-finvault-sqlserver           | 2026-07-02 13:41:27.95 spid43s     Database 'model_msdb' running the upgrade step from version 945 to version 946.
-finvault-sqlserver           | 2026-07-02 13:41:28.05 spid43s     Database 'model_msdb' running the upgrade step from version 946 to version 947.
-finvault-rabbitmq            | [38;5;214m2026-07-02 13:41:20.402043+00:00 [warning] <0.657.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent": rebuilding indices from scratch[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.402870+00:00 [info] <0.644.0> Started message store of type persistent for vhost '/'[0m
-finvault-sqlserver           | 2026-07-02 13:41:28.06 Logon       Error: 18456, Severity: 14, State: 7.
-finvault-sqlserver           | 2026-07-02 13:41:28.06 Logon       Login failed for user 'sa'. Reason: An error occurred while evaluating the password. [CLIENT: 172.18.0.2]
-finvault-rabbitmq            | 2026-07-02 13:41:20.403021+00:00 [info] <0.644.0> Recovering 0 queues of type rabbit_classic_queue took 24ms[0m
-finvault-sqlserver           | 2026-07-02 13:41:28.12 spid43s     Database 'model_msdb' running the upgrade step from version 947 to version 948.
-finvault-rabbitmq            | 2026-07-02 13:41:20.403090+00:00 [info] <0.644.0> Recovering 0 queues of type rabbit_quorum_queue took 0ms[0m
-finvault-sqlserver           | 2026-07-02 13:41:28.27 spid43s     Database 'model_msdb' running the upgrade step from version 948 to version 949.
-finvault-rabbitmq            | 2026-07-02 13:41:20.403117+00:00 [info] <0.644.0> Recovering 0 queues of type rabbit_stream_queue took 0ms[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.417738+00:00 [info] <0.254.0> Created user 'guest'[0m
-finvault-sqlserver           | 2026-07-02 13:41:28.40 spid43s     Database 'model_msdb' running the upgrade step from version 949 to version 950.
-finvault-rabbitmq            | 2026-07-02 13:41:20.428811+00:00 [info] <0.254.0> Successfully set user tags for user 'guest' to [administrator][0m
-finvault-sqlserver           | 2026-07-02 13:41:28.45 spid43s     Database 'model_msdb' running the upgrade step from version 950 to version 951.
-finvault-sqlserver           | 2026-07-02 13:41:28.55 spid43s     Database 'model_msdb' running the upgrade step from version 951 to version 952.
-finvault-rabbitmq            | 2026-07-02 13:41:20.441677+00:00 [info] <0.254.0> Successfully set permissions for user 'guest' in virtual host '/' to '.*', '.*', '.*'[0m
-finvault-sqlserver           | 2026-07-02 13:41:28.63 spid43s     Database 'model_msdb' running the upgrade step from version 952 to version 953.
-finvault-rabbitmq            | 2026-07-02 13:41:20.441787+00:00 [info] <0.254.0> Running boot step rabbit_observer_cli defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:28.70 spid43s     Database 'model_msdb' running the upgrade step from version 953 to version 954.
-finvault-rabbitmq            | 2026-07-02 13:41:20.441925+00:00 [info] <0.254.0> Running boot step rabbit_looking_glass defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:28.81 spid43s     Database 'model_msdb' running the upgrade step from version 954 to version 955.
-finvault-rabbitmq            | 2026-07-02 13:41:20.441985+00:00 [info] <0.254.0> Running boot step rabbit_core_metrics_gc defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:28.91 spid43s     Database 'model_msdb' running the upgrade step from version 955 to version 956.
-finvault-sqlserver           | 2026-07-02 13:41:29.10 spid43s     Database 'model_msdb' running the upgrade step from version 956 to version 957.
-finvault-rabbitmq            | 2026-07-02 13:41:20.442231+00:00 [info] <0.254.0> Running boot step background_gc defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.442363+00:00 [info] <0.254.0> Running boot step routing_ready defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.442398+00:00 [info] <0.254.0> Running boot step pre_flight defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.442438+00:00 [info] <0.254.0> Running boot step notify_cluster defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:29.46 spid43s     Resource governor reconfiguration succeeded.
-finvault-sqlserver           | 2026-07-02 13:41:29.46 spid67s     Attribute synchronization initialized
-finvault-rabbitmq            | 2026-07-02 13:41:20.442474+00:00 [info] <0.254.0> Running boot step networking defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:29.46 spid43s     SQL Server Audit is starting the audits. This is an informational message. No user action is required.
-finvault-rabbitmq            | 2026-07-02 13:41:20.442527+00:00 [info] <0.254.0> Running boot step rabbit_quorum_queue_periodic_membership_reconciliation defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.442733+00:00 [info] <0.254.0> Running boot step definition_import_worker_pool defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:29.46 spid67s     Attribute synchronization manager initialized
-finvault-sqlserver           | 2026-07-02 13:41:29.46 spid43s     SQL Server Audit has started the audits. This is an informational message. No user action is required.
-finvault-sqlserver           | 2026-07-02 13:41:29.52 spid43s     SQL Trace ID 1 was started by login "sa".
-finvault-sqlserver           | 2026-07-02 13:41:29.70 spid43s     Server name is '5d8b5b40a70c'. This is an informational message only. No user action is required.
-finvault-sqlserver           | 2026-07-02 13:41:29.72 spid46s     Clearing tempdb database.
-finvault-rabbitmq            | 2026-07-02 13:41:20.442830+00:00 [info] <0.317.0> Starting worker pool 'definition_import_pool' with 16 processes in it[0m
-finvault-sqlserver           | 2026-07-02 13:41:29.72 spid89s     Always On: The availability replica manager is starting. This is an informational message only. No user action is required.
-finvault-sqlserver           | 2026-07-02 13:41:29.72 spid92s     [4]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-finvault-rabbitmq            | 2026-07-02 13:41:20.443544+00:00 [info] <0.254.0> Running boot step cluster_name defined by app rabbit[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.443651+00:00 [info] <0.254.0> Initialising internal cluster ID to 'rabbitmq-cluster-id--tba5-GYo_5OE5ta9Sn_Sg'[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.460222+00:00 [info] <0.254.0> Running boot step virtual_host_reconciliation defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:29.72 spid89s     Always On: The availability replica manager is waiting for the instance of SQL Server to allow client connections. This is an informational message only. No user action is required.
-finvault-sqlserver           | 2026-07-02 13:41:29.72 spid92s     Starting up database 'msdb'.
-finvault-rabbitmq            | 2026-07-02 13:41:20.460545+00:00 [info] <0.254.0> Running boot step direct_client defined by app rabbit[0m
-finvault-sqlserver           | 2026-07-02 13:41:33.46 spid44s     Using 'dbghelp.dll' version '4.0.5'
-finvault-rabbitmq            | 2026-07-02 13:41:20.460683+00:00 [info] <0.254.0> Running boot step rabbit_federation_exchange defined by app rabbitmq_federation[0m
-finvault-sqlserver           | 2026-07-02 13:41:34.02 spid92s     Recovery completed for database msdb (database ID 4) in 4 second(s) (analysis 20 ms, redo 0 ms, undo 3414 ms [system undo 0 ms, regular undo 0 ms].) ADR-enabled=0, Is primary=1, OL-Enabled=0. This is an informational message only. No user action is required.
-finvault-sqlserver           | 2026-07-02 13:41:34.04 spid92s     Converting database 'msdb' from version 927 to the current version 957.
-finvault-rabbitmq            | 2026-07-02 13:41:20.460871+00:00 [info] <0.254.0> Running boot step rabbit_management_load_definitions defined by app rabbitmq_management[0m
-finvault-rabbitmq            | 2026-07-02 13:41:20.461016+00:00 [info] <0.706.0> Resetting node maintenance status[0m
-finvault-rabbitmq            | [38;5;214m2026-07-02 13:41:20.707108+00:00 [warning] <0.735.0> Deprecated features: `management_metrics_collection`: Feature `management_metrics_collection` is deprecated.[0m
-finvault-sqlserver           | 2026-07-02 13:41:34.05 spid92s     Database 'msdb' running the upgrade step from version 927 to version 928.
-finvault-sqlserver           | 2026-07-02 13:41:34.34 spid92s     Database 'msdb' running the upgrade step from version 928 to version 929.
-finvault-rabbitmq            | [38;5;214m2026-07-02 13:41:20.707108+00:00 [warning] <0.735.0> By default, this feature can still be used for now.[0m
-finvault-sqlserver           | 2026-07-02 13:41:34.42 spid46s     [2]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-finvault-rabbitmq            | [38;5;214m2026-07-02 13:41:20.707108+00:00 [warning] <0.735.0> Its use will not be permitted by default in a future minor RabbitMQ version and the feature will be removed from a future major RabbitMQ version; actual versions to be determined.[0m
-finvault-rabbitmq            | [38;5;214m2026-07-02 13:41:20.707108+00:00 [warning] <0.735.0> To continue using this feature when it is not permitted by default, set the following parameter in your configuration:[0m
-finvault-rabbitmq            | [38;5;214m2026-07-02 13:41:20.707108+00:00 [warning] <0.735.0>     "deprecated_features.permit.management_metrics_collection = true"[0m
-finvault-sqlserver           | 2026-07-02 13:41:34.42 spid46s     Starting up database 'tempdb'.
-finvault-rabbitmq            | [38;5;214m2026-07-02 13:41:20.707108+00:00 [warning] <0.735.0> To test RabbitMQ as if the feature was removed, set this in your configuration:[0m
-finvault-rabbitmq            | [38;5;214m2026-07-02 13:41:20.707108+00:00 [warning] <0.735.0>     "deprecated_features.permit.management_metrics_collection = false"[0m
-finvault-sqlserver           | 2026-07-02 13:41:34.46 spid92s     Database 'msdb' running the upgrade step from version 929 to version 930.
-finvault-rabbitmq            | 2026-07-02 13:41:24.668424+00:00 [info] <0.772.0> Management plugin: HTTP (non-TLS) listener started on port 15672[0m
-finvault-rabbitmq            | 2026-07-02 13:41:24.668563+00:00 [info] <0.804.0> Statistics database started.[0m
-finvault-rabbitmq            | 2026-07-02 13:41:24.668617+00:00 [info] <0.803.0> Starting worker pool 'management_worker_pool' with 3 processes in it[0m
-finvault-sqlserver           | 2026-07-02 13:41:34.50 spid46s     The tempdb database has 1 data file(s).
-finvault-sqlserver           | 2026-07-02 13:41:34.52 spid89s     The Service Broker endpoint is in disabled or stopped state.
-finvault-rabbitmq            | 2026-07-02 13:41:24.675048+00:00 [info] <0.822.0> Prometheus metrics: HTTP (non-TLS) listener started on port 15692[0m
-finvault-sqlserver           | 2026-07-02 13:41:34.52 spid89s     The Database Mirroring endpoint is in disabled or stopped state.
-finvault-sqlserver           | 2026-07-02 13:41:34.53 spid89s     Service Broker manager has started.
-finvault-rabbitmq            | 2026-07-02 13:41:24.675198+00:00 [info] <0.706.0> Ready to start client connection listeners[0m
-finvault-rabbitmq            | 2026-07-02 13:41:24.676925+00:00 [info] <0.866.0> started TCP listener on [::]:5672[0m
-finvault-rabbitmq            |  completed with 5 plugins.
-finvault-sqlserver           | 2026-07-02 13:41:34.53 spid92s     Database 'msdb' running the upgrade step from version 930 to version 931.
-finvault-sqlserver           | 2026-07-02 13:41:34.67 spid92s     Database 'msdb' running the upgrade step from version 931 to version 932.
-finvault-rabbitmq            | 2026-07-02 13:41:24.762583+00:00 [info] <0.706.0> Server startup complete; 5 plugins started.[0m
-finvault-sqlserver           | 2026-07-02 13:41:34.73 spid92s     Database 'msdb' running the upgrade step from version 932 to version 933.
-finvault-rabbitmq            | 2026-07-02 13:41:24.762583+00:00 [info] <0.706.0>  * rabbitmq_prometheus[0m
-finvault-sqlserver           | 2026-07-02 13:41:34.79 spid92s     Database 'msdb' running the upgrade step from version 933 to version 934.
-finvault-sqlserver           | 2026-07-02 13:41:34.87 spid92s     Database 'msdb' running the upgrade step from version 934 to version 935.
-finvault-sqlserver           | 2026-07-02 13:41:34.92 spid92s     Database 'msdb' running the upgrade step from version 935 to version 936.
-finvault-rabbitmq            | 2026-07-02 13:41:24.762583+00:00 [info] <0.706.0>  * rabbitmq_federation[0m
-finvault-rabbitmq            | 2026-07-02 13:41:24.762583+00:00 [info] <0.706.0>  * rabbitmq_management[0m
-finvault-rabbitmq            | 2026-07-02 13:41:24.762583+00:00 [info] <0.706.0>  * rabbitmq_management_agent[0m
-finvault-rabbitmq            | 2026-07-02 13:41:24.762583+00:00 [info] <0.706.0>  * rabbitmq_web_dispatch[0m
-finvault-sqlserver           | 2026-07-02 13:41:34.99 Server      Long Sync IO: Scheduler 8 had 1 Sync IOs in nonpreemptive mode longer than 1000 ms
-finvault-rabbitmq            | 2026-07-02 13:41:24.893020+00:00 [info] <0.9.0> Time to start RabbitMQ: 18111 ms[0m
-finvault-sqlserver           | 2026-07-02 13:41:34.99 spid92s     Database 'msdb' running the upgrade step from version 936 to version 937.
-finvault-sqlserver           | 2026-07-02 13:41:35.08 spid92s     Database 'msdb' running the upgrade step from version 937 to version 938.
-finvault-rabbitmq            | [38;5;87m2026-07-02 13:42:07.075076+00:00 [notice] <0.86.0>     alarm_handler: {set,{system_memory_high_watermark,[]}}[0m
-finvault-sqlserver           | 2026-07-02 13:41:35.15 spid92s     Database 'msdb' running the upgrade step from version 938 to version 939.
-finvault-sqlserver           | 2026-07-02 13:41:35.21 spid92s     Database 'msdb' running the upgrade step from version 939 to version 940.
-finvault-sqlserver           | 2026-07-02 13:41:35.25 spid92s     Database 'msdb' running the upgrade step from version 940 to version 941.
-finvault-sqlserver           | 2026-07-02 13:41:35.42 spid92s     Database 'msdb' running the upgrade step from version 941 to version 942.
-finvault-sqlserver           | 2026-07-02 13:41:35.47 spid92s     Database 'msdb' running the upgrade step from version 942 to version 943.
-finvault-sqlserver           | 2026-07-02 13:41:35.75 spid92s     Database 'msdb' running the upgrade step from version 943 to version 944.
-finvault-sqlserver           | 2026-07-02 13:41:35.82 spid92s     Database 'msdb' running the upgrade step from version 944 to version 945.
-finvault-sqlserver           | 2026-07-02 13:41:35.93 spid92s     Database 'msdb' running the upgrade step from version 945 to version 946.
-finvault-sqlserver           | 2026-07-02 13:41:36.01 spid92s     Database 'msdb' running the upgrade step from version 946 to version 947.
-finvault-sqlserver           | 2026-07-02 13:41:36.10 spid92s     Database 'msdb' running the upgrade step from version 947 to version 948.
-finvault-sqlserver           | 2026-07-02 13:41:36.27 spid92s     Database 'msdb' running the upgrade step from version 948 to version 949.
-finvault-sqlserver           | 2026-07-02 13:41:36.40 spid92s     Database 'msdb' running the upgrade step from version 949 to version 950.
-finvault-sqlserver           | 2026-07-02 13:41:36.48 spid92s     Database 'msdb' running the upgrade step from version 950 to version 951.
-finvault-sqlserver           | 2026-07-02 13:41:36.58 spid92s     Database 'msdb' running the upgrade step from version 951 to version 952.
-finvault-sqlserver           | 2026-07-02 13:41:36.65 spid92s     Database 'msdb' running the upgrade step from version 952 to version 953.
-finvault-sqlserver           | 2026-07-02 13:41:36.84 spid92s     Database 'msdb' running the upgrade step from version 953 to version 954.
-finvault-sqlserver           | 2026-07-02 13:41:36.90 spid92s     Database 'msdb' running the upgrade step from version 954 to version 955.
-finvault-sqlserver           | 2026-07-02 13:41:36.98 spid92s     Database 'msdb' running the upgrade step from version 955 to version 956.
-finvault-sqlserver           | 2026-07-02 13:41:37.05 spid92s     Database 'msdb' running the upgrade step from version 956 to version 957.
-finvault-sqlserver           | 2026-07-02 13:41:37.47 spid43s     Recovery is complete. This is an informational message only. No user action is required.
-finvault-sqlserver           | 2026-07-02 13:41:37.49 spid53s     The default language (LCID 0) has been set for engine and full-text services.
-finvault-sqlserver           | 2026-07-02 13:41:38.11 spid53s     The tempdb database has 8 data file(s).
-finvault-sqlserver           | 2026-07-02 13:41:39.55 Logon       Error: 18456, Severity: 14, State: 38.
-finvault-sqlserver           | 2026-07-02 13:41:39.55 Logon       Login failed for user 'sa'. Reason: Failed to open the explicitly specified database 'FinVaultInvestmentsDb'. [CLIENT: 172.18.0.6]
-finvault-sqlserver           | 2026-07-02 13:41:39.98 spid53      [5]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-finvault-sqlserver           | 2026-07-02 13:41:39.98 spid53      Starting up database 'FinVaultInvestmentsDb'.
-finvault-sqlserver           | 2026-07-02 13:41:39.98 spid53      RemoveStaleDbEntries: Cleanup of stale DB entries called for database ID: [5]
-finvault-sqlserver           | 2026-07-02 13:41:39.99 spid53      RemoveStaleDbEntries: Cleanup of stale DB entries skipped because master db is not memory optimized. DbId: 5.
-finvault-sqlserver           | 2026-07-02 13:41:40.03 spid53      Parallel redo is started for database 'FinVaultInvestmentsDb' with worker pool size [8].
-finvault-sqlserver           | 2026-07-02 13:41:40.06 spid53      Parallel redo is shutdown for database 'FinVaultInvestmentsDb' with worker pool size [8].
-finvault-sqlserver           | 2026-07-02 13:41:40.32 spid53      Setting database option READ_COMMITTED_SNAPSHOT to ON for database 'FinVaultInvestmentsDb'.
-finvault-sqlserver           | RecoveryUnit::Shutdown. IsOnline: 02026-07-02 13:41:40.60 spid53      [5]. Feature Status: PVS: 0. CTR: 0. ConcurrentPFSUpdate: 1. ConcurrentGAMUpdate: 1. ConcurrentSGAMUpdate: 1, CleanupUnderUserTransaction: 0. TranLevelPVS: 0
-finvault-sqlserver           | 2026-07-02 13:41:40.61 spid53      Starting up database 'FinVaultInvestmentsDb'.
-finvault-sqlserver           | 2026-07-02 13:41:40.61 spid53      RemoveStaleDbEntries: Cleanup of stale DB entries called for database ID: [5]
-finvault-sqlserver           | 2026-07-02 13:41:40.61 spid53      RemoveStaleDbEntries: Cleanup of stale DB entries skipped because master db is not memory optimized. DbId: 5.
-finvault-sqlserver           | 2026-07-02 13:41:40.65 spid53      Parallel redo is started for database 'FinVaultInvestmentsDb' with worker pool size [8].
-finvault-sqlserver           | 2026-07-02 13:41:40.79 spid61s     Parallel redo is shutdown for database 'FinVaultInvestmentsDb' with worker pool size [8].
