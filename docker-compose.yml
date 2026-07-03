@@ -34,6 +34,8 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
       - document-ingestion
+      - investments-service
+      - currentaccount-service
     networks:
       - finvault-network
 

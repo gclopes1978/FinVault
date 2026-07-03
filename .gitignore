@@ -8,6 +8,9 @@ obj/
 *.userosscache
 *.sln.docstates
 
+#python environment
+.venv
+
 # === Angular / Node ===
 node_modules/
 /dist
