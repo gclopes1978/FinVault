@@ -1,0 +1,222 @@
+[
+  {
+    "Codigo": 10000,
+    "Data": null,
+    "Quantidade": null,
+    "Taxa": null,
+    "valor_unitario": null,
+    "Abono": true,
+    "Desconto": null,
+    "OutputField": "Vencimento_Base"
+  },
+  {
+    "Codigo": 10450,
+    "Data": null,
+    "Quantidade": null,
+    "Taxa": null,
+    "valor_unitario": null,
+    "Abono": true,
+    "Desconto": null,
+    "OutputField": "Isencao_Horario"
+  },
+  {
+    "Codigo": 20210,
+    "Data": null,
+    "Quantidade": true,
+    "Taxa": null,
+    "valor_unitario": true,
+    "Abono": true,
+    "Desconto": null,
+    "OutputField": "Subsidio_Alimentacao"
+  },
+  {
+    "Codigo": 33328,
+    "Data": null,
+    "Quantidade": true,
+    "Taxa": null,
+    "valor_unitario": true,
+    "Abono": true,
+    "Desconto": null,
+    "OutputField": "Ajudas_Custo"
+  },
+  {
+    "Codigo": 57000,
+    "Data": null,
+    "Quantidade": null,
+    "Taxa": null,
+    "valor_unitario": null,
+    "Abono": null,
+    "Desconto": true,
+    "OutputField": "Retencao_IRS_1"
+  },
+  {
+    "Codigo": 63270,
+    "Data": null,
+    "Quantidade": null,
+    "Taxa": null,
+    "valor_unitario": null,
+    "Abono": null,
+    "Desconto": true,
+    "OutputField": "Retencao_IRS_1"
+  },
+  {
+    "Codigo": 57060,
+    "Data": null,
+    "Quantidade": null,
+    "Taxa": true,
+    "valor_unitario": null,
+    "Abono": null,
+    "Desconto": null,
+    "OutputField": "Taxa_Retencao_IRS_1"
+  },
+  {
+    "Codigo": 65920,
+    "Data": null,
+    "Quantidade": true,
+    "Taxa": true,
+    "valor_unitario": null,
+    "Abono": null,
+    "Desconto": true,
+    "OutputField": "Retencao_Seguranca_Social"
+  },
+  {
+    "Codigo": 75550,
+    "Data": null,
+    "Quantidade": null,
+    "Taxa": null,
+    "valor_unitario": null,
+    "Abono": null,
+    "Desconto": true,
+    "OutputField": "Seguro_Saude_Plus"
+  },
+  {
+    "Codigo": 1001,
+    "Data": true,
+    "Quantidade": null,
+    "Taxa": null,
+    "valor_unitario": null,
+    "Abono": true,
+    "Desconto": null,
+    "OutputField": "Vencimento_Base"
+  },
+  {
+    "Codigo": 1002,
+    "Data": true,
+    "Quantidade": true,
+    "Taxa": null,
+    "valor_unitario": null,
+    "Abono": true,
+    "Desconto": null,
+    "OutputField": "Isenção_Horário"
+  },
+  {
+    "Codigo": 422,
+    "Data": true,
+    "Quantidade": true,
+    "Taxa": null,
+    "valor_unitario": true,
+    "Abono": true,
+    "Desconto": null,
+    "OutputField": "Subsidio_Alimentacao"
+  },
+  {
+    "Codigo": 1551,
+    "Data": true,
+    "Quantidade": null,
+    "Taxa": null,
+    "valor_unitario": null,
+    "Abono": true,
+    "Desconto": null,
+    "OutputField": "Seguro_Poupança_Reforma"
+  },
+  {
+    "Codigo": 1583,
+    "Data": true,
+    "Quantidade": null,
+    "Taxa": null,
+    "valor_unitario": null,
+    "Abono": true,
+    "Desconto": null,
+    "OutputField": "Ajudas_Custo"
+  },
+  {
+    "Codigo": 1632,
+    "Data": true,
+    "Quantidade": true,
+    "Taxa": null,
+    "valor_unitario": null,
+    "Abono": true,
+    "Desconto": null,
+    "OutputField": "Subsidio_Ferias"
+  },
+  {
+    "Codigo": 1566,
+    "Data": true,
+    "Quantidade": null,
+    "Taxa": true,
+    "valor_unitario": null,
+    "Abono": null,
+    "Desconto": true,
+    "OutputField": "Deducao_Suguro_Poupança_Reforma"
+  },
+  {
+    "Codigo": 350,
+    "Data": true,
+    "Quantidade": null,
+    "Taxa": true,
+    "valor_unitario": null,
+    "Abono": null,
+    "Desconto": true,
+    "OutputField": "Retencao_Seguranca_Social"
+  },
+  {
+    "Codigo": 401,
+    "Data": true,
+    "Quantidade": null,
+    "Taxa": true,
+    "valor_unitario": null,
+    "Abono": null,
+    "Desconto": true,
+    "OutputField": "Retencao_IRS_1"
+  },
+  {
+    "Codigo": 403,
+    "Data": true,
+    "Quantidade": null,
+    "Taxa": true,
+    "valor_unitario": null,
+    "Abono": null,
+    "Desconto": true,
+    "OutputField": "Retencao_IRS_2"
+  },
+  {
+    "Codigo": 57100,
+    "Data": null,
+    "Quantidade": null,
+    "Taxa": true,
+    "valor_unitario": null,
+    "Abono": null,
+    "Desconto": true,
+    "OutputField": "Retencao_IRS_2"
+  },
+  {
+    "Codigo": 13600,
+    "Data": null,
+    "Quantidade": true,
+    "Taxa": true,
+    "valor_unitario": null,
+    "Abono": null,
+    "Desconto": true,
+    "OutputField": "Subsidio_Natal"
+  },
+  {
+    "Codigo": 57200,
+    "Data": null,
+    "Quantidade": null,
+    "Taxa": true,
+    "valor_unitario": null,
+    "Abono": null,
+    "Desconto": true,
+    "OutputField": "Retencao_IRS_3"
+  }
+]
