@@ -1,6 +1,33 @@
 @Gclopes.FinVault.PensionPlans_HostAddress = http://localhost:5274
 
-GET {{Gclopes.FinVault.PensionPlans_HostAddress}}/weatherforecast/
+### List all pension plan / insurance movements (requires a valid JWT Bearer token)
+GET {{Gclopes.FinVault.PensionPlans_HostAddress}}/api/pension-plans/movements
 Accept: application/json
+Authorization: Bearer {{token}}
+
+###
+
+### Import a batch of movements (called by the PDF parser service, no auth required)
+POST {{Gclopes.FinVault.PensionPlans_HostAddress}}/api/pension-plans/movements
+Content-Type: application/json
+
+[
+  {
+    "movement": "Encerramento do Mês",
+    "receipt": null,
+    "date": "2026-06-30",
+    "debit": 0.00,
+    "credit": 12.50,
+    "balance": 15234.67
+  },
+  {
+    "movement": "Liquidação de Prémio",
+    "receipt": "260192738",
+    "date": "2026-06-08",
+    "debit": 0.0,
+    "credit": 150.0,
+    "balance": 15222.17
+  }
+]
 
 ###

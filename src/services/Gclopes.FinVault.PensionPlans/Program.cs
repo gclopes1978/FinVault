@@ -1,5 +1,8 @@
 using Gclopes.FinVault.PensionPlans.Data;
+using Gclopes.FinVault.PensionPlans.Endpoints;
 using Gclopes.FinVault.PensionPlans.Middlewares;
+using Gclopes.FinVault.PensionPlans.Services.Implementations;
+using Gclopes.FinVault.PensionPlans.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -74,6 +77,9 @@ public class Program
         });
 
         // Register the financial movement service interfaces and implementations
+        // Scoped lifetime matches ApplicationDbContext's default lifetime, so each HTTP
+        // request gets its own service instance backed by its own DbContext instance.
+        builder.Services.AddScoped<IInsuranceMovementService, InsuranceMovementService>();
 
         builder.Services.AddLogging();
 
@@ -127,7 +133,7 @@ public class Program
         app.UseAuthorization();
 
         // Configure application routing endpoints
-        //app.MapMovementEndpoints();
+        app.MapInsuranceMovementEndpoints();
 
         app.Run();
     }

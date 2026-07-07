@@ -143,6 +143,26 @@ services:
         condition: service_healthy
     restart: on-failure
 
+  pensionplans-service:
+    image: finvault-pensionplans:latest
+    container_name: finvault-pensionplans-api
+    build:
+      context: .
+      dockerfile: src/services/Gclopes.FinVault.PensionPlans/Dockerfile
+    ports:
+      - "7006:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_PPR}
+    networks:
+      finvault-network:
+        aliases:
+          - pensionplans-api
+    depends_on:
+      finvault-sqlserver:
+        condition: service_healthy
+    restart: on-failure
+
 volumes:
   rabbitmq_data:
   sqlserver_data:
