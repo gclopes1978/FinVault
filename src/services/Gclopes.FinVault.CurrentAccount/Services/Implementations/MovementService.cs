@@ -1,49 +1,20 @@
 ﻿using Gclopes.FinVault.CurrentAccount.Data;
+using Gclopes.FinVault.CurrentAccount.Domain;
+using Gclopes.FinVault.CurrentAccount.Endpoints.DTO;
 using Gclopes.FinVault.CurrentAccount.Models;
 using Gclopes.FinVault.CurrentAccount.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace Gclopes.FinVault.CurrentAccount.Services.Implementations;
 
 public class MovementService(ApplicationDbContext context) : IMovementService
 {
-    private readonly ApplicationDbContext _context = context;
 
-    public async Task<MovementResponse> RegisterMovementAsync(CreateMovementRequest request, string userId)
+    public async Task<IEnumerable<MovementResponse>> GetAllMovementsAsync()
     {
-        var movement = new Movement
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            Amount = request.Amount,
-            Type = request.Type,
-            Description = request.Description,
-            Category = request.Category,
-            TransactionDate = request.TransactionDate,
-            ValueDate = request.ValueDate,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _context.Movements.Add(movement);
-        await _context.SaveChangesAsync();
-
-        return new MovementResponse(
-            movement.Id,
-            movement.Amount,
-            movement.Type,
-            movement.Description,
-            movement.Category,
-            movement.TransactionDate,
-            movement.ValueDate,
-            movement.CreatedAt
-        );
-    }
-
-    public async Task<IEnumerable<MovementResponse>> GetAllMovementsAsync(string userId)
-    {
-        var movements = await _context.Movements
-        .Where(m => m.UserId == userId)
-        .OrderByDescending(m => m.TransactionDate)
+        var movements = await context.Movements
+        .OrderBy(m => m.TransactionDate)
         .ToListAsync();
 
         return movements.Select(m => new MovementResponse(
@@ -51,10 +22,75 @@ public class MovementService(ApplicationDbContext context) : IMovementService
             m.Amount,
             m.Type,
             m.Description,
-            m.Category,
+            m.UserNote,
             m.TransactionDate,
             m.ValueDate,
             m.CreatedAt
         ));
+    }
+
+    public async Task<BankStatementResponse> RegisterBankStatementAsync(BankStatementPayloadDto dto, string userId)
+    {
+        // 1. Validação de Domínio (usando o BalanceCalculator que criámos)
+        // Extraímos os dados para uma forma simples (tupla) que o Domain entende
+        var movementsForCalc = dto.Transactions.Select(t => (t.Amount, t.Type));
+
+        var calculatedFinalBalance = BalanceCalculator.CalculateFinalBalance(dto.InitialBalance, movementsForCalc);
+
+        // Verificação matemática de segurança
+        if (Math.Abs(calculatedFinalBalance - dto.FinalBalance) > 0.01m)
+        {
+            throw new InvalidOperationException($"Inconsistência financeira: O saldo calculado ({calculatedFinalBalance}) não bate com o saldo final fornecido ({dto.FinalBalance}).");
+        }
+
+        // 2. Criação do Objeto (Infraestrutura)
+        var statement = new BankStatement
+        {
+            Id = Guid.NewGuid(),
+            InitialBalance = dto.InitialBalance,
+            FinalBalance = dto.FinalBalance,
+        };
+
+        foreach (var t in dto.Transactions)
+        {
+            var movement = new Movement
+            {
+                Id = Guid.NewGuid(),
+                Amount = t.Amount,
+                Type = t.Type,
+                Description = t.Description,
+                Balance = t.Balance,
+                BankStatementId = statement.Id,
+                // DateTime.ParseExact é perigoso sem try-catch, mas se já validaste no FluentValidation, aqui é seguro
+                TransactionDate = DateTime.ParseExact(t.Date, "dd-MM-yyyy", CultureInfo.InvariantCulture),
+                ValueDate = DateTime.ParseExact(t.ValueDate, "dd-MM-yyyy", CultureInfo.InvariantCulture),
+                CreatedAt = DateTime.UtcNow
+            };
+            statement.Movements.Add(movement);
+        }
+
+        // 3. Persistência
+        context.BankStatements.Add(statement);
+        await context.SaveChangesAsync();
+
+        // 4. Retorno (Mapeamento para o Response)
+        return new BankStatementResponse(statement.Id, "Bank statement processed successfully.", statement.ProcessedAt);
+    }
+
+    public async Task<bool> UpdateNoteAsync(Guid movementId, string note)
+    {
+        // Procura o movimento, mas garante que o utilizador é o dono!
+        var movement = await context.Movements
+            .FirstOrDefaultAsync(m => m.Id == movementId);
+
+        if (movement == null) return false;
+
+        // Atualiza apenas a nota
+        movement.UserNote = note;
+
+        // Grava no banco
+        await context.SaveChangesAsync();
+
+        return true;
     }
 }
