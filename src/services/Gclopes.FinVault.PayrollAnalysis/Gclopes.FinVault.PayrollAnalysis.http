@@ -1,6 +1,87 @@
-@Gclopes.FinVault.PayrollAnalysis_HostAddress = http://localhost:5235
+@Gclopes.FinVault.PayrollAnalysis_HostAddress = http://localhost:7002
 
-GET {{Gclopes.FinVault.PayrollAnalysis_HostAddress}}/weatherforecast/
+### Import a parsed payslip (as sent by the PdfParser pipeline)
+POST {{Gclopes.FinVault.PayrollAnalysis_HostAddress}}/api/payroll-analysis/imports
+Content-Type: application/json
+
+{
+  "sourceDocumentId": "dc06c4e8-0992-4aad-9bb3-fd3bf9c07207",
+  "data": [
+    {
+      "code": 10000,
+      "field": "Vencimento_Base",
+      "description": "Vencimento Base",
+      "date": null,
+      "quantity": null,
+      "rate": null,
+      "unitValue": null,
+      "amount": 2500.00,
+      "type": "abono"
+    },
+    {
+      "code": 10450,
+      "field": "Isencao_Horario",
+      "description": "Isenção horária",
+      "date": null,
+      "quantity": null,
+      "rate": null,
+      "unitValue": null,
+      "amount": 375.00,
+      "type": "abono"
+    },
+    {
+      "code": 20210,
+      "field": "Subsidio_Alimentacao",
+      "description": "Subsidio Alimentação Cartão",
+      "date": null,
+      "quantity": 22.0,
+      "rate": null,
+      "unitValue": 8.50,
+      "amount": 187.00,
+      "type": "abono"
+    },
+    {
+      "code": 33328,
+      "field": "Ajudas_Custo",
+      "description": "Quilómetros",
+      "date": null,
+      "quantity": 1500.0,
+      "rate": null,
+      "unitValue": 0.36,
+      "amount": 540.0,
+      "type": "abono"
+    },
+    {
+      "code": 65920,
+      "field": "Retencao_Seguranca_Social",
+      "description": "Segurança Social",
+      "date": null,
+      "quantity": 2875.0,
+      "rate": 11.0,
+      "unitValue": null,
+      "amount": -316.0,
+      "type": "desconto"
+    },
+    {
+      "code": 75550,
+      "field": "Seguro_Saude_Plus",
+      "description": "Seguro Saude Plus",
+      "date": null,
+      "quantity": null,
+      "rate": null,
+      "unitValue": null,
+      "amount": -15.0,
+      "type": "desconto"
+    }
+  ]
+}
+
+### Re-sending the same sourceDocumentId is idempotent (returns the existing import, no duplicate)
+
+### List all imported payslips
+GET {{Gclopes.FinVault.PayrollAnalysis_HostAddress}}/api/payroll-analysis/imports
 Accept: application/json
 
-###
+### Get a specific import by its source document id
+GET {{Gclopes.FinVault.PayrollAnalysis_HostAddress}}/api/payroll-analysis/imports/dc06c4e8-0992-4aad-9bb3-fd3bf9c07207
+Accept: application/json

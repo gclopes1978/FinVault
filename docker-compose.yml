@@ -164,6 +164,25 @@ services:
         condition: service_healthy
     restart: on-failure
 
+  payrollanalysis-service:
+    container_name: finvault-payrollanalysis-api
+    build:
+      context: .
+      dockerfile: src/services/Gclopes.FinVault.PayrollAnalysis/Dockerfile
+    ports:
+      - "7002:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ConnectionStrings__DefaultConnection: ${ORACLE_CONNECTION_FOLHASALARIAL}
+    networks:
+      finvault-network:
+        aliases:
+          - payrollanalysis-api
+    depends_on:
+      finvault-oracle:
+        condition: service_healthy
+    restart: on-failure
+
 volumes:
   rabbitmq_data:
   sqlserver_data:
