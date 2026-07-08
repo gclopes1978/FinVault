@@ -6,9 +6,9 @@ namespace Gclopes.FinVault.PensionPlans.Domain;
 // Kept as a small static helper (mirrors Gclopes.FinVault.CurrentAccount.Domain.MovementValidator)
 // so the rules live in one place, are easy to unit test in isolation, and are not scattered
 // across the endpoint or the service layer.
-public static class InsuranceMovementValidator
+public static class PensionInsuranceMovementValidator
 {
-    public static bool IsValid(InsuranceMovementDto dto, out string? errorMessage)
+    public static bool IsValid(PensionInsuranceMovementDto dto, out string? errorMessage)
     {
         // "Movement" is the human-readable description (e.g. "Liquidação de Prémio").
         // Without it the record is meaningless, so we reject it outright.

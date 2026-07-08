@@ -79,7 +79,8 @@ public class Program
         // Register the financial movement service interfaces and implementations
         // Scoped lifetime matches ApplicationDbContext's default lifetime, so each HTTP
         // request gets its own service instance backed by its own DbContext instance.
-        builder.Services.AddScoped<IInsuranceMovementService, InsuranceMovementService>();
+        builder.Services.AddScoped<IPensionInsuranceService, PensionInsuranceService>();
+        builder.Services.AddScoped<IPensionFundService, PensionFundService>();
 
         builder.Services.AddLogging();
 
@@ -133,7 +134,7 @@ public class Program
         app.UseAuthorization();
 
         // Configure application routing endpoints
-        app.MapInsuranceMovementEndpoints();
+        app.MapPensionPlansEndpoints();
 
         app.Run();
     }

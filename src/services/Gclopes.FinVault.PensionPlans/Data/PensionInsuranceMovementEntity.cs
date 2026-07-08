@@ -1,9 +1,7 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
+﻿
 namespace Gclopes.FinVault.PensionPlans.Data
 {
-    public class InsuranceMovementEntity
+    public class PensionInsuranceMovementEntity
     {
         public Guid Id { get; set; }
 

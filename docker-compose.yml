@@ -36,6 +36,7 @@ services:
       - document-ingestion
       - investments-service
       - currentaccount-service
+      - pensionplans-service
     networks:
       - finvault-network
 
@@ -81,6 +82,7 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+
   finvault-oracle:
     image: gvenzl/oracle-free:latest
     container_name: finvault-oracle
@@ -132,7 +134,6 @@ services:
       - "7005:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-      # A LINHA ABAIXO ESTAVA EM FALTA
       ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_INVESTMENTS}
     networks:
       finvault-network:
@@ -153,7 +154,7 @@ services:
       - "7006:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-      ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_PPR}
+      ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_PENSIONPLANS}
     networks:
       finvault-network:
         aliases:

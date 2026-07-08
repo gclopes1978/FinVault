@@ -4,6 +4,7 @@ import json
 import pdfplumber
 # Assuming your PensionFundParser class is inside parsers/pension_fund.py
 from parsers.pension_fund import PensionFundParser
+from datetime import datetime, timezone
 
 def test_real_file():
     print("=" * 60)
@@ -12,6 +13,7 @@ def test_real_file():
 
     # Absolute path to your local PDF statement
     pdf_path = r"C:\Projects\FinVault\Data\uploads\AR_PPR.pdf"
+    output_path = r"C:\Projects\FinVault\Data\uploads\AR_PPR.txt"
     
     print(f"\n[INFO] Target file path: {pdf_path}")
 
@@ -31,7 +33,12 @@ def test_real_file():
             
         print("\n[SUCCESS] Document parsed completely without validation errors!")
         print("\n--- TARGET JSON PAYLOAD FOR THE SERVICE ---")
-        
+        with open(output_path, "w", encoding="utf-8") as f:
+            f.write(f"# Generated at: {datetime.now(timezone.utc).isoformat()}\n")
+            f.write(f"# Source PDF: {pdf_path}\n")
+            f.write(f"# Items found: {len(json_payload)}\n\n")
+            json.dump(json_payload, f, ensure_ascii=False, indent=2)
+            
         # Print the exact formatted JSON that would be sent to your FinVault frontend/service
         print(json.dumps(json_payload, indent=4, ensure_ascii=False))
         print("-" * 43)

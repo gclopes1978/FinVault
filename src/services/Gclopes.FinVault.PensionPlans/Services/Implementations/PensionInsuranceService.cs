@@ -8,9 +8,9 @@ namespace Gclopes.FinVault.PensionPlans.Services.Implementations;
 
 // Primary constructor injects the EF Core DbContext (same pattern used by
 // Gclopes.FinVault.CurrentAccount.Services.Implementations.MovementService).
-public class InsuranceMovementService(ApplicationDbContext context) : IInsuranceMovementService
+public class PensionInsuranceService(ApplicationDbContext context) : IPensionInsuranceService
 {
-    public async Task<ImportMovementsResponse> ImportMovementsAsync(IEnumerable<InsuranceMovementDto> movements)
+    public async Task<ImportPensionInsuranceMovementsResponse> ImportMovementsAsync(IEnumerable<PensionInsuranceMovementDto> movements)
     {
         var movementsList = movements.ToList();
 
@@ -22,7 +22,7 @@ public class InsuranceMovementService(ApplicationDbContext context) : IInsurance
         // repeat every month with different balances, so comparing Balance alongside Movement
         // and Date is enough to uniquely identify a real duplicate re-import without rejecting
         // two different months' closing entries.
-        var existingKeys = await context.InsuranceMovementEntity
+        var existingKeys = await context.PensionInsuranceMovement
             .Select(e => new { e.Movement, e.Date, e.Balance })
             .ToListAsync();
 
@@ -30,13 +30,13 @@ public class InsuranceMovementService(ApplicationDbContext context) : IInsurance
             .Select(e => (e.Movement, e.Date, e.Balance))
             .ToHashSet();
 
-        var entitiesToAdd = new List<InsuranceMovementEntity>();
+        var entitiesToAdd = new List<PensionInsuranceMovementEntity>();
 
         foreach (var dto in movementsList)
         {
             // Reject structurally invalid rows early instead of letting a bad record
             // corrupt the batch or blow up on SaveChangesAsync().
-            if (!InsuranceMovementValidator.IsValid(dto, out var errorMessage))
+            if (!PensionInsuranceMovementValidator.IsValid(dto, out var errorMessage))
             {
                 throw new InvalidOperationException($"Invalid movement '{dto.Movement}' on {dto.Date:yyyy-MM-dd}: {errorMessage}");
             }
@@ -48,7 +48,7 @@ public class InsuranceMovementService(ApplicationDbContext context) : IInsurance
                 continue;
             }
 
-            entitiesToAdd.Add(new InsuranceMovementEntity
+            entitiesToAdd.Add(new PensionInsuranceMovementEntity
             {
                 Id = Guid.NewGuid(),
                 Movement = dto.Movement,
@@ -68,20 +68,20 @@ public class InsuranceMovementService(ApplicationDbContext context) : IInsurance
 
         if (entitiesToAdd.Count > 0)
         {
-            context.InsuranceMovementEntity.AddRange(entitiesToAdd);
+            context.PensionInsuranceMovement.AddRange(entitiesToAdd);
             await context.SaveChangesAsync();
         }
 
-        return new ImportMovementsResponse(imported, skipped, DateTime.UtcNow);
+        return new ImportPensionInsuranceMovementsResponse(imported, skipped, DateTime.UtcNow);
     }
 
-    public async Task<IEnumerable<InsuranceMovementResponse>> GetAllMovementsAsync()
+    public async Task<IEnumerable<PensionInsuranceMovementResponse>> GetAllMovementsAsync()
     {
-        var movements = await context.InsuranceMovementEntity
+        var movements = await context.PensionInsuranceMovement
             .OrderBy(m => m.Date)
             .ToListAsync();
 
-        return movements.Select(m => new InsuranceMovementResponse(
+        return movements.Select(m => new PensionInsuranceMovementResponse(
             m.Id,
             m.Movement,
             m.Receipt,

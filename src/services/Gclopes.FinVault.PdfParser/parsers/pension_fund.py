@@ -32,22 +32,22 @@ class PensionFundParser:
             return Decimal(clean)
 
         quantity_dec = to_decimal(qty_str)
-        price_dec = to_decimal(price_str)
+        unitPrice_dec = to_decimal(price_str)
         valuation_dec = to_decimal(val_str)
         
         # Financial validation logic
-        expected_valuation = (quantity_dec * price_dec).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        expected_valuation = (quantity_dec * unitPrice_dec).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
         
         # We allow a small tolerance for rounding differences
         if quantity_dec > 0 and abs(expected_valuation - valuation_dec) > Decimal("0.05"):
             raise ValueError(
-                f"Validation failed: Qty({quantity_dec}) * Price({price_dec}) "
+                f"Validation failed: Qty({quantity_dec}) * Price({unitPrice_dec}) "
                 f"= {expected_valuation}, but Valuation in PDF is {valuation_dec}."
             )
 
         return {
             "date": date_str,
             "quantity": float(quantity_dec),
-            "price": float(price_dec),
+            "UnitPrice": float(unitPrice_dec),
             "valuation": float(valuation_dec)
         }
