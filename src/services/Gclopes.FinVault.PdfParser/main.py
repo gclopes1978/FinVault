@@ -1,6 +1,7 @@
 import os
 import io
 import json
+import uuid
 import asyncio
 import pdfplumber
 import httpx
@@ -17,10 +18,15 @@ class PDFProcessorService:
     def __init__(self, service_urls: dict):
         self.service_urls = service_urls
 
-    async def process_pdf(self, file_bytes: bytes, filename: str) -> dict:
+    async def process_pdf(self, file_bytes: bytes, filename: str, document_id: str | None = None) -> dict:
         if not filename.endswith('.pdf'):
             raise ValueError("Only PDF files are supported.")
-            
+
+        # Every processed PDF gets a stable identifier for the destination service to key off
+        # (used by PayrollAnalysis as an idempotency key against duplicate/retried deliveries).
+        # If the caller (RabbitMQ message) already carries one, reuse it instead of minting a new one.
+        source_document_id = document_id or str(uuid.uuid4())
+
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             first_page_text = pdf.pages[0].extract_text() or ""
             doc_type = DocumentClassifier.classify(first_page_text)
@@ -29,9 +35,9 @@ class PDFProcessorService:
                 raise ValueError("Document type could not be classified.")
                 
             payload = self._delegate_to_parser(doc_type, pdf)
-            await self._forward_to_dotnet_service(doc_type, payload)
+            await self._forward_to_dotnet_service(doc_type, payload, source_document_id)
             
-            return {"status": "success", "documentType": doc_type, "data": payload}
+            return {"status": "success", "documentType": doc_type, "sourceDocumentId": source_document_id, "data": payload}
 
     def _delegate_to_parser(self, doc_type: str, pdf: pdfplumber.PDF) -> dict:
         parsers = {
@@ -44,12 +50,21 @@ class PDFProcessorService:
             raise ValueError(f"Parser for {doc_type} not implemented.")
         return parsers[doc_type](pdf)
 
-    async def _forward_to_dotnet_service(self, doc_type: str, payload: dict):
+    def _build_forward_payload(self, doc_type: str, payload: dict, source_document_id: str):
+        # PayrollAnalysis expects the {"sourceDocumentId": ..., "data": [...]} envelope for
+        # idempotent ingestion. The other destinations (CurrentAccount, PPR) still expect their
+        # original, unwrapped shapes — changing those is a separate piece of work.
+        if doc_type == "payroll":
+            return {"sourceDocumentId": source_document_id, "data": payload}
+        return payload
+
+    async def _forward_to_dotnet_service(self, doc_type: str, payload: dict, source_document_id: str):
         target_url = self.service_urls.get(doc_type)
         if not target_url:
             raise Exception("Target URL configuration missing.")
+        forward_payload = self._build_forward_payload(doc_type, payload, source_document_id)
         async with httpx.AsyncClient() as client:
-            response = await client.post(target_url, json=payload, timeout=10.0)
+            response = await client.post(target_url, json=forward_payload, timeout=10.0)
             response.raise_for_status()
 
 # Configuration
@@ -77,7 +92,7 @@ async def consume_rabbitmq():
             async with message.process():
                 try:
                     data = json.loads(message.body)
-                    await processor.process_pdf(data["bytes"], data["filename"])
+                    await processor.process_pdf(data["bytes"], data["filename"], data.get("documentId"))
                 except Exception as e:
                     print(f"Error processing rabbit message: {e}")
 
