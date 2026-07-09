@@ -183,6 +183,33 @@ services:
         condition: service_healthy
     restart: on-failure
 
+pdf-parser-service:
+    container_name: finvault-pdf-parser
+    build:
+      context: ./src/services/Gclopes.FinVault.PdfParser
+      dockerfile: Dockerfile
+    # Set the network to enable communication with other microservices
+    networks:
+      finvault-network:
+        aliases:
+          - pdf-parser
+    ports:
+      - "7003:8080" # Maps local port 7003 to the .
+    environment:
+      # These variables will automatically pull values from your .env file
+      - CURRENTACCOUNT_SERVICE_URL=${CURRENTACCOUNT_SERVICE_URL}
+      - PAYROLL_SERVICE_URL=${PAYROLL_SERVICE_URL}
+      - PENSION_INSURANCE_SERVICE_URL=${PENSION_INSURANCE_SERVICE_URL}
+      - PENSION_FUND_SERVICE_URL=${PENSION_FUND_SERVICE_URL}
+      # URL for RabbitMQ if the parser uses an event-driven approach
+      - RABBITMQ_HOST=rabbitmq
+    depends_on:
+      - rabbitmq
+      - payroll-analysis
+      - currentaccount-api
+      - pension-plans-api
+    restart: unless-stopped
+
 volumes:
   rabbitmq_data:
   sqlserver_data:
