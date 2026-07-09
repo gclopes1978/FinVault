@@ -21,11 +21,13 @@ public static class PayrollEndpoints
         // GET /api/payroll-analysis/imports - Lists all imported payslips.
         group.MapGet("/imports", GetAllImportsAsync)
              .WithName("GetPayrollImports")
+             .RequireAuthorization()
              .WithOpenApi();
 
         // GET /api/payroll-analysis/imports/{sourceDocumentId} - Retrieves a specific import.
         group.MapGet("/imports/{sourceDocumentId:guid}", GetImportBySourceDocumentIdAsync)
              .WithName("GetPayrollImportBySourceDocument")
+             .RequireAuthorization()
              .WithOpenApi();
     }
 

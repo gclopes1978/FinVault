@@ -1,8 +1,6 @@
 import os
 import io
 import json
-import uuid
-import base64
 import asyncio
 import pdfplumber
 import httpx
@@ -15,19 +13,16 @@ from parsers.payroll import PayrollParser
 from parsers.pension_insurance import PensionInsuranceParser
 from parsers.pension_fund import PensionFundParser
 
+# Service logic encapsulated with Primary Constructor approach
 class PDFProcessorService:
     def __init__(self, service_urls: dict):
         self.service_urls = service_urls
 
-    async def process_pdf(self, file_bytes: bytes, filename: str, document_id: str | None = None) -> dict:
+    async def process_pdf(self, file_bytes: bytes, filename: str) -> dict:
+        """Core logic to process the PDF bytes."""
         if not filename.endswith('.pdf'):
             raise ValueError("Only PDF files are supported.")
-
-        # Every processed PDF gets a stable identifier for the destination service to key off
-        # (used by PayrollAnalysis as an idempotency key against duplicate/retried deliveries).
-        # If the caller (RabbitMQ message) already carries one, reuse it instead of minting a new one.
-        source_document_id = document_id or str(uuid.uuid4())
-
+            
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             first_page_text = pdf.pages[0].extract_text() or ""
             doc_type = DocumentClassifier.classify(first_page_text)
@@ -36,9 +31,9 @@ class PDFProcessorService:
                 raise ValueError("Document type could not be classified.")
                 
             payload = self._delegate_to_parser(doc_type, pdf)
-            await self._forward_to_dotnet_service(doc_type, payload, source_document_id)
+            await self._forward_to_dotnet_service(doc_type, payload)
             
-            return {"status": "success", "documentType": doc_type, "sourceDocumentId": source_document_id, "data": payload}
+            return {"status": "success", "documentType": doc_type, "data": payload}
 
     def _delegate_to_parser(self, doc_type: str, pdf: pdfplumber.PDF) -> dict:
         parsers = {
@@ -51,29 +46,20 @@ class PDFProcessorService:
             raise ValueError(f"Parser for {doc_type} not implemented.")
         return parsers[doc_type](pdf)
 
-    def _build_forward_payload(self, doc_type: str, payload: dict, source_document_id: str):
-        # PayrollAnalysis expects the {"sourceDocumentId": ..., "data": [...]} envelope for
-        # idempotent ingestion. The other destinations (CurrentAccount, PPR) still expect their
-        # original, unwrapped shapes — changing those is a separate piece of work.
-        if doc_type == "payroll":
-            return {"sourceDocumentId": source_document_id, "data": payload}
-        return payload
-
-    async def _forward_to_dotnet_service(self, doc_type: str, payload: dict, source_document_id: str):
+    async def _forward_to_dotnet_service(self, doc_type: str, payload: dict):
         target_url = self.service_urls.get(doc_type)
         if not target_url:
             raise Exception("Target URL configuration missing.")
-        forward_payload = self._build_forward_payload(doc_type, payload, source_document_id)
         async with httpx.AsyncClient() as client:
-            response = await client.post(target_url, json=forward_payload, timeout=10.0)
+            response = await client.post(target_url, json=payload, timeout=10.0)
             response.raise_for_status()
 
 # Configuration
 service_urls = {
     "bank_statement": os.getenv("CURRENTACCOUNT_SERVICE_URL"),
-    "payroll": os.getenv("FOLHASALARIAL_SERVICE_URL"),
-    "pension_insurance": os.getenv("PPR_SERVICE_URL"),
-    "pension_fund": os.getenv("PPR_SERVICE_URL"),
+    "payroll": os.getenv("PAYROLL_SERVICE_URL"),
+    "pension_insurance": os.getenv("PENSION_INSURANCE_SERVICE_URL"),
+    "pension_fund": os.getenv("PENSION_FUND_SERVICE_URL"),
 }
 
 processor = PDFProcessorService(service_urls)
@@ -93,17 +79,18 @@ async def consume_rabbitmq():
             async with message.process():
                 try:
                     data = json.loads(message.body)
-                    # DocumentController publishes the file content as base64 (RabbitMQ.Client
-                    # sends JSON text, not raw binary, on this queue).
-                    file_bytes = base64.b64decode(data["bytes"])
-                    await processor.process_pdf(file_bytes, data["filename"], data.get("documentId"))
+                    # Process message from queue
+                    await processor.process_pdf(
+                        bytes(data["bytes"], "utf-8") if isinstance(data["bytes"], str) else bytes(data["bytes"]), 
+                        data["filename"]
+                    )
                 except Exception as e:
                     print(f"Error processing rabbit message: {e}")
 
-# Lifespan handler replacing on_event
+# Lifespan handler
 @asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Startup: Start RabbitMQ consumer task
+async def lifespan(_: FastAPI):
+    # Startup: Start RabbitMQ consumer task if enabled
     task = None
     if os.getenv("ENABLE_RABBITMQ") == "true":
         task = asyncio.create_task(consume_rabbitmq())
@@ -116,6 +103,7 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="FinVault PDF Parser Hybrid Service", lifespan=lifespan)
 
+# HTTP Entry Point
 @app.post("/parse")
 async def parse_http(file: UploadFile = File(...)):
     try:

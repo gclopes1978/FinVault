@@ -45,16 +45,7 @@ builder.Services.AddDbContext<FinVaultInvestmentsDb>(options =>
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null);
     }));
-//builder.Services.AddDbContext<FinVaultInvestmentsDb>(options =>
-//    options.UseSqlServer(
-//        connectionString,
-//        sqlOptions =>
-//        {
-//            sqlOptions.EnableRetryOnFailure(
-//                maxRetryCount: 5,
-//                maxRetryDelay: TimeSpan.FromSeconds(30),
-//                errorNumbersToAdd: null);
-//        }));
+
 
 // Register services
 builder.Services.AddScoped<IInvestmentsService, InvestmentsService>();
