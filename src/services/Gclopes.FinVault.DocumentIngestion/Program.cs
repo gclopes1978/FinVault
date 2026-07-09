@@ -1,5 +1,6 @@
 using MassTransit;
 using Microsoft.OpenApi.Models;
+using Gclopes.FinVault.DocumentIngestion.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,11 @@ builder.Services.AddMassTransit(x =>
         cfg.ConfigureEndpoints(context);
     });
 });
+
+// Bridges uploaded documents into the raw queue the Python PdfParser consumes from.
+// Singleton: keeps a single AMQP connection/channel open for the app's lifetime instead of
+// reconnecting on every upload.
+builder.Services.AddSingleton<IPdfProcessingQueuePublisher, PdfProcessingQueuePublisher>();
 
 var app = builder.Build();
 

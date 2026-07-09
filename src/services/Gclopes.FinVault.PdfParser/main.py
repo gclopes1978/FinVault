@@ -2,6 +2,7 @@ import os
 import io
 import json
 import uuid
+import base64
 import asyncio
 import pdfplumber
 import httpx
@@ -92,7 +93,10 @@ async def consume_rabbitmq():
             async with message.process():
                 try:
                     data = json.loads(message.body)
-                    await processor.process_pdf(data["bytes"], data["filename"], data.get("documentId"))
+                    # DocumentController publishes the file content as base64 (RabbitMQ.Client
+                    # sends JSON text, not raw binary, on this queue).
+                    file_bytes = base64.b64decode(data["bytes"])
+                    await processor.process_pdf(file_bytes, data["filename"], data.get("documentId"))
                 except Exception as e:
                     print(f"Error processing rabbit message: {e}")
 
