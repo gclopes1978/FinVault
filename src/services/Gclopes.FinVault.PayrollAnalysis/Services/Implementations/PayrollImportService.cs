@@ -27,7 +27,7 @@ public class PayrollImportService(PayrollAnalysisDbContext context) : IPayrollIm
             Id = Guid.NewGuid(),
             SourceDocumentId = request.SourceDocumentId,
             ImportedAt = DateTime.UtcNow,
-            Items = request.Data.Select(item => new PayrollItem
+            Items = [.. request.Data.Select(item => new PayrollItem
             {
                 Id = Guid.NewGuid(),
                 Code = item.Code,
@@ -39,7 +39,7 @@ public class PayrollImportService(PayrollAnalysisDbContext context) : IPayrollIm
                 UnitValue = item.UnitValue,
                 Amount = item.Amount,
                 Type = item.Type
-            }).ToList()
+            })]
         };
 
         _context.PayrollImports.Add(import);
@@ -72,7 +72,7 @@ public class PayrollImportService(PayrollAnalysisDbContext context) : IPayrollIm
             import.Id,
             import.SourceDocumentId,
             import.ImportedAt,
-            import.Items.Select(item => new PayrollItemResponse(
+            [.. import.Items.Select(item => new PayrollItemResponse(
                 item.Id,
                 item.Code,
                 item.Field,
@@ -83,6 +83,6 @@ public class PayrollImportService(PayrollAnalysisDbContext context) : IPayrollIm
                 item.UnitValue,
                 item.Amount,
                 item.Type
-            )).ToList()
+            ))]
         );
 }

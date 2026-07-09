@@ -8,36 +8,65 @@ namespace Gclopes.FinVault.DocumentIngestion.Services;
 // MassTransit-published DocumentUploadedEvent to bridge it into the Python service, and the
 // PdfParser's aio_pika consumer expects a plain, un-enveloped JSON body
 // ({"documentId", "filename", "bytes"}) on a literal "pdf_processing_queue" queue — not a
-// MassTransit envelope. A single long-lived connection/channel is kept open for the lifetime of
-// the app (registered as a singleton) rather than reconnecting per upload.
-public class PdfProcessingQueuePublisher : IPdfProcessingQueuePublisher, IDisposable
+// MassTransit envelope. Connection/channel are created lazily on first publish (RabbitMQ.Client
+// 7.x's connection APIs are async, so they can't be opened in a constructor) and then reused.
+public class PdfProcessingQueuePublisher(IConfiguration configuration) : IPdfProcessingQueuePublisher, IAsyncDisposable
 {
     private const string QueueName = "pdf_processing_queue";
 
-    private readonly IConnection _connection;
-    private readonly IModel _channel;
+    private readonly IConfiguration _configuration = configuration;
+    private readonly SemaphoreSlim _initLock = new(1, 1);
 
-    public PdfProcessingQueuePublisher(IConfiguration configuration)
+    private IConnection? _connection;
+    private IChannel? _channel;
+
+    private async Task<IChannel> GetChannelAsync(CancellationToken cancellationToken)
     {
-        var factory = new ConnectionFactory
+        if (_channel is not null)
         {
-            HostName = configuration["RABBITMQ_HOST"] ?? "finvault-rabbitmq",
-            UserName = configuration["RABBITMQ_USER"]
-                ?? throw new InvalidOperationException("RABBITMQ_USER environment variable is missing."),
-            Password = configuration["RABBITMQ_PASS"]
-                ?? throw new InvalidOperationException("RABBITMQ_PASS environment variable is missing.")
-        };
+            return _channel;
+        }
 
-        _connection = factory.CreateConnection();
-        _channel = _connection.CreateModel();
+        await _initLock.WaitAsync(cancellationToken);
+        try
+        {
+            if (_channel is not null)
+            {
+                return _channel;
+            }
 
-        // Matches the queue.declare_queue("pdf_processing_queue") call on the Python side
-        // (default aio_pika arguments: durable=false, exclusive=false, auto_delete=false).
-        _channel.QueueDeclare(queue: QueueName, durable: false, exclusive: false, autoDelete: false);
+            var factory = new ConnectionFactory
+            {
+                HostName = _configuration["RABBITMQ_HOST"] ?? "finvault-rabbitmq",
+                UserName = _configuration["RABBITMQ_USER"]
+                    ?? throw new InvalidOperationException("RABBITMQ_USER environment variable is missing."),
+                Password = _configuration["RABBITMQ_PASS"]
+                    ?? throw new InvalidOperationException("RABBITMQ_PASS environment variable is missing.")
+            };
+
+            _connection = await factory.CreateConnectionAsync(cancellationToken);
+            _channel = await _connection.CreateChannelAsync(cancellationToken: cancellationToken);
+
+            // Matches queue.declare_queue("pdf_processing_queue") on the Python side.
+            await _channel.QueueDeclareAsync(
+                queue: QueueName,
+                durable: false,
+                exclusive: false,
+                autoDelete: false,
+                cancellationToken: cancellationToken);
+
+            return _channel;
+        }
+        finally
+        {
+            _initLock.Release();
+        }
     }
 
-    public Task PublishAsync(Guid documentId, string fileName, byte[] fileBytes, CancellationToken cancellationToken = default)
+    public async Task PublishAsync(Guid documentId, string fileName, byte[] fileBytes, CancellationToken cancellationToken = default)
     {
+        var channel = await GetChannelAsync(cancellationToken);
+
         var message = new
         {
             documentId = documentId.ToString(),
@@ -48,19 +77,31 @@ public class PdfProcessingQueuePublisher : IPdfProcessingQueuePublisher, IDispos
 
         var body = Encoding.UTF8.GetBytes(JsonSerializer.Serialize(message));
 
-        var properties = _channel.CreateBasicProperties();
-        properties.ContentType = "application/json";
-        properties.DeliveryMode = 2; // persistent
+        var properties = new BasicProperties
+        {
+            ContentType = "application/json",
+            DeliveryMode = DeliveryModes.Persistent
+        };
 
-        _channel.BasicPublish(exchange: string.Empty, routingKey: QueueName, basicProperties: properties, body: body);
-
-        return Task.CompletedTask;
+        await channel.BasicPublishAsync(
+            exchange: string.Empty,
+            routingKey: QueueName,
+            mandatory: false,
+            basicProperties: properties,
+            body: body,
+            cancellationToken: cancellationToken);
     }
 
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
-        _channel?.Close();
-        _connection?.Close();
+        if (_channel is not null)
+        {
+            await _channel.CloseAsync();
+        }
+        if (_connection is not null)
+        {
+            await _connection.CloseAsync();
+        }
         GC.SuppressFinalize(this);
     }
 }

@@ -173,7 +173,7 @@ services:
       - "7002:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-      ConnectionStrings__DefaultConnection: ${ORACLE_CONNECTION_FOLHASALARIAL}
+      ConnectionStrings__DefaultConnection: ${ORACLE_CONNECTION_PAYROLL}
     networks:
       finvault-network:
         aliases:

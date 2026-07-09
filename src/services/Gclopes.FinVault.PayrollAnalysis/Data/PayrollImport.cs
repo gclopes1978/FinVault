@@ -10,5 +10,5 @@ public class PayrollImport
 
     public DateTime ImportedAt { get; set; }
 
-    public ICollection<PayrollItem> Items { get; set; } = new List<PayrollItem>();
+    public ICollection<PayrollItem> Items { get; set; } = [];
 }

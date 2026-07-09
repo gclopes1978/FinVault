@@ -14,8 +14,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <!-- TODO: verify latest available version with `dotnet restore` — could not reach nuget.org from this sandbox -->
-    <PackageReference Include="Oracle.EntityFrameworkCore" Version="9.23.70" />
+    <PackageReference Include="Oracle.EntityFrameworkCore" Version="9.23.80" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
   </ItemGroup>
 
