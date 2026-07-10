@@ -76,37 +76,42 @@ processor = PDFProcessorService(service_urls)
 
 # RabbitMQ Consumer Logic
 async def consume_rabbitmq():
-    # Constructing URL from host to ensure compatibility with docker-compose
     rabbit_user = os.getenv("RABBITMQ_USER", "guest")
     rabbit_pass = os.getenv("RABBITMQ_PASS", "guest")
     rabbit_host = os.getenv("RABBITMQ_HOST", "finvault-rabbitmq")
     rabbit_port = os.getenv("RABBITMQ_PORT", "5672")
-
-    # String de conexão completa e segura
     rabbitmq_url = f"amqp://{rabbit_user}:{rabbit_pass}@{rabbit_host}:{rabbit_port}/"
-    
-    try:
-        connection = await aio_pika.connect_robust(rabbitmq_url)
-        channel = await connection.channel()
-        queue = await channel.declare_queue("pdf_processing_queue")
 
-        async with queue.iterator() as queue_iter:
-            async for message in queue_iter:
-                async with message.process():
-                    try:
-                        data = json.loads(message.body)
-                        # Decoding Base64 correctly from .NET publisher
-                        file_bytes = base64.b64decode(data["bytes"])
-                        
-                        await processor.process_pdf(
-                            file_bytes, 
-                            data["filename"],
-                            data["sourceDocumentId"]
-                        )
-                    except Exception as e:
-                        print(f"Error processing rabbit message: {e}")
-    except Exception as e:
-        print(f"RabbitMQ connection failed: {e}")
+    max_retries = 5
+    delay = 5  # seconds
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            connection = await aio_pika.connect_robust(rabbitmq_url)
+            break
+        except Exception as e:
+            print(f"[RabbitMQ] retry {attempt}/{max_retries} failed: {e}")
+            if attempt == max_retries:
+                print("[RabbitMQ] Gave up on connecting. The consumer will not start.")
+                return
+            await asyncio.sleep(delay)
+
+    channel = await connection.channel()
+    queue = await channel.declare_queue("pdf_processing_queue")
+
+    async with queue.iterator() as queue_iter:
+        async for message in queue_iter:
+            async with message.process():
+                try:
+                    data = json.loads(message.body)
+                    file_bytes = base64.b64decode(data["bytes"])
+                    await processor.process_pdf(
+                        file_bytes,
+                        data["filename"],
+                        data["sourceDocumentId"]
+                    )
+                except Exception as e:
+                    print(f"Error processing rabbit message: {e}")
 
 # Lifespan handler
 @asynccontextmanager
@@ -135,4 +140,4 @@ async def parse_http(file: UploadFile = File(...), sourceDocumentId: str = "manu
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=False)
