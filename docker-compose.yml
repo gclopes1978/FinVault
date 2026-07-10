@@ -210,11 +210,11 @@ services:
     depends_on:
       finvault-rabbitmq:
         condition: service_healthy
-      finvault-payrollanalysis:
+      payrollanalysis-service:
         condition: service_started
-      finvault-currentaccount:
+      currentaccount-service:
         condition: service_started
-      finvault-pensionplans:
+      pensionplans-service:
         condition: service_started
     restart: unless-stopped
 
