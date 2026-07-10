@@ -47,8 +47,9 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
@@ -183,7 +184,7 @@ services:
         condition: service_healthy
     restart: on-failure
 
-pdf-parser-service:
+  pdf-parser-service:
     container_name: finvault-pdf-parser
     build:
       context: ./src/services/Gclopes.FinVault.PdfParser
@@ -202,12 +203,14 @@ pdf-parser-service:
       - PENSION_INSURANCE_SERVICE_URL=${PENSION_INSURANCE_SERVICE_URL}
       - PENSION_FUND_SERVICE_URL=${PENSION_FUND_SERVICE_URL}
       # URL for RabbitMQ if the parser uses an event-driven approach
-      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
     depends_on:
-      - rabbitmq
-      - payroll-analysis
-      - currentaccount-api
-      - pension-plans-api
+      - finvault-rabbitmq
+      - payrollanalysis-service
+      - currentaccount-service
+      - pensionplans-service
     restart: unless-stopped
 
 volumes:

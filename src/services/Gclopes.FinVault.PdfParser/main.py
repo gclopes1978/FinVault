@@ -2,6 +2,8 @@ import os
 import io
 import json
 import asyncio
+import base64
+import uvicorn
 import pdfplumber
 import httpx
 from contextlib import asynccontextmanager
@@ -18,8 +20,8 @@ class PDFProcessorService:
     def __init__(self, service_urls: dict):
         self.service_urls = service_urls
 
-    async def process_pdf(self, file_bytes: bytes, filename: str) -> dict:
-        """Core logic to process the PDF bytes."""
+    async def process_pdf(self, file_bytes: bytes, filename: str, source_document_id: str) -> dict:
+        """Core logic to process the PDF bytes and forward to .NET services."""
         if not filename.endswith('.pdf'):
             raise ValueError("Only PDF files are supported.")
             
@@ -31,9 +33,16 @@ class PDFProcessorService:
                 raise ValueError("Document type could not be classified.")
                 
             payload = self._delegate_to_parser(doc_type, pdf)
-            await self._forward_to_dotnet_service(doc_type, payload)
             
-            return {"status": "success", "documentType": doc_type, "data": payload}
+            # Constructing the exact envelope required by .NET 9.0 services
+            envelope = {
+                "sourceDocumentId": source_document_id,
+                "data": payload
+            }
+            
+            await self._forward_to_dotnet_service(doc_type, envelope)
+            
+            return {"status": "success", "documentType": doc_type, "data": envelope}
 
     def _delegate_to_parser(self, doc_type: str, pdf: pdfplumber.PDF) -> dict:
         parsers = {
@@ -49,9 +58,10 @@ class PDFProcessorService:
     async def _forward_to_dotnet_service(self, doc_type: str, payload: dict):
         target_url = self.service_urls.get(doc_type)
         if not target_url:
-            raise Exception("Target URL configuration missing.")
+            raise Exception(f"Target URL for {doc_type} configuration missing.")
+        
         async with httpx.AsyncClient() as client:
-            response = await client.post(target_url, json=payload, timeout=10.0)
+            response = await client.post(target_url, json=payload, timeout=30.0)
             response.raise_for_status()
 
 # Configuration
@@ -66,36 +76,42 @@ processor = PDFProcessorService(service_urls)
 
 # RabbitMQ Consumer Logic
 async def consume_rabbitmq():
-    rabbitmq_url = os.getenv("RABBITMQ_URL")
-    if not rabbitmq_url:
-        return
-        
-    connection = await aio_pika.connect_robust(rabbitmq_url)
-    channel = await connection.channel()
-    queue = await channel.declare_queue("pdf_processing_queue")
+    # Constructing URL from host to ensure compatibility with docker-compose
+    rabbit_host = os.getenv("RABBITMQ_HOST", "localhost")
+    rabbitmq_url = f"amqp://guest:guest@{rabbit_host}/"
+    
+    try:
+        connection = await aio_pika.connect_robust(rabbitmq_url)
+        channel = await connection.channel()
+        queue = await channel.declare_queue("pdf_processing_queue")
 
-    async with queue.iterator() as queue_iter:
-        async for message in queue_iter:
-            async with message.process():
-                try:
-                    data = json.loads(message.body)
-                    # Process message from queue
-                    await processor.process_pdf(
-                        bytes(data["bytes"], "utf-8") if isinstance(data["bytes"], str) else bytes(data["bytes"]), 
-                        data["filename"]
-                    )
-                except Exception as e:
-                    print(f"Error processing rabbit message: {e}")
+        async with queue.iterator() as queue_iter:
+            async for message in queue_iter:
+                async with message.process():
+                    try:
+                        data = json.loads(message.body)
+                        # Decoding Base64 correctly from .NET publisher
+                        file_bytes = base64.b64decode(data["bytes"])
+                        
+                        await processor.process_pdf(
+                            file_bytes, 
+                            data["filename"],
+                            data["sourceDocumentId"]
+                        )
+                    except Exception as e:
+                        print(f"Error processing rabbit message: {e}")
+    except Exception as e:
+        print(f"RabbitMQ connection failed: {e}")
 
 # Lifespan handler
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    # Startup: Start RabbitMQ consumer task if enabled
+    # Startup: Start RabbitMQ consumer task
     task = None
-    if os.getenv("ENABLE_RABBITMQ") == "true":
+    if os.getenv("ENABLE_RABBITMQ", "false").lower() == "true":
         task = asyncio.create_task(consume_rabbitmq())
         
-    yield # App is running
+    yield 
     
     # Shutdown: Clean up task
     if task:
@@ -105,10 +121,13 @@ app = FastAPI(title="FinVault PDF Parser Hybrid Service", lifespan=lifespan)
 
 # HTTP Entry Point
 @app.post("/parse")
-async def parse_http(file: UploadFile = File(...)):
+async def parse_http(file: UploadFile = File(...), sourceDocumentId: str = "manual-upload"):
     try:
         content = await file.read()
-        result = await processor.process_pdf(content, file.filename)
+        result = await processor.process_pdf(content, file.filename, sourceDocumentId)
         return result
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+if __name__ == "__main__":
+    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=True)
