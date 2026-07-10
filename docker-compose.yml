@@ -197,6 +197,7 @@ services:
     ports:
       - "7003:8080" # Maps local port 7003 to the .
     environment:
+      - ENABLE_RABBITMQ=${RABBITMQ_ENABLED}
       # These variables will automatically pull values from your .env file
       - CURRENTACCOUNT_SERVICE_URL=${CURRENTACCOUNT_SERVICE_URL}
       - PAYROLL_SERVICE_URL=${PAYROLL_SERVICE_URL}
@@ -207,10 +208,14 @@ services:
       - RABBITMQ_USER=${RABBITMQ_USER}
       - RABBITMQ_PASS=${RABBITMQ_PASS}
     depends_on:
-      - finvault-rabbitmq
-      - payrollanalysis-service
-      - currentaccount-service
-      - pensionplans-service
+      finvault-rabbitmq:
+        condition: service_healthy
+      finvault-payrollanalysis:
+        condition: service_started
+      finvault-currentaccount:
+        condition: service_started
+      finvault-pensionplans:
+        condition: service_started
     restart: unless-stopped
 
 volumes:
