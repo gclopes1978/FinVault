@@ -77,8 +77,13 @@ processor = PDFProcessorService(service_urls)
 # RabbitMQ Consumer Logic
 async def consume_rabbitmq():
     # Constructing URL from host to ensure compatibility with docker-compose
-    rabbit_host = os.getenv("RABBITMQ_HOST", "localhost")
-    rabbitmq_url = f"amqp://guest:guest@{rabbit_host}/"
+    rabbit_user = os.getenv("RABBITMQ_USER", "guest")
+    rabbit_pass = os.getenv("RABBITMQ_PASS", "guest")
+    rabbit_host = os.getenv("RABBITMQ_HOST", "finvault-rabbitmq")
+    rabbit_port = os.getenv("RABBITMQ_PORT", "5672")
+
+    # String de conexão completa e segura
+    rabbitmq_url = f"amqp://{rabbit_user}:{rabbit_pass}@{rabbit_host}:{rabbit_port}/"
     
     try:
         connection = await aio_pika.connect_robust(rabbitmq_url)
