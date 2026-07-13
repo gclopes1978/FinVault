@@ -3,7 +3,6 @@ import io
 import json
 import asyncio
 import base64
-import uvicorn
 import pdfplumber
 import httpx
 from contextlib import asynccontextmanager
@@ -15,13 +14,11 @@ from parsers.payroll import PayrollParser
 from parsers.pension_insurance import PensionInsuranceParser
 from parsers.pension_fund import PensionFundParser
 
-# Service logic encapsulated with Primary Constructor approach
 class PDFProcessorService:
     def __init__(self, service_urls: dict):
         self.service_urls = service_urls
 
     async def process_pdf(self, file_bytes: bytes, filename: str, source_document_id: str) -> dict:
-        """Core logic to process the PDF bytes and forward to .NET services."""
         if not filename.endswith('.pdf'):
             raise ValueError("Only PDF files are supported.")
             
@@ -33,15 +30,8 @@ class PDFProcessorService:
                 raise ValueError("Document type could not be classified.")
                 
             payload = self._delegate_to_parser(doc_type, pdf)
-            
-            # Constructing the exact envelope required by .NET 9.0 services
-            envelope = {
-                "sourceDocumentId": source_document_id,
-                "data": payload
-            }
-            
+            envelope = {"sourceDocumentId": source_document_id, "data": payload}
             await self._forward_to_dotnet_service(doc_type, envelope)
-            
             return {"status": "success", "documentType": doc_type, "data": envelope}
 
     def _delegate_to_parser(self, doc_type: str, pdf: pdfplumber.PDF) -> dict:
@@ -65,79 +55,75 @@ class PDFProcessorService:
             response.raise_for_status()
 
 # Configuration
-service_urls = {
+processor = PDFProcessorService({
     "bank_statement": os.getenv("CURRENTACCOUNT_SERVICE_URL"),
     "payroll": os.getenv("PAYROLL_SERVICE_URL"),
     "pension_insurance": os.getenv("PENSION_INSURANCE_SERVICE_URL"),
     "pension_fund": os.getenv("PENSION_FUND_SERVICE_URL"),
-}
+})
 
-processor = PDFProcessorService(service_urls)
-
-# RabbitMQ Consumer Logic
 async def consume_rabbitmq():
+    rabbit_host = os.getenv("RABBITMQ_HOST", "finvault-rabbitmq")
     rabbit_user = os.getenv("RABBITMQ_USER", "guest")
     rabbit_pass = os.getenv("RABBITMQ_PASS", "guest")
-    rabbit_host = os.getenv("RABBITMQ_HOST", "finvault-rabbitmq")
-    rabbit_port = os.getenv("RABBITMQ_PORT", "5672")
-    rabbitmq_url = f"amqp://{rabbit_user}:{rabbit_pass}@{rabbit_host}:{rabbit_port}/"
+    rabbit_port = int(os.getenv("RABBITMQ_PORT", 5672))
 
-    max_retries = 5
-    delay = 5  # seconds
-
-    for attempt in range(1, max_retries + 1):
+    print(f"[RabbitMQ] Attempting to connect to {rabbit_host}:{rabbit_port}...")
+    
+    for attempt in range(1, 11):
         try:
-            connection = await aio_pika.connect_robust(rabbitmq_url)
+            # Using parameter-based connection for maximum stability
+            connection = await aio_pika.connect_robust(
+                host=rabbit_host,
+                port=rabbit_port,
+                login=rabbit_user,
+                password=rabbit_pass,
+                virtualhost="/"
+            )
+            print("[RabbitMQ] Connection established successfully!")
+            
+            channel = await connection.channel()
+            queue = await channel.declare_queue("pdf_processing_queue", durable=True)
+            
+            async with queue.iterator() as queue_iter:
+                async for message in queue_iter:
+                    async with message.process():
+                        try:
+                            data = json.loads(message.body)
+                            await processor.process_pdf(
+                                base64.b64decode(data["bytes"]),
+                                data["filename"],
+                                data["sourceDocumentId"]
+                            )
+                        except Exception as e:
+                            print(f"Error processing message: {e}")
             break
         except Exception as e:
-            print(f"[RabbitMQ] retry {attempt}/{max_retries} failed: {e}")
-            if attempt == max_retries:
-                print("[RabbitMQ] Gave up on connecting. The consumer will not start.")
-                return
-            await asyncio.sleep(delay)
+            print(f"[RabbitMQ] Attempt {attempt} failed: {e}")
+            await asyncio.sleep(10)
 
-    channel = await connection.channel()
-    queue = await channel.declare_queue("pdf_processing_queue")
-
-    async with queue.iterator() as queue_iter:
-        async for message in queue_iter:
-            async with message.process():
-                try:
-                    data = json.loads(message.body)
-                    file_bytes = base64.b64decode(data["bytes"])
-                    await processor.process_pdf(
-                        file_bytes,
-                        data["filename"],
-                        data["sourceDocumentId"]
-                    )
-                except Exception as e:
-                    print(f"Error processing rabbit message: {e}")
-
-# Lifespan handler
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    # Startup: Start RabbitMQ consumer task
+    print("--- LIFESPAN STARTUP ---")
+    enabled = os.getenv("RABBITMQ_ENABLED", "false").lower()
     task = None
-    if os.getenv("ENABLE_RABBITMQ", "false").lower() == "true":
+    
+    if enabled == "true":
         task = asyncio.create_task(consume_rabbitmq())
+    else:
+        print("--- RABBITMQ IS DISABLED ---")
         
     yield 
     
-    # Shutdown: Clean up task
     if task:
         task.cancel()
 
-app = FastAPI(title="FinVault PDF Parser Hybrid Service", lifespan=lifespan)
+app = FastAPI(title="FinVault PDF Parser", lifespan=lifespan)
 
-# HTTP Entry Point
 @app.post("/parse")
 async def parse_http(file: UploadFile = File(...), sourceDocumentId: str = "manual-upload"):
     try:
         content = await file.read()
-        result = await processor.process_pdf(content, file.filename, sourceDocumentId)
-        return result
+        return await processor.process_pdf(content, file.filename, sourceDocumentId)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
-
-if __name__ == "__main__":
-    uvicorn.run("main:app", host="0.0.0.0", port=8080, reload=False)
+        raise HTTPException(status_code=400, detail=str(e))

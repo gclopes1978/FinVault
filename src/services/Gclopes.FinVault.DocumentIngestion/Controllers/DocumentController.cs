@@ -6,7 +6,7 @@ using Gclopes.FinVault.DocumentIngestion.Services;
 namespace Gclopes.FinVault.DocumentIngestion.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/document")]
 public class DocumentController(
     IPublishEndpoint publishEndpoint,
     IPdfProcessingQueuePublisher pdfProcessingQueuePublisher,

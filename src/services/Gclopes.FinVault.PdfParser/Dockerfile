@@ -25,4 +25,4 @@ EXPOSE 8080
 
 # Define the command to start the service using Uvicorn
 # This keeps the process running and ensures the app is served correctly
-CMD ["python", "main.py"]
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8080"]
