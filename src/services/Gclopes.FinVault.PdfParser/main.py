@@ -24,6 +24,7 @@ class PDFProcessorService:
             
         with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
             first_page_text = pdf.pages[0].extract_text() or ""
+            print(f"[PDFProcessor] Extracted text from first page of {filename}: {first_page_text[:100]}...")  # Log first 100 chars
             doc_type = DocumentClassifier.classify(first_page_text)
             
             if doc_type == "unknown":
@@ -31,7 +32,8 @@ class PDFProcessorService:
                 
             payload = self._delegate_to_parser(doc_type, pdf)
             envelope = {"sourceDocumentId": source_document_id, "data": payload}
-            await self._forward_to_dotnet_service(doc_type, envelope)
+            print(f"payload--> {payload}")
+            await self._forward_to_dotnet_service(doc_type, payload)
             return {"status": "success", "documentType": doc_type, "data": envelope}
 
     def _delegate_to_parser(self, doc_type: str, pdf: pdfplumber.PDF) -> dict:

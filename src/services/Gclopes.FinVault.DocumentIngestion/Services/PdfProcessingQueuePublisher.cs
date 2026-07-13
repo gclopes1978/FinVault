@@ -50,9 +50,10 @@ public class PdfProcessingQueuePublisher(IConfiguration configuration) : IPdfPro
             // Matches queue.declare_queue("pdf_processing_queue") on the Python side.
             await _channel.QueueDeclareAsync(
                 queue: QueueName,
-                durable: false,
+                durable: true,
                 exclusive: false,
                 autoDelete: false,
+                arguments: null,
                 cancellationToken: cancellationToken);
 
             return _channel;
@@ -69,7 +70,7 @@ public class PdfProcessingQueuePublisher(IConfiguration configuration) : IPdfPro
 
         var message = new
         {
-            documentId = documentId.ToString(),
+            sourceDocumentId = documentId.ToString(),
             filename = fileName,
             // The Python consumer base64-decodes this field before opening it with pdfplumber.
             bytes = Convert.ToBase64String(fileBytes)

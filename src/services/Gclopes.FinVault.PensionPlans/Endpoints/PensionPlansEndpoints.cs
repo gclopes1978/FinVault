@@ -11,21 +11,20 @@ public static class PensionPlansEndpoints
         // the pension plan statement to the logged-in owner), so it stays behind the JWT
         // bearer authentication configured in Program.cs.
         var movements = app.MapGroup("/api/pension-plans/movements")
-                           .RequireAuthorization()
-                           .WithOpenApi();
+                   .WithOpenApi();
 
-        // Mapping GET endpoints using a common local function
-        // This removes the need for two separate private methods for GETs
         static async Task<IResult> GetAllMovements<T>(Func<Task<IEnumerable<T>>> serviceCall)
             => Results.Ok(await serviceCall());
 
         movements.MapGet("/funds", (IPensionFundService s) => GetAllMovements(s.GetAllMovementsAsync))
              .WithName("GetPensionFundMovements")
-             .WithTags("PensionFundMovements");
+             .WithTags("PensionFundMovements")
+             .RequireAuthorization();
 
         movements.MapGet("/insurance", (IPensionInsuranceService s) => GetAllMovements(s.GetAllMovementsAsync))
              .WithName("GetPensionInsuranceMovements")
-             .WithTags("PensionInsuranceMovements");
+             .WithTags("PensionInsuranceMovements")
+             .RequireAuthorization();
 
         movements.MapPost("/funds", ImportFundMovementsAsync)
                  .WithName("ImportPensionFundMovements")

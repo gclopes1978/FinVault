@@ -14,6 +14,7 @@ def test_real_file():
     # Absolute path to your local PDF statement
     pdf_path = r"C:\Projects\FinVault\Data\uploads\AR_PPR.pdf"
     output_path = r"C:\Projects\FinVault\Data\uploads\AR_PPR.txt"
+    raw_txt_path = r"C:\Projects\FinVault\Data\uploads\AR_PPR_raw.txt"
     
     print(f"\n[INFO] Target file path: {pdf_path}")
 
@@ -28,9 +29,12 @@ def test_real_file():
     # 2. Open the real PDF file and execute the parser
     try:
         with pdfplumber.open(pdf_path) as pdf:
-            print("[INFO] Extracting text and validating mathematical consistency...")
-            json_payload = PensionFundParser.parse(pdf)
-            
+            full_text = ""
+            for page in pdf.pages:
+                full_text += page.extract_text()
+        with open(raw_txt_path, "w", encoding="utf-8") as raw_file:
+                raw_file.write(full_text)
+        json_payload = PensionFundParser.parse(pdf)
         print("\n[SUCCESS] Document parsed completely without validation errors!")
         print("\n--- TARGET JSON PAYLOAD FOR THE SERVICE ---")
         with open(output_path, "w", encoding="utf-8") as f:

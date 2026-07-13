@@ -5,20 +5,22 @@ class DocumentClassifier:
     
     @staticmethod
     def classify(text: str) -> str:
-        # 1. Check for Bank Statement (ActivoBank)
-        if "ActivoBank" in text and "Extrato" in text:
+        text_lower = text.lower()
+        print(f"[DocumentClassifier] Classifying document based on text: {text_lower}...")  
+        # 1. Check for Bank Statement (activobank)
+        if "activobank" in text_lower and "extrato" in text_lower:
             return "bank_statement"
         
         # 2. Check for Payroll / Payslip
-        if "Recibo de Vencimento" in text and re.search(r"NIF:\s*\d{9}", text):
+        if "recibo vencimento" in text_lower or "recibo de vencimento" in text_lower:
             return "payroll"
             
         # 3. Check for Lusitânia Vida (Pension Insurance)
-        if "Lusitania Vida" in text and "PPR" in text:
+        if "movimento recibo data movimento débito crédito saldo" in text_lower:
             return "pension_insurance"
             
         # 4. Check for AR PPR Banco Invest (Pension Fund)
-        if "PLANOS DE POUPANÇA - AR PPR" in text:
+        if "bancoinvest" in text:
             return "pension_fund"
             
         return "unknown"

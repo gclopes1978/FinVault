@@ -12,17 +12,18 @@ public static class MovementEndpoints
     public static void MapMovementEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/movements")
-                       .WithTags("Movements")
-                       .RequireAuthorization();
+                       .WithTags("Movements");
 
         // Dentro do teu MapMovementEndpoints...
         group.MapPatch("/{id}/note", UpdateMovementNoteAsync)
              .WithName("UpdateMovementNote")
+             .RequireAuthorization()
              .WithOpenApi();
 
         // GET /api/movements - Retrieve all financial movements using the service layer
         group.MapGet("/", GetMovementsAsync)
              .WithName("GetMovements")
+             .RequireAuthorization()
              .WithOpenApi();
 
         group.MapPost("/", async (BankStatementPayloadDto request, IMovementService service, ClaimsPrincipal user) =>

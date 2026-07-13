@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 def run_test():
     file_path = r"C:\Projects\FinVault\Data\uploads\LUSITANIA_PPR.pdf" # Ajusta o nome do ficheiro
     output_path = r"C:\Projects\FinVault\Data\uploads\LUSITANIA_PPR.txt"
+    raw_txt_path = r"C:\Projects\FinVault\Data\uploads\AR_PPR_raw.txt"
     print("=" * 60)
     print(" FINVAULT - INTEGRATION TEST: INSURANCE PENSION PARSER ")
     print("=" * 60)
@@ -18,7 +19,11 @@ def run_test():
     try:
         with pdfplumber.open(file_path) as pdf:
             result = PensionInsuranceParser.parse(pdf)
-            
+            full_text = ""
+            for page in pdf.pages:
+                full_text += page.extract_text()
+        with open(raw_txt_path, "w", encoding="utf-8") as raw_file:
+                raw_file.write(full_text)    
         print("[SUCCESS] Document parsed successfully!")
         print("\n--- TARGET JSON PAYLOAD ---")
         import json

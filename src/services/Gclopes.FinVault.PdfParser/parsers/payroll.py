@@ -219,15 +219,15 @@ class PayrollParser:
                     extracted["rate"] = None
 
                 items.append({
-                    "code": code,
-                    "field": config["OutputField"],
-                    "description": extracted.get("description"),
-                    "date": extracted["date"],
-                    "quantity": extracted["quantity"],
-                    "rate": extracted["rate"],
-                    "unitValue": extracted["unitValue"],
-                    "amount": extracted["amount"],
-                    "type": "abono" if config["Abono"] else "desconto",
+                    "Code": code,
+                    "Field": config["OutputField"],
+                    "Description": extracted.get("description"),
+                    "ReferenceMonth": extracted["date"],
+                    "Quantity": extracted["quantity"],
+                    "Rate": extracted["rate"],
+                    "UnitValue": extracted["unitValue"],
+                    "Amount": extracted["amount"],
+                    "Type": "abono" if config["Abono"] else "desconto",
                 })
 
         return items

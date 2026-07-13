@@ -46,8 +46,8 @@ class PensionFundParser:
             )
 
         return {
-            "date": date_str,
-            "quantity": float(quantity_dec),
+            "Date": date_str,
+            "Quantity": float(quantity_dec),
             "UnitPrice": float(unitPrice_dec),
-            "valuation": float(valuation_dec)
+            "Valuation": float(valuation_dec)
         }
