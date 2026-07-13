@@ -32,8 +32,10 @@ class PDFProcessorService:
                 
             payload = self._delegate_to_parser(doc_type, pdf)
             envelope = {"sourceDocumentId": source_document_id, "data": payload}
-            print(f"payload--> {payload}")
-            await self._forward_to_dotnet_service(doc_type, payload)
+            print(f"envelope--> {envelope}")
+            # The downstream .NET services expect the full envelope
+            # ({ sourceDocumentId, data }), not the bare parser payload.
+            await self._forward_to_dotnet_service(doc_type, envelope)
             return {"status": "success", "documentType": doc_type, "data": envelope}
 
     def _delegate_to_parser(self, doc_type: str, pdf: pdfplumber.PDF) -> dict:

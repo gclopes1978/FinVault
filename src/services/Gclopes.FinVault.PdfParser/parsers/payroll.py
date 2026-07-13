@@ -222,7 +222,10 @@ class PayrollParser:
                     "Code": code,
                     "Field": config["OutputField"],
                     "Description": extracted.get("description"),
-                    "ReferenceMonth": extracted["date"],
+                    # Field must be named "Date" (not "ReferenceMonth") to match the
+                    # PayrollAnalysis service's PayrollItemRequest contract, which maps
+                    # this incoming "Date" onto its own internal ReferenceMonth column.
+                    "Date": extracted["date"],
                     "Quantity": extracted["quantity"],
                     "Rate": extracted["rate"],
                     "UnitValue": extracted["unitValue"],
