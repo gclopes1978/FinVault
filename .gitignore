@@ -8,3 +8,13 @@
 **/__pycache__/
 **/.venv/
 
+# Pasta de dados e logs
+Data/
+docker-compose.log
+logs_*.txt
+
+# Configurações de frontend
+src/frontend/.vscode/
+
+# Ignorar ficheiros específicos de utilizador
+*.user
