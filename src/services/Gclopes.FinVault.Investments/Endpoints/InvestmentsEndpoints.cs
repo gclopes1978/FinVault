@@ -8,6 +8,7 @@ public static class InvestmentsEndpoints
     {
         var group = app.MapGroup("/api/investments")
             .WithName("Investments")
+            .RequireAuthorization()
             .WithOpenApi();
 
         group.MapPost("/import/xtb", ImportXtbAsync)

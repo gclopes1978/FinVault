@@ -96,6 +96,24 @@ namespace Gclopes.FinVault.CurrentAccount.Data.Migrations
 
                     b.ToTable("AuditLogs");
                 });
+            modelBuilder.Entity("Gclopes.FinVault.CurrentAccount.Models.BankStatement", b =>
+            {
+                b.Property<Guid>("Id")
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("uniqueidentifier");
+
+                b.Property<decimal>("InitialBalance")
+                    .HasPrecision(18, 2)
+                    .HasColumnType("decimal(18,2)");
+
+                b.Property<decimal>("FinalBalance")
+                    .HasPrecision(18, 2)
+                    .HasColumnType("decimal(18,2)");
+
+                b.HasKey("Id");
+
+                b.ToTable("BankStatements");
+            });
 #pragma warning restore 612, 618
         }
     }

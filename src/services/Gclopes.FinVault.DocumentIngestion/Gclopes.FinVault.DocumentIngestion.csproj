@@ -12,7 +12,13 @@
 	<ItemGroup>
 		<PackageReference Include="MassTransit.RabbitMQ" Version="8.3.7" />
 		<PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.17" />
+		<PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.17" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.22.1" />
+		<!-- Used directly (not via MassTransit) to publish onto pdf_processing_queue, the plain
+		     queue the Python PdfParser consumes from. TODO: verify version against MassTransit.RabbitMQ
+		     8.3.7's transitive dependency to avoid a version conflict — could not run `dotnet restore`
+		     from this sandbox (no NuGet access). -->
+		<PackageReference Include="RabbitMQ.Client" Version="7.2.1" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
 	</ItemGroup>
     <ItemGroup>

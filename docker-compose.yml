@@ -10,6 +10,8 @@ services:
           memory: 512M
     ports:
       - "7050:8080" # Maps local port 7050 to the .NET 9 container port 8080
+    env_file:
+      - .env  # Isto força o Docker a ler este ficheiro para este serviço
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - RABBITMQ_USER=${RABBITMQ_USER}
@@ -30,10 +32,15 @@ services:
     container_name: finvault-gateway
     ports:
       - "5000:8080" # Maps public port 5000 to Gateway's .NET 9 port 8080
+    env_file:
+      - .env  # Isto força o Docker a ler este ficheiro para este serviço
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
     depends_on:
       - document-ingestion
+      - investments-service
+      - currentaccount-service
+      - pensionplans-service
     networks:
       - finvault-network
 
@@ -44,20 +51,22 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
-      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASS}
+    command: >
+      sh -c "echo 'vm_memory_high_watermark.relative = 0.99' > /etc/rabbitmq/rabbitmq.conf &&
+             echo 'disk_free_limit.absolute = 50MB' >> /etc/rabbitmq/rabbitmq.conf &&
+             echo 'listeners.tcp.default = 5672' >> /etc/rabbitmq/rabbitmq.conf &&
+             rabbitmq-server"
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
-      finvault-network:
-        aliases:
-          - rabbitmq-host
+      - finvault-network
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: ["CMD", "rabbitmq-diagnostics", "check_port_connectivity"]
       interval: 10s
       timeout: 5s
       retries: 5
-      start_period: 20s
 
   finvault-sqlserver:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -79,11 +88,14 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+
   finvault-oracle:
     image: gvenzl/oracle-free:latest
     container_name: finvault-oracle
     ports:
       - "1521:1521"
+    env_file:
+      - .env  # Isto força o Docker a ler este ficheiro para este serviço
     environment:
       ORACLE_PASSWORD: ${ORACLE_PASSWORD}
       APP_USER: ${ORACLE_APP_USER}
@@ -109,6 +121,8 @@ services:
       dockerfile: src/services/Gclopes.FinVault.CurrentAccount/Dockerfile
     ports:
       - "7001:8080"
+    env_file:
+      - .env  # Isto força o Docker a ler este ficheiro para este serviço
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
       ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_CURRENTACCOUNT}
@@ -128,9 +142,10 @@ services:
       dockerfile: src/services/Gclopes.FinVault.Investments/Dockerfile
     ports:
       - "7005:8080"
+    env_file:
+      - .env  # Isto força o Docker a ler este ficheiro para este serviço
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-      # A LINHA ABAIXO ESTAVA EM FALTA
       ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_INVESTMENTS}
     networks:
       finvault-network:
@@ -140,6 +155,73 @@ services:
       finvault-sqlserver:
         condition: service_healthy
     restart: on-failure
+
+  pensionplans-service:
+    image: finvault-pensionplans:latest
+    container_name: finvault-pensionplans-api
+    build:
+      context: .
+      dockerfile: src/services/Gclopes.FinVault.PensionPlans/Dockerfile
+    ports:
+      - "7006:8080"
+    env_file:
+      - .env  # Isto força o Docker a ler este ficheiro para este serviço
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_PENSIONPLANS}
+    networks:
+      finvault-network:
+        aliases:
+          - pensionplans-api
+    depends_on:
+      finvault-sqlserver:
+        condition: service_healthy
+    restart: on-failure
+
+  payrollanalysis-service:
+    container_name: finvault-payrollanalysis-api
+    build:
+      context: .
+      dockerfile: src/services/Gclopes.FinVault.PayrollAnalysis/Dockerfile
+    ports:
+      - "7002:8080"
+    env_file:
+      - .env  # Isto força o Docker a ler este ficheiro para este serviço
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ConnectionStrings__DefaultConnection: ${ORACLE_CONNECTION_PAYROLL}
+    networks:
+      finvault-network:
+        aliases:
+          - payrollanalysis-api
+    depends_on:
+      finvault-oracle:
+        condition: service_healthy
+    restart: on-failure
+
+  pdf-parser-service:
+    container_name: finvault-pdf-parser
+    build:
+      context: ./src/services/Gclopes.FinVault.PdfParser
+      dockerfile: Dockerfile
+    networks:
+      finvault-network:
+        aliases:
+          - pdf-parser
+    ports:
+      - "7003:8080"
+    env_file:
+      - .env
+    environment:
+      - RABBITMQ_ENABLED=${RABBITMQ_ENABLED}
+      - RABBITMQ_HOST=${RABBITMQ_HOST}
+      - RABBITMQ_USER=${RABBITMQ_USER}
+      - RABBITMQ_PASS=${RABBITMQ_PASS}
+      - RABBITMQ_PORT=${RABBITMQ_PORT}
+    depends_on:
+      finvault-rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
 
 volumes:
   rabbitmq_data:

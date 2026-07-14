@@ -45,16 +45,7 @@ builder.Services.AddDbContext<FinVaultInvestmentsDb>(options =>
             maxRetryDelay: TimeSpan.FromSeconds(30),
             errorNumbersToAdd: null);
     }));
-//builder.Services.AddDbContext<FinVaultInvestmentsDb>(options =>
-//    options.UseSqlServer(
-//        connectionString,
-//        sqlOptions =>
-//        {
-//            sqlOptions.EnableRetryOnFailure(
-//                maxRetryCount: 5,
-//                maxRetryDelay: TimeSpan.FromSeconds(30),
-//                errorNumbersToAdd: null);
-//        }));
+
 
 // Register services
 builder.Services.AddScoped<IInvestmentsService, InvestmentsService>();
@@ -96,11 +87,11 @@ app.UseAuthorization();
 app.MapInvestmentsEndpoints();
 
 
-// Garantir a criação da BD no arranque
+// Garantir a criaÃ§Ã£o da BD no arranque
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<FinVaultInvestmentsDb>();
-    // Cria a base de dados e aplica migrações se necessário
+    // Cria a base de dados e aplica migraÃ§Ãµes se necessÃ¡rio
     dbContext.Database.EnsureCreated();
 }
 

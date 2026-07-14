@@ -1,0 +1,19 @@
+# === Frontend (O grande vilão do peso) ===
+node_modules/
+dist/
+
+# === Ficheiros de compilação local do .NET ===
+**/bin/
+**/obj/
+
+# === IDEs e Git ===
+.vs/
+.vscode/
+.git/
+.gitignore
+
+# === Docker (para não criar loops) ===
+*.md
+docker-compose*.yml
+.env
+.env.*

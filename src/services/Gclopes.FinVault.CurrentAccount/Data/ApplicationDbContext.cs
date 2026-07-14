@@ -1,5 +1,4 @@
-﻿using Gclopes.FinVault.CurrentAccount.Data.Interceptors;
-using Gclopes.FinVault.CurrentAccount.Models;
+﻿using Gclopes.FinVault.CurrentAccount.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace Gclopes.FinVault.CurrentAccount.Data
@@ -12,13 +11,12 @@ namespace Gclopes.FinVault.CurrentAccount.Data
         public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
 
         // Map the baseline financial transaction account movements records database table schema
+        public DbSet<BankStatement> BankStatements => Set<BankStatement>();
         public DbSet<Movement> Movements => Set<Movement>();
 
         // Override configuring pipeline structures to register independent system interceptor hooks
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            // Register the custom generic audit logging interceptor directly into system configurations
-            optionsBuilder.AddInterceptors(new AuditLoggingInterceptor());
 
             // Execute default baseline lifecycle configurations inside the base database component framework
             base.OnConfiguring(optionsBuilder);
@@ -37,13 +35,27 @@ namespace Gclopes.FinVault.CurrentAccount.Data
                 entity.Property(e => e.ChangesPayload).IsRequired();
             });
 
-            // Movement configuration (fixing the decimal precision warning)
+            modelBuilder.Entity<BankStatement>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.InitialBalance).HasPrecision(18, 2);
+                entity.Property(e => e.FinalBalance).HasPrecision(18, 2);
+            });
+
             modelBuilder.Entity<Movement>(entity =>
             {
                 entity.HasKey(e => e.Id);
+
                 entity.Property(e => e.Amount).HasPrecision(18, 2);
-                entity.Property(e => e.UserId).IsRequired().HasMaxLength(100);
-                entity.Property(e => e.Type).IsRequired().HasMaxLength(10);
+                entity.Property(e => e.Balance).HasPrecision(18, 2);
+                entity.Property(e => e.Type).IsRequired().HasMaxLength(1);
+                entity.Property(e => e.Description).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.CreatedAt).HasDefaultValueSql("GETUTCDATE()");
+
+                entity.HasOne(m => m.BankStatement)
+                      .WithMany(s => s.Movements)
+                      .HasForeignKey(m => m.BankStatementId) // Certifica-te que esta propriedade existe em Movement.cs
+                      .OnDelete(DeleteBehavior.Cascade); // Recomendado para evitar órfãos
             });
 
             base.OnModelCreating(modelBuilder);

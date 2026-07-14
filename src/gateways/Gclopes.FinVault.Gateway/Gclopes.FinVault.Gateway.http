@@ -1,6 +1,132 @@
-@Gclopes.FinVault.Gateway_HostAddress = http://localhost:5008
+@HostAddress = http://localhost:5000
+@Token = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (o teu JWT aqui)
 
-GET {{Gclopes.FinVault.Gateway_HostAddress}}/weatherforecast/
+### ==========================================
+### CURRENT ACCOUNT SERVICE
+### ==========================================
+### 1. GET - Obter todos os movimentos (Autenticado)
+GET {{HostAddress}}/api/v1/accounts/
+Authorization: Bearer {{Token}}
+
+### 2. PATCH - Atualizar nota de um movimento
+PATCH {{HostAddress}}/api/v1/accounts/123-abc-456/note
+Authorization: Bearer {{Token}}
+Content-Type: application/json
+
+{
+  "note": "Pagamento de faturas de eletricidade"
+}
+
+### 3. POST - Registar novo extrato bancário
+POST http://localhost:7001/api/movements
+Content-Type: application/json
+
+< C:/Projects/FinVault/Data/uploads/Extractos/202606.txt
+
+
+### ==========================================
+### DOCUMENT INGESTION SERVICE
+### ==========================================
+POST {{HostAddress}}/api/v1/Document/upload
+Content-Type: multipart/form-data
+
+< C:/Projects/FinVault/Data/uploads/Extratos/202606.pdf
+
+### ==========================================
+### INVESTMENTS SERVICE (via YARP)
+### ==========================================
+
+### 1. Importar CSV da XTB
+POST {{HostAddress}}/api/v1/investments/import/xtb
+Authorization: Bearer {{Token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="xtb_export.csv"
+Content-Type: text/csv
+
+< C:/Projects/FinVault/Data/uploads/xtb_export.csv
+--boundary--
+
+### 2. Importar CSV da Trading212
+POST {{HostAddress}}/api/v1/investments/import/trading212
+Authorization: Bearer {{Token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="trading212_export.csv"
+Content-Type: text/csv
+
+< C:/Projects/FinVault/Data/uploads/trading212_export.csv
+--boundary--
+
+### 3. Obter Portfolio Atual
+GET {{HostAddress}}/api/v1/investments/portfolio
+Authorization: Bearer {{Token}}
 Accept: application/json
 
-###
+### 4. Obter Histórico do Portfolio
+GET {{HostAddress}}/api/v1/investments/portfolio/history
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### ==========================================
+### PENSION PLANS SERVICE (via YARP)
+### ==========================================
+
+### 1. GET - Fund Movements
+GET {{HostAddress}}/api/v1/pension-plans/movements/funds
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### 2. GET - Insurance Movements
+GET {{HostAddress}}/api/v1/pension-plans/movements/insurance
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### 3. POST - Import Fund Movements
+POST http://localhost:7006/api/pension-plans/movements/funds
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="fund_data.csv"
+Content-Type: text/csv
+
+< C:/Projects/FinVault/Data/uploads/fund_data.csv
+--boundary--
+
+### 4. POST - Import Insurance Movements
+POST http://localhost:7006/api/pension-plans/movements/insurance
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="file"; filename="insurance_data.csv"
+Content-Type: text/csv
+
+< C:/Projects/FinVault/Data/uploads/insurance_data.csv
+--boundary--
+
+
+### ==========================================
+### PAYROLL ANALYSIS SERVICE (via YARP)
+### ==========================================
+
+### 1. GET - Listar todos os imports (Frontend via Gateway)
+GET {{HostAddress}}/api/v1/payroll-analysis/imports
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### 2. GET - Obter um import específico pelo ID (Frontend via Gateway)
+@DocumentId = 550e8400-e29b-41d4-a716-446655440000
+GET {{HostAddress}}/api/v1/payroll-analysis/imports/{{DocumentId}}
+Authorization: Bearer {{Token}}
+Accept: application/json
+
+### 3. POST - Importar (Server-to-Server)
+
+POST http://localhost:7002/api/payroll-analysis/imports
+Content-Type: application/json
+
+{
+  "data": "dados-processados-pelo-pdf-parser"
+}
