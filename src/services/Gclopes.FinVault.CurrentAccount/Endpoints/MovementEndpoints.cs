@@ -12,7 +12,8 @@ public static class MovementEndpoints
     public static void MapMovementEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/movements")
-                       .WithTags("Movements");
+                       .WithTags("Movements")
+                       .RequireAuthorization();
 
         // Dentro do teu MapMovementEndpoints...
         group.MapPatch("/{id}/note", UpdateMovementNoteAsync)

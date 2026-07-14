@@ -1,3 +1,4 @@
+using FluentValidation;
 using Gclopes.FinVault.CurrentAccount.Data;
 using Gclopes.FinVault.CurrentAccount.Data.Interceptors;
 using Gclopes.FinVault.CurrentAccount.Endpoints;

@@ -87,11 +87,11 @@ app.UseAuthorization();
 app.MapInvestmentsEndpoints();
 
 
-// Garantir a criação da BD no arranque
+// Garantir a criaÃ§Ã£o da BD no arranque
 using (var scope = app.Services.CreateScope())
 {
     var dbContext = scope.ServiceProvider.GetRequiredService<FinVaultInvestmentsDb>();
-    // Cria a base de dados e aplica migrações se necessário
+    // Cria a base de dados e aplica migraÃ§Ãµes se necessÃ¡rio
     dbContext.Database.EnsureCreated();
 }
 
