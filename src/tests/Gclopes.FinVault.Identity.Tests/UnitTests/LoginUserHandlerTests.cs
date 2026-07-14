@@ -4,6 +4,7 @@ using Gclopes.FinVault.Identity.Application.Handlers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using Moq;
+using Xunit;
 
 namespace Gclopes.FinVault.Identity.Tests.UnitTests;
 

@@ -11,7 +11,7 @@ namespace Gclopes.FinVault.CurrentAccount.Services.Implementations;
 public class MovementService(ApplicationDbContext context) : IMovementService
 {
 
-    public async Task<IEnumerable<MovementResponse>> GetAllMovementsAsync(string userId)
+    public async Task<IEnumerable<MovementResponse>> GetAllMovementsAsync()
     {
         var movements = await context.Movements
         .OrderBy(m => m.TransactionDate)
