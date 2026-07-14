@@ -1,0 +1,10 @@
+# .NET
+**/bin/
+**/obj/
+**/.vs/
+**/*.user
+**/.env
+**/logs_*.txt
+**/__pycache__/
+**/.venv/
+
