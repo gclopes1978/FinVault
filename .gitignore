@@ -9,7 +9,14 @@
 **/.venv/
 
 # Pasta de dados e logs
-Data/
+# FIX: this used to be the unanchored pattern "Data/", which matched ANY folder
+# named "Data" anywhere in the repo (e.g. src/services/*/Data/), not just the
+# root-level local uploads folder it was meant for. That silently prevented
+# "git add" from ever picking up source files under .../Data/ in any microservice,
+# which is why SavingsBondDbContext.cs and the SavingsBond entity were never
+# committed for the new SavingsCertificates service. Anchored and scoped back to
+# the original intent (see git history: "Data/uploads/").
+/Data/uploads/
 docker-compose.log
 logs_*.txt
 

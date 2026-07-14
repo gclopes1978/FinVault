@@ -1,6 +1,11 @@
 ﻿using Gclopes.FinVault.SavingsCertificates.Data.Entities;
 using Gclopes.FinVault.SavingsCertificates.Services.Interfaces;
 
+// FIX: This file had no namespace declaration, so the class was landing in the global
+// namespace instead of Services.Strategies (inconsistent with SeriesEStrategy/SeriesFStrategy,
+// which live in this namespace and rely on unqualified access to this base class).
+namespace Gclopes.FinVault.SavingsCertificates.Services.Strategies;
+
 public abstract class BaseSeriesStrategy : ISeriesStrategy
 {
     protected const int MonthsPerQuarter = 3;

@@ -20,7 +20,9 @@ namespace Gclopes.FinVault.SavingsCertificates.Migrations
                     BaseRate = table.Column<decimal>(type: "decimal(18,5)", precision: 18, scale: 5, nullable: false),
                     SubscriptionDate = table.Column<DateTime>(type: "date", nullable: false),
                     UnitValue = table.Column<decimal>(type: "decimal(18,5)", precision: 18, scale: 5, nullable: false),
-                    Quantity = table.Column<int>(type: "int", precision: 18, scale: 5, nullable: false)
+                    // FIX: Quantity is an int column; precision/scale only apply to decimal
+                    // columns and were mistakenly copy-pasted from BaseRate/UnitValue above.
+                    Quantity = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {

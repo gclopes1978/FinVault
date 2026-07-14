@@ -32,8 +32,9 @@ namespace Gclopes.FinVault.SavingsCertificates.Migrations
                         .HasPrecision(18, 5)
                         .HasColumnType("decimal(18,5)");
 
+                    // FIX: Quantity is an int property; HasPrecision only applies to decimal
+                    // types and was mistakenly copy-pasted from BaseRate/UnitValue below.
                     b.Property<int>("Quantity")
-                        .HasPrecision(18, 5)
                         .HasColumnType("int");
 
                     b.Property<string>("Series")
