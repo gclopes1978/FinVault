@@ -1,5 +1,6 @@
 ﻿using Gclopes.FinVault.SavingsCertificates.Data;
 using Gclopes.FinVault.SavingsCertificates.Data.Entities;
+using Gclopes.FinVault.SavingsCertificates.DTO;
 using Gclopes.FinVault.SavingsCertificates.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,7 +18,7 @@ public static class SavingsBondsEndpoints
         group.MapGet("/", GetAllBondsAsync)
             .WithName("GetAllBonds")
             .WithOpenApi()
-            .Produces<List<SavingsBond>>(StatusCodes.Status200OK);
+            .Produces<List<SavingsBondResponseDto>>(StatusCodes.Status200OK);
 
         group.MapGet("/{id:guid}/valuation", GetBondValuationAsync)
             .WithName("GetBondValuation")
@@ -37,10 +38,21 @@ public static class SavingsBondsEndpoints
             .Produces(StatusCodes.Status404NotFound);
     }
 
-    private static async Task<IResult> GetAllBondsAsync(SavingsBondDbContext db, CancellationToken ct)
+    private static async Task<IResult> GetAllBondsAsync(SavingsBondDbContext db, IInterestCalculationService calcService, CancellationToken ct)
     {
         var bonds = await db.SavingsBonds.ToListAsync(ct);
-        return Results.Ok(bonds);
+
+        var result = bonds.Select(bond => new SavingsBondResponseDto(
+            bond.Id,
+            bond.Series,
+            bond.BaseRate,
+            bond.SubscriptionDate,
+            bond.UnitValue,
+            bond.Quantity,
+            calcService.CalculateCurrentValue(bond)
+        ));
+
+        return Results.Ok(result);
     }
 
     private static async Task<IResult> GetBondValuationAsync(
@@ -63,10 +75,22 @@ public static class SavingsBondsEndpoints
         });
     }
 
-    private static async Task<IResult> CreateBondAsync(SavingsBond bond, SavingsBondDbContext db, CancellationToken ct)
+    private static async Task<IResult> CreateBondAsync(SavingsBondCreateDto dto, SavingsBondDbContext db, CancellationToken ct)
     {
+        // Map the DTO to the entity
+        var bond = new SavingsBond
+        {
+            Id = Guid.NewGuid(), // Generate the ID here
+            Series = dto.Series,
+            BaseRate = dto.BaseRate,
+            SubscriptionDate = dto.SubscriptionDate,
+            UnitValue = dto.UnitValue,
+            Quantity = dto.Quantity
+        };
+
         db.SavingsBonds.Add(bond);
         await db.SaveChangesAsync(ct);
+
         return Results.Created($"/api/savings-bonds/{bond.Id}", bond);
     }
 

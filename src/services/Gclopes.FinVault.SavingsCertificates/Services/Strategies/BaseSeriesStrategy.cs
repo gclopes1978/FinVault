@@ -1,43 +1,47 @@
 ﻿using Gclopes.FinVault.SavingsCertificates.Data.Entities;
 using Gclopes.FinVault.SavingsCertificates.Services.Interfaces;
 
-// FIX: This file had no namespace declaration, so the class was landing in the global
-// namespace instead of Services.Strategies (inconsistent with SeriesEStrategy/SeriesFStrategy,
-// which live in this namespace and rely on unqualified access to this base class).
 namespace Gclopes.FinVault.SavingsCertificates.Services.Strategies;
 
 public abstract class BaseSeriesStrategy : ISeriesStrategy
 {
-    protected const int MonthsPerQuarter = 3;
+    protected const int DaysPerQuarter = 91; // IGCP uses 91 days for quarter calculation
 
     public abstract bool CanHandle(string series);
 
     public decimal CalculateInterest(SavingsBond bond)
     {
         var totalInvested = bond.UnitValue * bond.Quantity;
-        var yearsHeld = (DateTime.UtcNow - bond.SubscriptionDate).TotalDays / 365.25;
+        var startDate = bond.SubscriptionDate;
+        var endDate = DateTime.UtcNow;
 
-        // Determine the permanence premium based on the number of years held
-        var premium = GetPermanencePremium(yearsHeld);
+        var currentCapital = totalInvested;
+        var totalDays = (endDate - startDate).Days;
 
-        // Get base rate (BaseRate + Euribor if applicable)
-        var baseRate = GetBaseRate(bond);
+        // Number of completed quarters
+        var totalQuarters = totalDays / DaysPerQuarter;
 
-        // Apply 28% tax retention (net value = 72% of gross)
-        var effectiveRate = (baseRate + premium) * 0.72m;
-        var quarterlyRate = effectiveRate / 4;
+        for (int i = 0; i < totalQuarters; i++)
+        {
+            // Years for the permanence premium calculation
+            var years = i * (DaysPerQuarter / 365.0m);
+            var premium = GetPermanencePremium((double)years);
 
-        // Calculate number of quarters elapsed
-        var quarters = (int)((DateTime.UtcNow - bond.SubscriptionDate).TotalDays / 91.25);
+            // IGCP quarterly rate calculation: (Base Rate + Premium) / 4
+            // Assuming bond.BaseRate is the annual percentage (e.g., 3.403)
+            var quarterlyRate = (bond.BaseRate + (decimal)premium) / 100m / 4m;
 
-        if (quarters <= 0) return 0m;
+            // Capitalization: Interest is added to the principal
+            var quarterlyInterest = currentCapital * quarterlyRate;
+            currentCapital += quarterlyInterest;
+        }
 
-        // Compound interest calculation: A = P(1 + r/n)^(nt)
-        var accumulatedValue = totalInvested * (decimal)Math.Pow((double)(1 + quarterlyRate), quarters);
-        return Math.Round(accumulatedValue - totalInvested, 2);
+        var totalGrossInterest = currentCapital - totalInvested;
+        var totalNetInterest = totalGrossInterest * 0.72m; // Applying 28% tax
+
+        return Math.Round(totalNetInterest, 2);
     }
 
-    // Common implementation for all series
     protected virtual decimal GetBaseRate(SavingsBond bond) => bond.BaseRate;
     protected abstract decimal GetPermanencePremium(double years);
 }
