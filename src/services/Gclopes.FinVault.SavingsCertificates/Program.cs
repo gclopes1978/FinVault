@@ -83,6 +83,7 @@ app.UseAuthorization();
 
 // Map endpoints
 app.MapSavingsBondsEndpoints();
+app.MapSeriesRateHistoryEndpoints();
 
 // Ensure databases are created on startup
 using (var scope = app.Services.CreateScope())

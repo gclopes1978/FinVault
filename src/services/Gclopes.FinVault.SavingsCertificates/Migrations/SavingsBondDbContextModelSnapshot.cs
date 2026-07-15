@@ -53,6 +53,34 @@ namespace Gclopes.FinVault.SavingsCertificates.Migrations
 
                     b.ToTable("SavingsBonds", (string)null);
                 });
+
+            modelBuilder.Entity("Gclopes.FinVault.SavingsCertificates.Data.Entities.SeriesRateHistory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal>("BaseRate")
+                        .HasPrecision(18, 5)
+                        .HasColumnType("decimal(18,5)");
+
+                    b.Property<DateOnly>("EffectiveMonth")
+                        .HasColumnType("date");
+
+                    b.Property<string>("Series")
+                        .IsRequired()
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Series", "EffectiveMonth")
+                        .IsUnique();
+
+                    b.ToTable("SeriesRateHistories", (string)null);
+                });
 #pragma warning restore 612, 618
         }
     }

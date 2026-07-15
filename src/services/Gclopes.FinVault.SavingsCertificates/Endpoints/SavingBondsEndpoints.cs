@@ -42,15 +42,20 @@ public static class SavingsBondsEndpoints
     {
         var bonds = await db.SavingsBonds.ToListAsync(ct);
 
-        var result = bonds.Select(bond => new SavingsBondResponseDto(
-            bond.Id,
-            bond.Series,
-            bond.BaseRate,
-            bond.SubscriptionDate,
-            bond.UnitValue,
-            bond.Quantity,
-            calcService.CalculateCurrentValue(bond)
-        ));
+        var result = new List<SavingsBondResponseDto>(bonds.Count);
+        foreach (var bond in bonds)
+        {
+            var accumulatedInterest = await calcService.CalculateCurrentValueAsync(bond, ct);
+            result.Add(new SavingsBondResponseDto(
+                bond.Id,
+                bond.Series,
+                bond.BaseRate,
+                bond.SubscriptionDate,
+                bond.UnitValue,
+                bond.Quantity,
+                accumulatedInterest
+            ));
+        }
 
         return Results.Ok(result);
     }
@@ -64,7 +69,7 @@ public static class SavingsBondsEndpoints
         var bond = await db.SavingsBonds.FindAsync([id], ct);
         if (bond is null) return Results.NotFound(new { message = "Bond not found" });
 
-        var currentValue = calcService.CalculateCurrentValue(bond);
+        var currentValue = await calcService.CalculateCurrentValueAsync(bond, ct);
 
         return Results.Ok(new
         {

@@ -10,6 +10,8 @@ public class SavingsBondDbContext(DbContextOptions<SavingsBondDbContext> options
 {
     public DbSet<SavingsBond> SavingsBonds => Set<SavingsBond>();
 
+    public DbSet<SeriesRateHistory> SeriesRateHistories => Set<SeriesRateHistory>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<SavingsBond>(entity =>
@@ -25,6 +27,18 @@ public class SavingsBondDbContext(DbContextOptions<SavingsBondDbContext> options
             // (that's only valid for decimal columns). The original migration snapshot
             // had HasPrecision(18, 5) copy-pasted onto this int property; intentionally
             // not repeated here, and removed from the migration/snapshot files too.
+        });
+
+        modelBuilder.Entity<SeriesRateHistory>(entity =>
+        {
+            entity.ToTable("SeriesRateHistories");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Series).IsRequired().HasMaxLength(1);
+            entity.Property(e => e.EffectiveMonth).HasColumnType("date");
+            entity.Property(e => e.BaseRate).HasPrecision(18, 5);
+
+            // A series can only have one published rate per month.
+            entity.HasIndex(e => new { e.Series, e.EffectiveMonth }).IsUnique();
         });
 
         base.OnModelCreating(modelBuilder);

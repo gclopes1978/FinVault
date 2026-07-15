@@ -4,5 +4,7 @@ namespace Gclopes.FinVault.SavingsCertificates.Services.Interfaces;
 
 public interface IInterestCalculationService
 {
-    decimal CalculateCurrentValue(SavingsBond bond);
+    // Async because the calculation now needs to fetch the series' historical
+    // monthly base rates from the database (see SeriesRateHistory).
+    Task<decimal> CalculateCurrentValueAsync(SavingsBond bond, CancellationToken ct = default);
 }
