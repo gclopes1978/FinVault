@@ -23,21 +23,26 @@ public abstract class BaseSeriesStrategy : ISeriesStrategy
 
         for (int i = 0; i < totalQuarters; i++)
         {
-            // Years for the permanence premium calculation
+            // Years elapsed at the START of this quarter, used for the permanence premium tier
             var years = i * (DaysPerQuarter / 365.0m);
             var premium = GetPermanencePremium((double)years);
 
-            // IGCP quarterly rate calculation: (Base Rate + Premium) / 4
-            // Assuming bond.BaseRate is the annual percentage (e.g., 3.403)
-            var quarterlyRate = (bond.BaseRate + (decimal)premium) / 100m / 4m;
+            // IGCP quarterly rate: (annual base rate + premium) / 4, both expressed as fractions.
+            // bond.BaseRate is stored as a percentage (e.g. 3.403 => 3.403%), so it must be divided
+            // by 100 on its own. The premium returned by GetPermanencePremium is already a fraction
+            // (e.g. 0.0050m => 0.50%). Adding it to bond.BaseRate BEFORE the /100 division (the
+            // previous bug) shrank the premium's effect by a factor of 100.
+            var quarterlyRate = (bond.BaseRate / 100m) / 4m + (decimal)premium / 4m;
 
-            // Capitalization: Interest is added to the principal
-            var quarterlyInterest = currentCapital * quarterlyRate;
-            currentCapital += quarterlyInterest;
+            // IGCP capitalizes the interest NET of the 28% IRS withholding tax every quarter
+            // (not gross interest with tax deducted only once at the end).
+            var quarterlyGrossInterest = currentCapital * quarterlyRate;
+            var quarterlyNetInterest = Math.Round(quarterlyGrossInterest * 0.72m, 2, MidpointRounding.AwayFromZero);
+
+            currentCapital += quarterlyNetInterest;
         }
 
-        var totalGrossInterest = currentCapital - totalInvested;
-        var totalNetInterest = totalGrossInterest * 0.72m; // Applying 28% tax
+        var totalNetInterest = currentCapital - totalInvested;
 
         return Math.Round(totalNetInterest, 2);
     }
