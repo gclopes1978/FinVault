@@ -222,7 +222,26 @@ services:
       finvault-rabbitmq:
         condition: service_healthy
     restart: unless-stopped
-
+  savings-bonds-service:
+    container_name: finvault-savings-bonds-api
+    build:
+      context: .
+      dockerfile: src/services/Gclopes.FinVault.SavingsCertificates/Dockerfile
+    ports:
+      - "7007:8080"
+    env_file:
+      - .env
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ConnectionStrings__DefaultConnection=${SQLSERVER_CONNECTION_SAVINGS_BONDS}
+    networks:
+      finvault-network:
+        aliases:
+          - savings-bonds-api
+    depends_on:
+      finvault-sqlserver:
+        condition: service_healthy
+    restart: on-failure
 volumes:
   rabbitmq_data:
   sqlserver_data:
