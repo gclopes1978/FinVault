@@ -1,0 +1,181 @@
+// Apply styling properties to the full-viewport centering wrapper for the login page
+.login-page {
+  // Stretch the wrapper across the entire available viewport height
+  min-height: 100vh;
+  // Activate CSS Flexbox module layout parameters for interior element tracking
+  display: flex;
+  // Center align the login card perfectly on the horizontal tracking index
+  align-items: center;
+  // Center align the login card perfectly on the vertical tracking index
+  justify-content: center;
+  // Paint a soft neutral background tone to distinguish the auth screen from the app shell
+  background-color: #f1f5f9;
+  // Inject a safety padding margin so the card never touches the viewport edges
+  padding: 24px;
+}
+
+// Apply styling properties to the centered white card containing the form
+.login-card {
+  // Constrain the card width to a comfortable reading measure on desktop
+  width: 100%;
+  max-width: 380px;
+  // Paint a solid crisp white background tone across the card surface
+  background-color: #ffffff;
+  // Round the card corners to match the app's soft, modern aesthetic
+  border-radius: 12px;
+  // Apply a subtle elevation shadow to lift the card off the background
+  box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.1);
+  // Inject a generous interior padding safety margin around the form content
+  padding: 32px;
+}
+
+// Apply layout styling properties to the header block above the form
+.login-header {
+  // Inject vertical spacing below the header before the form fields begin
+  margin-bottom: 24px;
+
+  // Apply visual styling properties to the text logo title area
+  .app-title {
+    // Elevate the typography scale to a comfortable 1.5rem grid size
+    font-size: 1.5rem;
+    // Enforce a heavy bold thickness layout to give the branding visual weight
+    font-weight: 700;
+    // Set the branding text color profile to a sharp corporate dark slate tone
+    color: #1e293b;
+    // Compress the tracking interval between characters to sharpen title contrast
+    letter-spacing: -0.025em;
+  }
+
+  // Apply structural typography overrides directly to the subtitle string label
+  .subtitle {
+    // Inject a small vertical spacing gap between the title and subtitle text
+    margin-top: 4px;
+    // Set the typographic scale down to a clean readable 0.875rem size index
+    font-size: 0.875rem;
+    // Shift text tone down to a subtle muted corporate charcoal gray hue profile
+    color: #64748b;
+  }
+}
+
+// Apply layout styling properties to the reactive form wrapper
+.login-form {
+  // Activate CSS Flexbox module layout parameters stacked in a vertical column
+  display: flex;
+  flex-direction: column;
+  // Inject a clean vertical gap tracking interval of 18px between form fields
+  gap: 18px;
+}
+
+// Apply layout styling properties to each individual label/input pairing
+.form-field {
+  // Activate CSS Flexbox module layout parameters stacked in a vertical column
+  display: flex;
+  flex-direction: column;
+  // Inject a tight vertical gap tracking interval of 6px between label and input
+  gap: 6px;
+
+  label {
+    // Set the typographic scale down to a clean readable 0.8125rem size index
+    font-size: 0.8125rem;
+    // Apply a balanced medium font weight layout tier to prevent over-bolding
+    font-weight: 500;
+    // Shift text tone down to a subtle muted corporate charcoal gray hue profile
+    color: #334155;
+  }
+
+  input {
+    // Inject a comfortable interior padding safety margin inside the text field
+    padding: 10px 12px;
+    // Outline a subtle light gray border trace around the entire input field
+    border: 1px solid #cbd5e1;
+    // Round the input corners to match the card's soft, modern aesthetic
+    border-radius: 8px;
+    // Elevate the typography scale to a comfortable 0.9375rem grid size
+    font-size: 0.9375rem;
+    // Ensure the input inherits the standard system font stack cleanly
+    font-family: inherit;
+    // Smooth the border color transition when the field gains or loses focus
+    transition: border-color 0.15s ease-in-out;
+
+    // Apply visual styling properties whenever the input field is focused
+    &:focus {
+      // Remove the default browser outline in favor of the custom border treatment
+      outline: none;
+      // Paint the border with the app's vibrant solid blue accent tone
+      border-color: #3b82f6;
+    }
+  }
+
+  // Apply visual styling properties to the field-level validation error text
+  .field-error {
+    // Set the typographic scale down to a small 0.75rem size index
+    font-size: 0.75rem;
+    // Paint the error text with a clear corporate red warning tone
+    color: #dc2626;
+  }
+}
+
+// Apply visual styling properties to the top-level authentication failure banner
+.form-error-banner {
+  // Inject a comfortable interior padding safety margin inside the banner
+  padding: 10px 12px;
+  // Paint a soft red background tone to signal a failed authentication attempt
+  background-color: #fef2f2;
+  // Outline a subtle red border trace around the entire banner block
+  border: 1px solid #fecaca;
+  // Round the banner corners to match the card's soft, modern aesthetic
+  border-radius: 8px;
+  // Set the typographic scale down to a clean readable 0.8125rem size index
+  font-size: 0.8125rem;
+  // Paint the banner text with a clear corporate red warning tone
+  color: #b91c1c;
+}
+
+// Apply visual styling properties to the primary form submission button
+.submit-button {
+  // Inject a comfortable interior padding safety margin inside the button
+  padding: 11px 16px;
+  // Remove the default browser border in favor of the flat filled treatment
+  border: none;
+  // Round the button corners to match the card's soft, modern aesthetic
+  border-radius: 8px;
+  // Paint the interior background workspace with a vibrant solid blue accent
+  background-color: #3b82f6;
+  // Apply a contrasting crisp pure white shade to the interior button label
+  color: #ffffff;
+  // Apply a solid semi-bold typographic font weight to clarify the call to action
+  font-weight: 600;
+  // Elevate the typography scale to a comfortable 0.9375rem grid size
+  font-size: 0.9375rem;
+  // Signal interactivity through the pointer cursor on hover
+  cursor: pointer;
+  // Smooth the background color transition on hover and disabled states
+  transition: background-color 0.15s ease-in-out;
+
+  // Apply visual styling properties whenever the button is hovered and enabled
+  &:hover:not(:disabled) {
+    // Darken the background tone slightly to reinforce the hover affordance
+    background-color: #2563eb;
+  }
+
+  // Apply visual styling properties whenever the button is disabled during submission
+  &:disabled {
+    // Mute the background tone to signal the button is temporarily inactive
+    background-color: #93c5fd;
+    // Swap the cursor to communicate the disabled interactive state
+    cursor: not-allowed;
+  }
+}
+
+.secondary-link {
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  margin-top: 4px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

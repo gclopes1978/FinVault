@@ -79,5 +79,33 @@
       // Apply a balanced medium font weight layout tier to prevent over-bolding
       font-weight: 500;
     }
+
+    // Apply visual styling properties to the sign-out action button
+    .logout-button {
+      // Remove the default browser border in favor of a minimal ghost treatment
+      border: 1px solid #e2e8f0;
+      // Round the button corners to match the app's soft, modern aesthetic
+      border-radius: 6px;
+      // Paint a transparent background so the button blends into the header bar
+      background-color: transparent;
+      // Inject a compact interior padding safety margin inside the button
+      padding: 6px 12px;
+      // Set the typographic scale down to a small 0.8125rem size index
+      font-size: 0.8125rem;
+      // Shift text tone down to a subtle muted corporate charcoal gray hue profile
+      color: #475569;
+      // Signal interactivity through the pointer cursor on hover
+      cursor: pointer;
+      // Smooth the background and border color transition on hover
+      transition: background-color 0.15s ease-in-out, border-color 0.15s ease-in-out;
+
+      // Apply visual styling properties whenever the button is hovered
+      &:hover {
+        // Paint a soft neutral background tone to reinforce the hover affordance
+        background-color: #f1f5f9;
+        // Darken the border tone slightly to reinforce the hover affordance
+        border-color: #cbd5e1;
+      }
+    }
   }
 }

@@ -1,9 +1,13 @@
-<app-header></app-header>
+@if (showShell()) {
+  <app-header></app-header>
 
-<div class="main-layout-container">
-  <app-sidebar></app-sidebar>
-  
-  <main class="content-body">
-    <router-outlet></router-outlet>
-  </main>
-</div>
+  <div class="main-layout-container">
+    <app-sidebar></app-sidebar>
+
+    <main class="content-body">
+      <router-outlet></router-outlet>
+    </main>
+  </div>
+} @else {
+  <router-outlet></router-outlet>
+}

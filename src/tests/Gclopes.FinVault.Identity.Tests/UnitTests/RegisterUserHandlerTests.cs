@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Moq;
+using System.Security.Claims;
 using Xunit;
 
 namespace Gclopes.FinVault.Identity.Tests.UnitTests;
@@ -26,8 +27,10 @@ public class RegisterUserHandlerTests
         // Arrange
         _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<IdentityUser>(), It.IsAny<string>()))
                         .ReturnsAsync(IdentityResult.Success);
+        _userManagerMock.Setup(x => x.AddClaimAsync(It.IsAny<IdentityUser>(), It.IsAny<Claim>()))
+                        .ReturnsAsync(IdentityResult.Success);
 
-        var command = new RegisterUserCommand("test@finvault.com", "P@ssword123!", "P@ssword123!");
+        var command = new RegisterUserCommand("Ana Silva", "test@finvault.com", "P@ssword123!", "P@ssword123!");
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);
@@ -44,7 +47,7 @@ public class RegisterUserHandlerTests
         _userManagerMock.Setup(x => x.CreateAsync(It.IsAny<IdentityUser>(), It.IsAny<string>()))
                         .ReturnsAsync(IdentityResult.Failed(error));
 
-        var command = new RegisterUserCommand("test@finvault.com", "123", "123");
+        var command = new RegisterUserCommand("Ana Silva", "test@finvault.com", "123", "123");
 
         // Act
         var result = await _handler.Handle(command, CancellationToken.None);

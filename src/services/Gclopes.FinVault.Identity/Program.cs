@@ -73,23 +73,23 @@ public class Program
 
         builder.Services.AddValidatorsFromAssembly(typeof(Program).Assembly);
 
-        builder.Services.AddMediatR(cfg => {
+        builder.Services.AddMediatR(cfg =>
+        {
             cfg.RegisterServicesFromAssembly(typeof(Program).Assembly);
             cfg.AddOpenBehavior(typeof(ValidationBehavior<,>));
         });
-        
+
         // --- Application Pipeline ---
         // Builds the application based on the configuration above
         var app = builder.Build();
-       
+
         // Adiciona isto logo após o var app = builder.Build();
-        if (app.Environment.IsDevelopment())
-        {
-            using var scope = app.Services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-            db.Database.EnsureCreated(); // Cria a base de dados se não existir
-        }
-        
+
+        using var scope = app.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+        db.Database.EnsureCreated(); // Cria a base de dados se não existir
+
+
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 
         // Enables authentication and authorization middleware
@@ -97,7 +97,7 @@ public class Program
         app.UseAuthorization();
         // Maps attribute-routed controllers to the request pipeline
         app.MapControllers();
-        
+
         // Starts the web server and listens for incoming requests
         app.Run();
     }

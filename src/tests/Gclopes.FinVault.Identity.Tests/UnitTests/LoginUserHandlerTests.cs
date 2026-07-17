@@ -28,9 +28,9 @@ public class LoginUserHandlerTests
         _configMock = new Mock<IConfiguration>();
 
         // Mocking Configuration
-        _configMock.Setup(c => c["Jwt:Key"]).Returns("SuperSecretKeyThatMustBeAtLeast32CharactersLong");
-        _configMock.Setup(c => c["Jwt:Issuer"]).Returns("TestIssuer");
-        _configMock.Setup(c => c["Jwt:Audience"]).Returns("TestAudience");
+        _configMock.Setup(c => c["JwtSettings:Secret"]).Returns("SuperSecretKeyThatMustBeAtLeast32CharactersLong");
+        _configMock.Setup(c => c["JwtSettings:Issuer"]).Returns("TestIssuer");
+        _configMock.Setup(c => c["JwtSettings:Audience"]).Returns("TestAudience");
 
         _handler = new LoginUserHandler(_signInManagerMock.Object, _userManagerMock.Object, _configMock.Object);
     }

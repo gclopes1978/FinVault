@@ -41,6 +41,7 @@ services:
       - investments-service
       - currentaccount-service
       - pensionplans-service
+      - identity-service
     networks:
       - finvault-network
 
@@ -130,6 +131,31 @@ services:
       finvault-network:
         aliases:
           - currentaccount-api
+    depends_on:
+      finvault-sqlserver:
+        condition: service_healthy
+    restart: on-failure
+
+  identity-service:
+    container_name: finvault-identity-api
+    build:
+      context: .
+      dockerfile: src/services/Gclopes.FinVault.Identity/Dockerfile
+    ports:
+      - "7008:8080"
+    env_file:
+      - .env  # Isto força o Docker a ler este ficheiro para este serviço
+    environment:
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_IDENTITY}
+      JwtSettings__Secret: ${JWT_SECRET}
+      JwtSettings__Issuer: ${JWT_ISSUER}
+      JwtSettings__Audience: ${JWT_AUDIENCE}
+      JwtSettings__ExpiryMinutes: ${JWT_EXPIRY_MINUTES}
+    networks:
+      finvault-network:
+        aliases:
+          - identity-api
     depends_on:
       finvault-sqlserver:
         condition: service_healthy
