@@ -1,5 +1,9 @@
 // Import the core Component decorator from the Angular framework
 import { Component } from '@angular/core';
+// Import the Router to redirect the user back to the login page after logging out
+import { Router } from '@angular/router';
+// Import the AuthService to clear the persisted session token
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   // Define the custom HTML selector tag used to render this component
@@ -17,4 +21,12 @@ import { Component } from '@angular/core';
 export class HeaderComponent {
   // Define a public property storing a default placeholder username for display purposes
   public username: string = 'G. Lopes';
+
+  constructor(private authService: AuthService, private router: Router) {}
+
+  // Clear the active session and send the user back to the login page
+  public onLogout(): void {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
 }
