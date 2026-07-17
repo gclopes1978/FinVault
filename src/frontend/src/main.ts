@@ -1,3 +1,5 @@
+import 'zone.js';
+
 // Import the bootstrapApplication function to initialize the Angular standalone app
 import { bootstrapApplication } from '@angular/platform-browser';
 // Import the appConfig configuration object for global providers and routing

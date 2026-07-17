@@ -166,3 +166,16 @@
     cursor: not-allowed;
   }
 }
+
+.secondary-link {
+  color: #2563eb;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-align: center;
+  text-decoration: none;
+  margin-top: 4px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}

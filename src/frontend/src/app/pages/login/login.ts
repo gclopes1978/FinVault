@@ -5,7 +5,7 @@ import { CommonModule } from '@angular/common';
 // Import the Reactive Forms building blocks used to validate the credentials form
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 // Import the Router to navigate to the dashboard after a successful authentication
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 // Import the AuthService that performs the actual login HTTP call
 import { AuthService } from '../../services/auth.service';
 
@@ -15,7 +15,7 @@ import { AuthService } from '../../services/auth.service';
   // Enable standalone mode to allow this component to manage its own scope independently
   standalone: true,
   // Inject the modules required to build and validate the reactive login form
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink],
   // Specify the external relative file path containing the template layout
   templateUrl: './login.html',
   // Specify the external relative file path containing the page styles

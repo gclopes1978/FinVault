@@ -1,11 +1,12 @@
 // Import the core Component decorator from the Angular framework
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 // Import the RouterOutlet directive to enable dynamic sub-page rendering slots
-import { RouterOutlet } from '@angular/router';
+import { NavigationEnd, Router, RouterOutlet } from '@angular/router';
 // Import the custom layout shell Header component for global brand presentation
 import { HeaderComponent } from './components/header/header';
 // Import the custom layout shell Sidebar component for application routing controls
 import { SidebarComponent } from './components/sidebar/sidebar';
+import { filter } from 'rxjs';
 
 @Component({
   // Define the custom unique HTML selector tag utilized to render the core root application
@@ -20,4 +21,19 @@ import { SidebarComponent } from './components/sidebar/sidebar';
   styleUrl: './app.scss'
 })
 // Export the primary AppComponent class targeting bootstrap initiation
-export class AppComponent {}
+export class AppComponent {
+  public readonly showShell = signal(true);
+
+  constructor(private router: Router) {
+    this.updateShellVisibility(this.router.url);
+
+    this.router.events
+      .pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd))
+      .subscribe((event) => this.updateShellVisibility(event.urlAfterRedirects));
+  }
+
+  private updateShellVisibility(url: string): void {
+    const pathname = (url || window.location.pathname).split('?')[0];
+    this.showShell.set(!['/login', '/register'].includes(pathname));
+  }
+}

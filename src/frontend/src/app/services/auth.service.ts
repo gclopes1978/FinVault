@@ -16,6 +16,14 @@ export interface LoginRequest {
   password: string;
 }
 
+// Define a type-safe contract for the payload submitted to the register endpoint
+export interface RegisterRequest {
+  fullName: string;
+  email: string;
+  password: string;
+  confirmPassword: string;
+}
+
 // Define a type-safe contract mapping the Identity service authentication response
 export interface AuthenticationResponse {
   accessToken: string;
@@ -35,6 +43,11 @@ export class AuthService {
       .pipe(
         tap((response) => this.setToken(response.accessToken))
       );
+  }
+
+  // Register a new user account through the Identity service
+  register(request: RegisterRequest): Observable<{ message?: string; Message?: string }> {
+    return this.http.post<{ message?: string; Message?: string }>(`${environment.gatewayUrl}/v1/auth/register`, request);
   }
 
   // Remove the persisted token, effectively logging the current user out

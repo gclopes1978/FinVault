@@ -55,7 +55,7 @@ public class AuthControllerTests(IntegrationTestFixture factory) : IClassFixture
     public async Task Register_ShouldReturnOk_WhenRegistrationIsValid()
     {
         var uniqueEmail = $"user_{Guid.NewGuid()}@finvault.com";
-        var command = new { Email = uniqueEmail, Password = "Password123!", ConfirmPassword = "Password123!" };
+        var command = new { FullName = "Ana Silva", Email = uniqueEmail, Password = "Password123!", ConfirmPassword = "Password123!" };
 
         var response = await _client.PostAsJsonAsync("/api/v1/auth/register", command);
 
@@ -67,7 +67,7 @@ public class AuthControllerTests(IntegrationTestFixture factory) : IClassFixture
     public async Task Register_ShouldReturnBadRequest_WhenRegistrationFails()
     {
         await DatabaseHelper.SeedUserAsync(factory);
-        var command = new { Email = "user@finvault.com", Password = "Password123!", ConfirmPassword = "Password123!" };
+        var command = new { FullName = "Ana Silva", Email = "user@finvault.com", Password = "Password123!", ConfirmPassword = "Password123!" };
 
         var response = await _client.PostAsJsonAsync("/api/v1/auth/register", command);
 
@@ -76,12 +76,13 @@ public class AuthControllerTests(IntegrationTestFixture factory) : IClassFixture
     }
 
     [Theory]
-    [InlineData("invalid-email", "Password123!@#", "Password123!@#", "Invalid Email")]
-    [InlineData("newuser@finvault.com", "123", "123", "Password too short")]
-    [InlineData("newuser@finvault.com", "Password123!@#", "DifferentPassword!", "Passwords do not match")]
-    public async Task Register_ShouldReturnBadRequest_WhenInputIsInvalid(string email, string password, string confirmPassword, string reason)
+    [InlineData("", "invalid-email", "Password123!@#", "Password123!@#", "Invalid Full Name")]
+    [InlineData("João Silva", "invalid-email", "Password123!@#", "Password123!@#", "Invalid Email")]
+    [InlineData("João Silva", "newuser@finvault.com", "password", "password", "Password too weak")]
+    [InlineData("João Silva", "newuser@finvault.com", "Password123!@#", "DifferentPassword!", "Passwords do not match")]
+    public async Task Register_ShouldReturnBadRequest_WhenInputIsInvalid(string fullName, string email, string password, string confirmPassword, string reason)
     {
-        var command = new { Email = email, Password = password, ConfirmPassword = confirmPassword };
+        var command = new { FullName = fullName, Email = email, Password = password, ConfirmPassword = confirmPassword };
 
         var response = await _client.PostAsJsonAsync("/api/v1/auth/register", command);
 

@@ -6,13 +6,18 @@ import { authGuard } from './guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
-    redirectTo: 'dashboard',
+    redirectTo: 'login',
     pathMatch: 'full'
   },
   {
     // Publicly accessible login view, not protected by the auth guard
     path: 'login',
     loadComponent: () => import('./pages/login/login').then(m => m.LoginComponent)
+  },
+  {
+    // Publicly accessible register view, not protected by the auth guard
+    path: 'register',
+    loadComponent: () => import('./pages/register/register').then(m => m.RegisterComponent)
   },
   {
     // Point directly to the short name convention file for the dashboard component view module
@@ -28,6 +33,6 @@ export const routes: Routes = [
   },
   {
     path: '**',
-    redirectTo: 'dashboard'
+    redirectTo: 'login'
   }
 ];
