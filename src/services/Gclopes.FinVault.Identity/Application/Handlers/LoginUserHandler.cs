@@ -39,7 +39,7 @@ public class LoginUserHandler(
 
     private JwtSecurityToken GenerateJwtToken(IdentityUser user)
     {
-        var secretKey = configuration["Jwt:Key"];
+        var secretKey = configuration["JwtSettings:Secret"];
 
         // Ensure the JWT key is configured to prevent runtime exceptions
         if (string.IsNullOrEmpty(secretKey))
@@ -54,8 +54,8 @@ public class LoginUserHandler(
         var authSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey));
 
         return new JwtSecurityToken(
-            issuer: configuration["Jwt:Issuer"],
-            audience: configuration["Jwt:Audience"],
+            issuer: configuration["JwtSettings:Issuer"],
+            audience: configuration["JwtSettings:Audience"],
             expires: DateTime.UtcNow.AddHours(2),
             claims: authClaims,
             signingCredentials: new SigningCredentials(authSigningKey, SecurityAlgorithms.HmacSha256)
