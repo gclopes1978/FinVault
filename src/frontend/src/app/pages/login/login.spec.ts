@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { LoginComponent } from './login';
@@ -20,7 +20,9 @@ describe('LoginComponent', () => {
       imports: [LoginComponent, HttpClientTestingModule],
       providers: [
         { provide: AuthService, useValue: authServiceStub },
-        { provide: Router, useValue: routerStub }
+        { provide: Router, useValue: routerStub },
+        // Stub ActivatedRoute so the template's routerLink="/register" can resolve during tests
+        { provide: ActivatedRoute, useValue: { snapshot: { data: {} } } }
       ]
     }).compileComponents();
 
