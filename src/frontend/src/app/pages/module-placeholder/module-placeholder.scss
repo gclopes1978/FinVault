@@ -1,0 +1,49 @@
+// Apply structured layout controls to the root placeholder outer framing block
+.placeholder-container {
+  // Inject defensive bounding insulation padding around the page workspace
+  padding: 8px;
+  // Center the placeholder card horizontally and vertically within the available space
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  // Reserve enough vertical space so the card feels centered under the shell header
+  min-height: calc(100vh - 140px);
+
+  // Apply base design configuration to the central informational card
+  .placeholder-card {
+    // Paint the physical base canvas color with a solid crisp absolute white tone
+    background-color: #ffffff;
+    // Form a clean subtle border enclosure trace boundary along the perimeter edge
+    border: 1px solid #e2e8f0;
+    // Shape subtle rounding geometry contours onto the bounding corner profiles
+    border-radius: 12px;
+    // Inject comfortable internal spatial balancing padding inside card coordinates
+    padding: 48px;
+    // Center all inner textual content along the horizontal axis
+    text-align: center;
+    // Constrain the maximum card width to keep the message readable on wide screens
+    max-width: 480px;
+
+    // Scale the decorative icon glyph up for immediate visual emphasis
+    .placeholder-icon {
+      font-size: 2.5rem;
+      display: block;
+      margin-bottom: 16px;
+    }
+
+    // Apply typography parameters to the main placeholder title tag
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 8px 0;
+    }
+
+    // Apply typography parameters to the supporting subtitle text
+    .text-muted {
+      font-size: 0.9rem;
+      color: #64748b;
+      margin: 0;
+    }
+  }
+}

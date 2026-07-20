@@ -27,4 +27,18 @@
 
   </div>
 
+  <section class="hub-section">
+    <h2 class="hub-title">Explore Your Modules</h2>
+
+    <div class="hub-grid">
+      @for (module of moduleLinks; track module.route) {
+        <a class="hub-card" [routerLink]="module.route">
+          <span class="hub-icon">{{ module.icon }}</span>
+          <h3 class="hub-label">{{ module.label }}</h3>
+          <p class="hub-description">{{ module.description }}</p>
+        </a>
+      }
+    </div>
+  </section>
+
 </div>

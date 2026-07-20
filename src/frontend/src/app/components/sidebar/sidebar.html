@@ -3,7 +3,11 @@
     <ul>
       @for (item of navItems; track item.label) {
         <li>
-          <a class="nav-link">
+          <a
+            class="nav-link"
+            [routerLink]="item.route"
+            routerLinkActive="active"
+          >
             <span class="nav-label">{{ item.label }}</span>
           </a>
         </li>
