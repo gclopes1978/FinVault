@@ -2,8 +2,12 @@
 import { Injectable } from '@angular/core';
 // Import the HTTP client used to communicate with the Identity microservice through the gateway
 import { HttpClient } from '@angular/common/http';
-// Import the Observable and tap operator to react to the login response as a side effect
-import { Observable, tap } from 'rxjs';
+// Import the Observable, tap, and timeout operators to react to the login response as a side effect
+import { Observable, tap, timeout } from 'rxjs';
+
+// Maximum time (ms) to wait for the Identity service to answer a login request
+// before failing fast, so the UI never gets stuck on "Signing in..." indefinitely
+const LOGIN_TIMEOUT_MS = 15000;
 // Import the environment configuration to resolve the API Gateway base address
 import { environment } from '../../environments/environment';
 
@@ -41,6 +45,7 @@ export class AuthService {
     return this.http
       .post<AuthenticationResponse>(`${environment.gatewayUrl}/v1/auth/login`, request)
       .pipe(
+        timeout(LOGIN_TIMEOUT_MS),
         tap((response) => this.setToken(response.accessToken))
       );
   }
