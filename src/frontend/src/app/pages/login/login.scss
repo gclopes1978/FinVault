@@ -129,7 +129,19 @@
   font-size: 0.8125rem;
   // Paint the banner text with a clear corporate red warning tone
   color: #b91c1c;
+
+  // Make focus highly visible for keyboard users and Assistive Technology
+  transition: box-shadow 0.12s ease-in-out, border-color 0.12s ease-in-out;
+
+  // Strong visible focus ring when the element receives keyboard focus
+  &:focus,
+  &:focus-visible {
+    outline: none; /* use box-shadow for consistent styling across browsers */
+    border-color: #f87171;
+    box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.18);
+  }
 }
+
 
 // Apply visual styling properties to the primary form submission button
 .submit-button {

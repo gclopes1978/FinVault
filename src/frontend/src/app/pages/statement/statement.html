@@ -20,11 +20,14 @@
     </div>
   </div>
 
-  <div *ngIf="filteredTransactions.length === 0" class="empty-state-box">
-    <p>No historical transactions were found matching the selected filter criteria profiles.</p>
-  </div>
+  @if(filteredTransactions.length === 0) {
+    <div class="empty-state-box">
+      <p>No historical transactions were found matching the selected filter criteria profiles.</p>
+    </div>
+  }
 
-  <div *ngIf="filteredTransactions.length > 0" class="table-responsive">
+@if (filteredTransactions.length > 0) {
+  <div class="table-responsive">
     <table class="statement-table">
       <thead>
         <tr>
@@ -37,22 +40,25 @@
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let tx of filteredTransactions" class="transaction-row">
-          <td class="text-mono">{{ tx.id }}</td>
-          <td>{{ tx.date | date: 'dd/MM/yyyy HH:mm' }}</td>
-          <td class="text-bold">{{ tx.description }}</td>
-          <td>
-            <span [ngClass]="{'badge-income': tx.type === 'Income', 'badge-expense': tx.type === 'Expense'}">
-              {{ tx.type }}
-            </span>
-          </td>
-          <td [ngClass]="{'amount-positive': tx.type === 'Income', 'amount-negative': tx.type === 'Expense'}" class="text-bold">
-            {{ tx.type === 'Income' ? '+' : '-' }} {{ tx.amount | currency: 'EUR' }}
-          </td>
-          <td class="text-bold">{{ tx.balanceAfter | currency: 'EUR' }}</td>
-        </tr>
+        @for (tx of filteredTransactions; track tx.id) {
+          <tr class="transaction-row">
+            <td class="text-mono">{{ tx.id }}</td>
+            <td>{{ tx.date | date: 'dd/MM/yyyy HH:mm' }}</td>
+            <td class="text-bold">{{ tx.description }}</td>
+            <td>
+              <span [ngClass]="getTypeClass(tx.type)">
+                {{ tx.type }}
+              </span>
+            </td>
+            <td [ngClass]="getAmountClass(tx.type)" class="text-bold">
+              {{ tx.type === 'Income' ? '+' : '-' }} {{ tx.amount | currency: 'EUR' }}
+            </td>
+            <td class="text-bold">{{ tx.balanceAfter | currency: 'EUR' }}</td>
+          </tr>
+        }
       </tbody>
     </table>
   </div>
+}
 
 </div>

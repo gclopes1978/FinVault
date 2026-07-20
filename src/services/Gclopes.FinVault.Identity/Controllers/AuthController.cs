@@ -32,7 +32,14 @@ public class AuthController(IMediator mediator) : ControllerBase
     public async Task<IActionResult> Login([FromBody] LoginUserCommand command)
     {
         var result = await mediator.Send(command);
-        if (result == null) return Unauthorized();
+        if (result == null)
+        {
+            return Problem(
+                detail: "Invalid username or password",
+                statusCode: StatusCodes.Status401Unauthorized,
+                title: "Unauthorized"
+            );
+        }
 
         return Ok(result); // Devolve o objeto plano diretamente
     }

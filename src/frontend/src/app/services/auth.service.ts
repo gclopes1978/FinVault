@@ -1,11 +1,13 @@
 // Import the core Injectable decorator from the Angular framework
 import { Injectable } from '@angular/core';
-// Import the HTTP client used to communicate with the Identity microservice through the gateway
-import { HttpClient } from '@angular/common/http';
-// Import the Observable and tap operator to react to the login response as a side effect
-import { Observable, tap } from 'rxjs';
+// Import the HTTP client and HttpErrorResponse
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+// Import the Observable and operators
+import { Observable, map, switchMap, of, throwError } from 'rxjs';
 // Import the environment configuration to resolve the API Gateway base address
 import { environment } from '../../environments/environment';
+
+
 
 // Define the key used to persist the JWT bearer token inside sessionStorage
 const TOKEN_STORAGE_KEY = 'finvault_access_token';
@@ -36,12 +38,29 @@ export interface AuthenticationResponse {
 export class AuthService {
   constructor(private http: HttpClient) {}
 
-  // Submit the user credentials to the Identity service and persist the returned token on success
+  // Submit the user credentials to the Identity service and persist the returned token on success.
   login(request: LoginRequest): Observable<AuthenticationResponse> {
     return this.http
-      .post<AuthenticationResponse>(`${environment.gatewayUrl}/v1/auth/login`, request)
+      .post<any>(`${environment.gatewayUrl}/v1/auth/login`, request)
       .pipe(
-        tap((response) => this.setToken(response.accessToken))
+        switchMap((response: any) => {
+          const token = response?.accessToken ?? response?.data?.accessToken ?? response?.token ?? response?.data?.token;
+
+          if (token) {
+            this.setToken(token);
+            const expiration = response?.expiration ?? response?.expiresAt ?? response?.data?.expiration ?? response?.data?.expiresAt ?? undefined;
+            return of({ accessToken: token, expiration } as AuthenticationResponse);
+          }
+
+          // Se chegou aqui com HTTP 200 mas sem token, criamos um erro REAL do Angular
+          // que o teu login.ts vai conseguir ler perfeitamente
+          const msg = response?.detail || response?.message || 'Authentication failed.';
+          return throwError(() => new HttpErrorResponse({
+            error: { detail: msg },
+            status: 401,
+            statusText: 'Unauthorized'
+          }));
+        })
       );
   }
 
