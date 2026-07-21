@@ -8,6 +8,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router, RouterLink } from '@angular/router';
 // Import the AuthService that performs the actual login HTTP call
 import { AuthService } from '../../services/auth.service';
+// Import TimeoutError to tell a network/backend timeout apart from a genuine auth rejection
+import { TimeoutError } from 'rxjs';
 
 @Component({
   // Define the custom HTML selector tag used to render this page component
@@ -62,9 +64,11 @@ export class LoginComponent {
         this.isSubmitting = false;
         this.router.navigate(['/dashboard']);
       },
-      error: () => {
+      error: (error: unknown) => {
         this.isSubmitting = false;
-        this.errorMessage = 'Invalid email or password. Please try again.';
+        this.errorMessage = error instanceof TimeoutError
+          ? 'The server took too long to respond. Please check your connection and try again.'
+          : 'Invalid email or password. Please try again.';
       }
     });
   }

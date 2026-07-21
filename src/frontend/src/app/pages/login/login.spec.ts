@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
-import { Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { ActivatedRoute, Router } from '@angular/router';
+import { of, throwError, TimeoutError } from 'rxjs';
 
 import { LoginComponent } from './login';
 import { AuthService } from '../../services/auth.service';
@@ -20,7 +20,9 @@ describe('LoginComponent', () => {
       imports: [LoginComponent, HttpClientTestingModule],
       providers: [
         { provide: AuthService, useValue: authServiceStub },
-        { provide: Router, useValue: routerStub }
+        { provide: Router, useValue: routerStub },
+        // RouterLink in the template needs an ActivatedRoute in its injector, even without a real router
+        { provide: ActivatedRoute, useValue: {} }
       ]
     }).compileComponents();
 
@@ -62,6 +64,17 @@ describe('LoginComponent', () => {
     component.onSubmit();
 
     expect(component.errorMessage).toBe('Invalid email or password. Please try again.');
+    expect(component.isSubmitting).toBe(false);
+    expect(routerStub.navigate).not.toHaveBeenCalled();
+  });
+
+  it('should reset the submit button and show a timeout message when the request stalls', () => {
+    (authServiceStub.login as jest.Mock).mockReturnValue(throwError(() => new TimeoutError()));
+    component.loginForm.setValue({ email: 'user@example.com', password: 'secret123' });
+
+    component.onSubmit();
+
+    expect(component.errorMessage).toBe('The server took too long to respond. Please check your connection and try again.');
     expect(component.isSubmitting).toBe(false);
     expect(routerStub.navigate).not.toHaveBeenCalled();
   });
