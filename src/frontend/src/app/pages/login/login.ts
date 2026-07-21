@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, NgZone } from '@angular/core';
+import { Component, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -24,7 +24,11 @@ export class LoginComponent {
     private formBuilder: FormBuilder,
     private authService: AuthService,
     private router: Router,
-    private ngZone: NgZone // <--- ADICIONADO PARA FORÇAR A ATUALIZAÇÃO
+    // Angular 22 has a known Zone.js change-detection regression (angular/angular#69530)
+    // where UI-updating state set inside async callbacks (HTTP errors, etc.) doesn't
+    // trigger a repaint even from inside NgZone.run(). ChangeDetectorRef.detectChanges()
+    // is the documented workaround until upstream fixes the scheduler.
+    private cdr: ChangeDetectorRef
   ) {
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
@@ -44,22 +48,19 @@ export class LoginComponent {
 
     this.authService.login({ email, password }).subscribe({
       next: () => {
-        this.ngZone.run(() => {
-          this.isSubmitting = false;
-          this.router.navigate(['/dashboard']);
-        });
+        this.isSubmitting = false;
+        this.router.navigate(['/dashboard']);
       },
       error: (err: unknown) => {
-        // Wrapped in ngZone.run() so the UI reliably re-renders regardless of where the error originated
-        this.ngZone.run(() => {
-          this.isSubmitting = false;
-          if (err instanceof TimeoutError) {
-            this.errorMessage = 'The server took too long to respond. Please check your connection and try again.';
-          } else {
-            const httpError = err as { error?: { detail?: string } };
-            this.errorMessage = httpError?.error?.detail || 'Invalid email or password. Please try again.';
-          }
-        });
+        this.isSubmitting = false;
+        if (err instanceof TimeoutError) {
+          this.errorMessage = 'The server took too long to respond. Please check your connection and try again.';
+        } else {
+          const httpError = err as { error?: { detail?: string } };
+          this.errorMessage = httpError?.error?.detail || 'Invalid email or password. Please try again.';
+        }
+        // Force a repaint immediately — see constructor comment on the Angular 22 CD regression
+        this.cdr.detectChanges();
       }
     });
   }
