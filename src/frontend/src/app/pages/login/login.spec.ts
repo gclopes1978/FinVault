@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { ActivatedRoute, Router } from '@angular/router';
-import { of, throwError } from 'rxjs';
+import { of, throwError, TimeoutError } from 'rxjs';
 
 import { LoginComponent } from './login';
 import { AuthService } from '../../services/auth.service';
@@ -57,13 +57,37 @@ describe('LoginComponent', () => {
     expect(component.isSubmitting).toBe(false);
   });
 
-  it('should surface an error message when the credentials are rejected', () => {
-    (authServiceStub.login as jest.Mock).mockReturnValue(throwError(() => new Error('Unauthorized')));
+  it('should surface the backend detail message when the credentials are rejected', () => {
+    (authServiceStub.login as jest.Mock).mockReturnValue(
+      throwError(() => ({ error: { detail: 'Invalid username or password' } }))
+    );
+    component.loginForm.setValue({ email: 'user@example.com', password: 'wrongpass' });
+
+    component.onSubmit();
+
+    expect(component.errorMessage).toBe('Invalid username or password');
+    expect(component.isSubmitting).toBe(false);
+    expect(routerStub.navigate).not.toHaveBeenCalled();
+  });
+
+  it('should fall back to a generic message when the error has no detail', () => {
+    (authServiceStub.login as jest.Mock).mockReturnValue(throwError(() => new Error('network down')));
     component.loginForm.setValue({ email: 'user@example.com', password: 'wrongpass' });
 
     component.onSubmit();
 
     expect(component.errorMessage).toBe('Invalid email or password. Please try again.');
+    expect(component.isSubmitting).toBe(false);
+    expect(routerStub.navigate).not.toHaveBeenCalled();
+  });
+
+  it('should reset the submit button and show a timeout message when the request stalls', () => {
+    (authServiceStub.login as jest.Mock).mockReturnValue(throwError(() => new TimeoutError()));
+    component.loginForm.setValue({ email: 'user@example.com', password: 'secret123' });
+
+    component.onSubmit();
+
+    expect(component.errorMessage).toBe('The server took too long to respond. Please check your connection and try again.');
     expect(component.isSubmitting).toBe(false);
     expect(routerStub.navigate).not.toHaveBeenCalled();
   });

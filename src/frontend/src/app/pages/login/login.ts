@@ -3,6 +3,8 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../services/auth.service';
+// Import TimeoutError to tell a network/backend timeout apart from a genuine auth rejection
+import { TimeoutError } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -47,11 +49,16 @@ export class LoginComponent {
           this.router.navigate(['/dashboard']);
         });
       },
-      error: (err: any) => {
-        // FORÇA o Angular a re-renderizar o HTML dentro da Zona
+      error: (err: unknown) => {
+        // Wrapped in ngZone.run() so the UI reliably re-renders regardless of where the error originated
         this.ngZone.run(() => {
-          this.errorMessage = err?.error?.detail || 'Invalid email or password. Please try again.';
           this.isSubmitting = false;
+          if (err instanceof TimeoutError) {
+            this.errorMessage = 'The server took too long to respond. Please check your connection and try again.';
+          } else {
+            const httpError = err as { error?: { detail?: string } };
+            this.errorMessage = httpError?.error?.detail || 'Invalid email or password. Please try again.';
+          }
         });
       }
     });

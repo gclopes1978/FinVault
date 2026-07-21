@@ -1,9 +1,13 @@
 // Import the core Injectable decorator from the Angular framework
 import { Injectable } from '@angular/core';
-// Import the HTTP client and HttpErrorResponse
+// Import the HTTP client and HttpErrorResponse used to communicate with the Identity microservice through the gateway
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-// Import the Observable and operators
-import { Observable, map, switchMap, of, throwError } from 'rxjs';
+// Import the Observable and operators used to react to the login response as a side effect
+import { Observable, map, switchMap, of, throwError, timeout } from 'rxjs';
+
+// Maximum time (ms) to wait for the Identity service to answer a login request
+// before failing fast, so the UI never gets stuck on "Signing in..." indefinitely
+const LOGIN_TIMEOUT_MS = 15000;
 // Import the environment configuration to resolve the API Gateway base address
 import { environment } from '../../environments/environment';
 
@@ -43,6 +47,7 @@ export class AuthService {
     return this.http
       .post<any>(`${environment.gatewayUrl}/v1/auth/login`, request)
       .pipe(
+        timeout(LOGIN_TIMEOUT_MS),
         switchMap((response: any) => {
           const token = response?.accessToken ?? response?.data?.accessToken ?? response?.token ?? response?.data?.token;
 
@@ -52,8 +57,8 @@ export class AuthService {
             return of({ accessToken: token, expiration } as AuthenticationResponse);
           }
 
-          // Se chegou aqui com HTTP 200 mas sem token, criamos um erro REAL do Angular
-          // que o teu login.ts vai conseguir ler perfeitamente
+          // If we got HTTP 200 but no token, raise a real Angular HttpErrorResponse
+          // so LoginComponent's error handler can read it consistently
           const msg = response?.detail || response?.message || 'Authentication failed.';
           return throwError(() => new HttpErrorResponse({
             error: { detail: msg },
