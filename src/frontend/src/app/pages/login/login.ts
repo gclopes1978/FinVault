@@ -1,54 +1,42 @@
-// Import the core Component decorator from the Angular framework
-import { Component } from '@angular/core';
-// Import the CommonModule to enable standard structural directives inside the template
+import { Component, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-// Import the Reactive Forms building blocks used to validate the credentials form
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
-// Import the Router to navigate to the dashboard after a successful authentication
 import { Router, RouterLink } from '@angular/router';
-// Import the AuthService that performs the actual login HTTP call
 import { AuthService } from '../../services/auth.service';
 // Import TimeoutError to tell a network/backend timeout apart from a genuine auth rejection
 import { TimeoutError } from 'rxjs';
 
 @Component({
-  // Define the custom HTML selector tag used to render this page component
   selector: 'app-login',
-  // Enable standalone mode to allow this component to manage its own scope independently
   standalone: true,
-  // Inject the modules required to build and validate the reactive login form
   imports: [CommonModule, ReactiveFormsModule, RouterLink],
-  // Specify the external relative file path containing the template layout
   templateUrl: './login.html',
-  // Specify the external relative file path containing the page styles
-  styleUrl: './login.scss'
+  styleUrls: ['./login.scss']
 })
-// Export the LoginComponent class so it can be registered in the application routing
 export class LoginComponent {
-  // Declare the reactive form group tracking the email and password controls
   public loginForm: FormGroup;
-
-  // Track whether a login request is currently in flight to disable the submit button
   public isSubmitting = false;
-
-  // Hold the error message returned by a failed authentication attempt
   public errorMessage: string | null = null;
+
+  @ViewChild('errorBanner') errorBanner?: ElementRef<HTMLDivElement>;
 
   constructor(
     private formBuilder: FormBuilder,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    // Angular 22 has a known Zone.js change-detection regression (angular/angular#69530)
+    // where UI-updating state set inside async callbacks (HTTP errors, etc.) doesn't
+    // trigger a repaint even from inside NgZone.run(). ChangeDetectorRef.detectChanges()
+    // is the documented workaround until upstream fixes the scheduler.
+    private cdr: ChangeDetectorRef
   ) {
-    // Build the form here, once formBuilder has been injected by Angular
     this.loginForm = this.formBuilder.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]]
     });
   }
 
-  // Submit the credentials to the AuthService and redirect to the dashboard on success
   public onSubmit(): void {
-    // Do nothing when the form is invalid, letting field-level errors guide the user
     if (this.loginForm.invalid) {
       this.loginForm.markAllAsTouched();
       return;
@@ -56,7 +44,6 @@ export class LoginComponent {
 
     this.isSubmitting = true;
     this.errorMessage = null;
-
     const { email, password } = this.loginForm.value;
 
     this.authService.login({ email, password }).subscribe({
@@ -64,11 +51,16 @@ export class LoginComponent {
         this.isSubmitting = false;
         this.router.navigate(['/dashboard']);
       },
-      error: (error: unknown) => {
+      error: (err: unknown) => {
         this.isSubmitting = false;
-        this.errorMessage = error instanceof TimeoutError
-          ? 'The server took too long to respond. Please check your connection and try again.'
-          : 'Invalid email or password. Please try again.';
+        if (err instanceof TimeoutError) {
+          this.errorMessage = 'The server took too long to respond. Please check your connection and try again.';
+        } else {
+          const httpError = err as { error?: { detail?: string } };
+          this.errorMessage = httpError?.error?.detail || 'Invalid email or password. Please try again.';
+        }
+        // Force a repaint immediately — see constructor comment on the Angular 22 CD regression
+        this.cdr.detectChanges();
       }
     });
   }

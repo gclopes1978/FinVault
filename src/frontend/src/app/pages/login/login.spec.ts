@@ -21,8 +21,8 @@ describe('LoginComponent', () => {
       providers: [
         { provide: AuthService, useValue: authServiceStub },
         { provide: Router, useValue: routerStub },
-        // RouterLink in the template needs an ActivatedRoute in its injector, even without a real router
-        { provide: ActivatedRoute, useValue: {} }
+        // Stub ActivatedRoute so the template's routerLink="/register" can resolve during tests
+        { provide: ActivatedRoute, useValue: { snapshot: { data: {} } } }
       ]
     }).compileComponents();
 
@@ -57,8 +57,21 @@ describe('LoginComponent', () => {
     expect(component.isSubmitting).toBe(false);
   });
 
-  it('should surface an error message when the credentials are rejected', () => {
-    (authServiceStub.login as jest.Mock).mockReturnValue(throwError(() => new Error('Unauthorized')));
+  it('should surface the backend detail message when the credentials are rejected', () => {
+    (authServiceStub.login as jest.Mock).mockReturnValue(
+      throwError(() => ({ error: { detail: 'Invalid username or password' } }))
+    );
+    component.loginForm.setValue({ email: 'user@example.com', password: 'wrongpass' });
+
+    component.onSubmit();
+
+    expect(component.errorMessage).toBe('Invalid username or password');
+    expect(component.isSubmitting).toBe(false);
+    expect(routerStub.navigate).not.toHaveBeenCalled();
+  });
+
+  it('should fall back to a generic message when the error has no detail', () => {
+    (authServiceStub.login as jest.Mock).mockReturnValue(throwError(() => new Error('network down')));
     component.loginForm.setValue({ email: 'user@example.com', password: 'wrongpass' });
 
     component.onSubmit();

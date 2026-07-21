@@ -63,6 +63,14 @@
             // Shift targeted hyperlink text color out into a sharp bright light gray tone
             color: #f8fafc;
           }
+
+          // Highlight the link matching the currently active router route
+          &.active {
+            // Apply a vibrant blue accent background to mark the current section
+            background-color: #2563eb;
+            // Force bright light text on top of the accent background for contrast
+            color: #f8fafc;
+          }
         }
       }
     }

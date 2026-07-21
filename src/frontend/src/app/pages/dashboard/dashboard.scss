@@ -116,6 +116,67 @@
       }
     }
   }
+
+  // Apply layout styling to the navigation hub section placed below the metrics overview
+  .hub-section {
+    // Inject a clean vertical top separation gap above the hub section
+    margin-top: 32px;
+
+    // Apply typography parameters to the hub section title
+    .hub-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 0 0 16px 0;
+    }
+
+    // Activate CSS Grid module layouts to organize the module navigation cards
+    .hub-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 24px;
+
+      // Apply base design configuration to each clickable module navigation card
+      .hub-card {
+        background-color: #ffffff;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 24px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        text-decoration: none;
+        transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+
+        // Capture interactive mouse entry behaviors over the targeted hub cards
+        &:hover {
+          transform: translateY(-2px);
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+          border-color: #2563eb;
+        }
+
+        // Scale the decorative icon glyph for immediate visual identification
+        .hub-icon {
+          font-size: 1.75rem;
+        }
+
+        // Apply typography parameters to the module name heading
+        .hub-label {
+          font-size: 1rem;
+          font-weight: 700;
+          color: #1e293b;
+          margin: 0;
+        }
+
+        // Apply typography parameters to the module short description text
+        .hub-description {
+          font-size: 0.8rem;
+          color: #64748b;
+          margin: 0;
+        }
+      }
+    }
+  }
 }
 
 // Introduce responsive media query break targets to re-adjust layouts on smaller monitors
@@ -123,6 +184,11 @@
   // Re-configure grid specifications when executing under tighter desktop layout constraints
   .dashboard-container .metrics-grid {
     // Compress layout grids down into a dual-column format to protect card boundaries
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  // Re-configure the hub navigation grid to a dual-column format on tighter desktop viewports
+  .dashboard-container .hub-section .hub-grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -134,6 +200,12 @@
     // Downscale columns down to a simple singular full-width column pattern sequence
     grid-template-columns: 1fr;
     // Compress intermediate spacing down to 16px to conserve restricted display rooms
+    gap: 16px;
+  }
+
+  // Downscale the hub navigation grid down to a single full-width column on phone displays
+  .dashboard-container .hub-section .hub-grid {
+    grid-template-columns: 1fr;
     gap: 16px;
   }
 }

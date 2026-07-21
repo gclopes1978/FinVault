@@ -92,4 +92,20 @@ export class StatementComponent implements OnInit {
       );
     }
   }
+
+  // --- MÉTODOS ADICIONADOS AQUI PARA O HTML ---
+
+  public getTypeClass(type: string): Record<string, boolean> {
+    return {
+      'badge-income': type === 'Income',
+      'badge-expense': type === 'Expense'
+    };
+  }
+
+  public getAmountClass(type: string): Record<string, boolean> {
+    return {
+      'amount-positive': type === 'Income',
+      'amount-negative': type === 'Expense'
+    };
+  }
 }

@@ -7,7 +7,7 @@ import { AuthService } from '../services/auth.service';
 
 /**
  * Global functional interceptor that clones outgoing HTTP requests and appends
- * the "Authorization: Bearer <token>" header whenever a token exists in sessionStorage.
+ * the "Authorization" header whenever a token exists in sessionStorage.
  */
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
@@ -18,10 +18,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     return next(req);
   }
 
-  // Clone the request and inject the Authorization header instead of mutating the original
+  // Clone the request and inject the Authorization header using the stored bearer token
   const authorizedRequest = req.clone({
     setHeaders: {
-      Authorization: `Bearer ${token}`
+      Authorization: 'Bearer ' + token
     }
   });
 

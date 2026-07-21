@@ -1,15 +1,17 @@
 // Import the core Injectable decorator from the Angular framework
 import { Injectable } from '@angular/core';
-// Import the HTTP client used to communicate with the Identity microservice through the gateway
-import { HttpClient } from '@angular/common/http';
-// Import the Observable, tap, and timeout operators to react to the login response as a side effect
-import { Observable, tap, timeout } from 'rxjs';
+// Import the HTTP client and HttpErrorResponse used to communicate with the Identity microservice through the gateway
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+// Import the Observable and operators used to react to the login response as a side effect
+import { Observable, map, switchMap, of, throwError, timeout } from 'rxjs';
 
 // Maximum time (ms) to wait for the Identity service to answer a login request
 // before failing fast, so the UI never gets stuck on "Signing in..." indefinitely
 const LOGIN_TIMEOUT_MS = 15000;
 // Import the environment configuration to resolve the API Gateway base address
 import { environment } from '../../environments/environment';
+
+
 
 // Define the key used to persist the JWT bearer token inside sessionStorage
 const TOKEN_STORAGE_KEY = 'finvault_access_token';
@@ -40,13 +42,30 @@ export interface AuthenticationResponse {
 export class AuthService {
   constructor(private http: HttpClient) {}
 
-  // Submit the user credentials to the Identity service and persist the returned token on success
+  // Submit the user credentials to the Identity service and persist the returned token on success.
   login(request: LoginRequest): Observable<AuthenticationResponse> {
     return this.http
-      .post<AuthenticationResponse>(`${environment.gatewayUrl}/v1/auth/login`, request)
+      .post<any>(`${environment.gatewayUrl}/v1/auth/login`, request)
       .pipe(
         timeout(LOGIN_TIMEOUT_MS),
-        tap((response) => this.setToken(response.accessToken))
+        switchMap((response: any) => {
+          const token = response?.accessToken ?? response?.data?.accessToken ?? response?.token ?? response?.data?.token;
+
+          if (token) {
+            this.setToken(token);
+            const expiration = response?.expiration ?? response?.expiresAt ?? response?.data?.expiration ?? response?.data?.expiresAt ?? undefined;
+            return of({ accessToken: token, expiration } as AuthenticationResponse);
+          }
+
+          // If we got HTTP 200 but no token, raise a real Angular HttpErrorResponse
+          // so LoginComponent's error handler can read it consistently
+          const msg = response?.detail || response?.message || 'Authentication failed.';
+          return throwError(() => new HttpErrorResponse({
+            error: { detail: msg },
+            status: 401,
+            statusText: 'Unauthorized'
+          }));
+        })
       );
   }
 

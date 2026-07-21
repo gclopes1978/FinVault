@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { provideRouter } from '@angular/router';
 
 import { SidebarComponent } from './sidebar';
 
@@ -9,6 +10,8 @@ describe('SidebarComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [SidebarComponent],
+      // Provide an empty test router so RouterLink/RouterLinkActive can resolve without a real app config
+      providers: [provideRouter([])],
     }).compileComponents();
 
     fixture = TestBed.createComponent(SidebarComponent);

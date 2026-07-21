@@ -46,8 +46,9 @@
         }
       </div>
 
+
       @if (errorMessage) {
-        <div class="form-error-banner">{{ errorMessage }}</div>
+        <div id="error-banner" #errorBanner class="form-error-banner" role="alert" aria-live="assertive" tabindex="-1">{{ errorMessage }}</div>
       }
 
       <button type="submit" class="submit-button" [disabled]="isSubmitting">
