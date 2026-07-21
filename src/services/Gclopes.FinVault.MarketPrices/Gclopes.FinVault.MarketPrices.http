@@ -1,0 +1,6 @@
+@Gclopes.FinVault.MarketPrices_HostAddress = http://localhost:5217
+
+GET {{Gclopes.FinVault.MarketPrices_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

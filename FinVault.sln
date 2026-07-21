@@ -31,6 +31,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gclopes.FinVault.Investment
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gclopes.FinVault.DocumentIngestion", "src\services\Gclopes.FinVault.DocumentIngestion\Gclopes.FinVault.DocumentIngestion.csproj", "{73A4A8A2-0841-4885-87A1-60471CC9A8CF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Gclopes.FinVault.MarketPrices", "src\services\Gclopes.FinVault.MarketPrices\Gclopes.FinVault.MarketPrices.csproj", "{381BC715-FA2C-9E28-5888-DF14241AD51A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -161,6 +163,18 @@ Global
 		{73A4A8A2-0841-4885-87A1-60471CC9A8CF}.Release|x64.Build.0 = Release|Any CPU
 		{73A4A8A2-0841-4885-87A1-60471CC9A8CF}.Release|x86.ActiveCfg = Release|Any CPU
 		{73A4A8A2-0841-4885-87A1-60471CC9A8CF}.Release|x86.Build.0 = Release|Any CPU
+		{381BC715-FA2C-9E28-5888-DF14241AD51A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{381BC715-FA2C-9E28-5888-DF14241AD51A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{381BC715-FA2C-9E28-5888-DF14241AD51A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{381BC715-FA2C-9E28-5888-DF14241AD51A}.Debug|x64.Build.0 = Debug|Any CPU
+		{381BC715-FA2C-9E28-5888-DF14241AD51A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{381BC715-FA2C-9E28-5888-DF14241AD51A}.Debug|x86.Build.0 = Debug|Any CPU
+		{381BC715-FA2C-9E28-5888-DF14241AD51A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{381BC715-FA2C-9E28-5888-DF14241AD51A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{381BC715-FA2C-9E28-5888-DF14241AD51A}.Release|x64.ActiveCfg = Release|Any CPU
+		{381BC715-FA2C-9E28-5888-DF14241AD51A}.Release|x64.Build.0 = Release|Any CPU
+		{381BC715-FA2C-9E28-5888-DF14241AD51A}.Release|x86.ActiveCfg = Release|Any CPU
+		{381BC715-FA2C-9E28-5888-DF14241AD51A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -179,6 +193,7 @@ Global
 		{263413C1-0701-0BDF-3C0B-7416C14C3E67} = {CEA09484-30F6-4D44-02F6-822E06DBC57C}
 		{6251ACB1-C711-4944-A6D7-22517BA708BB} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
 		{73A4A8A2-0841-4885-87A1-60471CC9A8CF} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
+		{381BC715-FA2C-9E28-5888-DF14241AD51A} = {984BB9B3-3FA3-BE33-9484-CAC21695A33C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E2EBD18F-BBA2-4863-AD05-D189E40FB315}

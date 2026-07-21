@@ -268,6 +268,15 @@ services:
       finvault-sqlserver:
         condition: service_healthy
     restart: on-failure
+  market-prices-service:
+    build:
+      context: .
+      dockerfile: src/services/Gclopes.FinVault.MarketPrices/Dockerfile
+    container_name: market-prices-service
+    ports:
+      - "7012:8080"
+    restart: unless-stopped
+
 volumes:
   rabbitmq_data:
   sqlserver_data:
