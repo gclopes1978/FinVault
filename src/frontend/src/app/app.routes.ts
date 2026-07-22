@@ -32,6 +32,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/statement/statement').then(m => m.StatementComponent)
   },
   {
+    // PDF Upload Centre: centralised screen for all manual PDF imports (statements, payroll, PPR)
+    path: 'pdf-upload',
+    canActivate: [authGuard],
+    loadComponent: () => import('./pages/pdf-upload/pdf-upload').then(m => m.PdfUploadComponent)
+  },
+  {
     // Lazy-loaded placeholder route for the Current Account module, reached from the Dashboard Hub and Sidebar
     path: 'current-account',
     canActivate: [authGuard],
