@@ -9,7 +9,7 @@ import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
 // Import the subscription type used to stop the post-upload history polling
 import { Subscription, interval } from 'rxjs';
 // Import the upload service and its supporting types
-import { PdfDocumentType, PdfUploadResult, PdfUploadService, UploadHistoryItem } from '../../services/pdf-upload.service';
+import { PdfDocumentType, PdfUploadService, UploadHistoryItem } from '../../services/pdf-upload.service';
 
 // Describe a selectable entry in the document type dropdown/selector
 interface DocumentTypeOption {
@@ -17,15 +17,27 @@ interface DocumentTypeOption {
   label: string;
 }
 
-// Track which visual state the upload area is currently showing
-type UploadStage = 'idle' | 'uploading' | 'parsing' | 'success' | 'error';
+// Track which visual state a single queued upload is currently showing
+type UploadTaskStage = 'uploading' | 'parsing' | 'success' | 'error';
 
-// How often (ms) to refresh the history table while a just-uploaded document is still pending,
-// so its status updates automatically once the PdfParser reports back
+// One row in the "current batch" list — one per file selected/dropped in a single interaction.
+// Files are uploaded one at a time (see processQueue) since the PdfParser has a single
+// RabbitMQ consumer and processes documents sequentially regardless of how fast we upload them.
+interface UploadTask {
+  id: string;
+  fileName: string;
+  stage: UploadTaskStage;
+  progress: number;
+  errorMessage: string | null;
+  documentId: string | null;
+}
+
+// How often (ms) to refresh the history table while just-uploaded documents are still pending,
+// so their status updates automatically once the PdfParser reports back
 const HISTORY_POLL_INTERVAL_MS = 2500;
-// Stop polling after this many attempts even if the document never reports back, so the app
+// Stop polling after this many attempts even if a document never reports back, so the app
 // doesn't poll forever if the PdfParser callback is misconfigured
-const HISTORY_POLL_MAX_ATTEMPTS = 12;
+const HISTORY_POLL_MAX_ATTEMPTS = 20;
 
 @Component({
   selector: 'app-pdf-upload',
@@ -58,14 +70,15 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
 
   public selectedDocumentType: PdfDocumentType = this.documentTypes[0].value;
   public isDragging = false;
-  public stage: UploadStage = 'idle';
-  public uploadProgress = 0;
-  public errorMessage: string | null = null;
-  public lastResult: PdfUploadResult | null = null;
+
+  // The current batch: every file selected/dropped together, with its own live progress/status
+  public uploadTasks: UploadTask[] = [];
 
   public importHistory: UploadHistoryItem[] = [];
   public isHistoryLoading = false;
 
+  private uploadQueue: { file: File; task: UploadTask }[] = [];
+  private isProcessingQueue = false;
   private historyPollSubscription: Subscription | null = null;
 
   constructor(private pdfUploadService: PdfUploadService) {}
@@ -78,9 +91,9 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
     this.historyPollSubscription?.unsubscribe();
   }
 
-  // Whether user interaction with the upload area should currently be blocked
+  // Whether user interaction with the drop zone should currently be blocked
   public get isBusy(): boolean {
-    return this.stage === 'uploading' || this.stage === 'parsing';
+    return this.isProcessingQueue;
   }
 
   public onDragOver(event: DragEvent): void {
@@ -103,28 +116,24 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const droppedFile = event.dataTransfer?.files?.[0];
-    if (droppedFile) {
-      this.handleFile(droppedFile);
+    const droppedFiles = event.dataTransfer?.files;
+    if (droppedFiles && droppedFiles.length > 0) {
+      this.handleFiles(Array.from(droppedFiles));
     }
   }
 
   public onFileSelected(event: Event): void {
     const input = event.target as HTMLInputElement;
-    const selectedFile = input.files?.[0];
-    if (selectedFile) {
-      this.handleFile(selectedFile);
+    if (input.files && input.files.length > 0) {
+      this.handleFiles(Array.from(input.files));
     }
-    // Reset the input so selecting the same file twice in a row still fires a change event
+    // Reset the input so selecting the same file(s) twice in a row still fires a change event
     input.value = '';
   }
 
-  // Return to the idle state so the user can upload another document
-  public resetUpload(): void {
-    this.stage = 'idle';
-    this.uploadProgress = 0;
-    this.errorMessage = null;
-    this.lastResult = null;
+  // Clear the current batch list so the drop zone is free for another round of uploads
+  public clearCompletedTasks(): void {
+    this.uploadTasks = [];
   }
 
   // Resolve a document type value (either a frontend hint or a PdfParser classifier label) into
@@ -176,49 +185,89 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
     });
   }
 
-  private handleFile(file: File): void {
-    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
-    if (!isPdf) {
-      this.stage = 'error';
-      this.errorMessage = 'Documento não reconhecido: apenas são aceites ficheiros PDF.';
+  private handleFiles(files: File[]): void {
+    for (const file of files) {
+      const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+      const task: UploadTask = {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
+        fileName: file.name,
+        stage: isPdf ? 'uploading' : 'error',
+        progress: 0,
+        errorMessage: isPdf ? null : 'Documento não reconhecido: apenas são aceites ficheiros PDF.',
+        documentId: null
+      };
+
+      this.uploadTasks.unshift(task);
+
+      if (isPdf) {
+        this.uploadQueue.push({ file, task });
+      }
+    }
+
+    if (!this.isProcessingQueue) {
+      this.processQueue();
+    }
+  }
+
+  // Uploads are processed one file at a time, in the order they were added. This matches the
+  // PdfParser's single RabbitMQ consumer (it processes one document at a time regardless of how
+  // many arrive at once), and avoids saturating the Gateway with dozens of simultaneous uploads.
+  private processQueue(): void {
+    const next = this.uploadQueue.shift();
+
+    if (!next) {
+      this.isProcessingQueue = false;
+      this.onBatchDrained();
       return;
     }
 
-    this.stage = 'uploading';
-    this.uploadProgress = 0;
-    this.errorMessage = null;
-    this.lastResult = null;
+    this.isProcessingQueue = true;
+    this.uploadOne(next.file, next.task).then(() => this.processQueue());
+  }
 
-    this.pdfUploadService.uploadPdf(file, this.selectedDocumentType).subscribe({
-      next: (event) => {
-        if (event.type === HttpEventType.UploadProgress && event.total) {
-          this.uploadProgress = Math.round((100 * event.loaded) / event.total);
-          // Once the bytes are fully sent, the backend is still parsing/dispatching the document
-          if (this.uploadProgress >= 100) {
-            this.stage = 'parsing';
+  private uploadOne(file: File, task: UploadTask): Promise<void> {
+    return new Promise((resolve) => {
+      this.pdfUploadService.uploadPdf(file, this.selectedDocumentType).subscribe({
+        next: (event) => {
+          if (event.type === HttpEventType.UploadProgress && event.total) {
+            task.progress = Math.round((100 * event.loaded) / event.total);
+            // Once the bytes are fully sent, the backend is still parsing/dispatching the document
+            if (task.progress >= 100) {
+              task.stage = 'parsing';
+            }
+          } else if (event.type === HttpEventType.Response) {
+            task.stage = 'success';
+            task.documentId = event.body?.documentId ?? null;
+            resolve();
           }
-        } else if (event.type === HttpEventType.Response) {
-          this.stage = 'success';
-          this.lastResult = event.body ?? null;
-          this.loadHistory();
-          if (this.lastResult?.documentId) {
-            this.pollHistoryUntilProcessed(this.lastResult.documentId);
-          }
+        },
+        error: (err: HttpErrorResponse) => {
+          task.stage = 'error';
+          task.errorMessage = this.extractErrorMessage(err);
+          resolve();
         }
-      },
-      error: (err: HttpErrorResponse) => {
-        this.stage = 'error';
-        this.errorMessage = this.extractErrorMessage(err);
-        this.loadHistory();
-      }
+      });
     });
   }
 
-  // The upload response only confirms the document was received — actual PDF processing happens
-  // asynchronously via RabbitMQ/PdfParser. Poll the history briefly afterwards so the "Em
-  // processamento" row updates to "Sucesso"/"Erro" without the user needing to refresh manually.
-  private pollHistoryUntilProcessed(documentId: string): void {
+  // Once every file in the batch has been sent, refresh the history table and poll it briefly so
+  // the newly uploaded rows move from "Em processamento" to "Sucesso"/"Erro" automatically.
+  private onBatchDrained(): void {
+    this.loadHistory();
+
+    const pendingDocumentIds = this.uploadTasks
+      .filter((task) => task.stage === 'success' && task.documentId)
+      .map((task) => task.documentId as string);
+
+    this.pollHistoryUntilProcessed(pendingDocumentIds);
+  }
+
+  private pollHistoryUntilProcessed(documentIds: string[]): void {
     this.historyPollSubscription?.unsubscribe();
+
+    if (documentIds.length === 0) {
+      return;
+    }
 
     let attempts = 0;
     this.historyPollSubscription = interval(HISTORY_POLL_INTERVAL_MS).subscribe(() => {
@@ -226,8 +275,13 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
       this.pdfUploadService.getHistory(20).subscribe({
         next: (history) => {
           this.importHistory = history;
-          const uploaded = history.find((item) => item.id === documentId);
-          if ((uploaded && uploaded.success !== null) || attempts >= HISTORY_POLL_MAX_ATTEMPTS) {
+
+          const stillPending = documentIds.some((id) => {
+            const item = history.find((h) => h.id === id);
+            return !item || item.success === null;
+          });
+
+          if (!stillPending || attempts >= HISTORY_POLL_MAX_ATTEMPTS) {
             this.historyPollSubscription?.unsubscribe();
           }
         },

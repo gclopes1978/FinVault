@@ -30,75 +30,48 @@
       (drop)="onDrop($event)"
       (click)="!isBusy && fileInput.click()"
     >
-      <input #fileInput type="file" accept="application/pdf,.pdf" hidden [disabled]="isBusy" (change)="onFileSelected($event)" />
+      <input #fileInput type="file" accept="application/pdf,.pdf" multiple hidden [disabled]="isBusy" (change)="onFileSelected($event)" />
       <span class="drop-icon">📄</span>
-      <p class="drop-text">Arraste um ficheiro PDF para aqui, ou <span class="drop-link">clique para selecionar</span></p>
-      <p class="drop-hint">Apenas ficheiros .pdf são aceites</p>
+      <p class="drop-text">Arraste um ou vários PDF para aqui, ou <span class="drop-link">clique para selecionar</span></p>
+      <p class="drop-hint">Podes selecionar vários ficheiros de uma vez — são enviados um a um</p>
     </div>
 
-    @if (stage === 'uploading') {
-      <div class="feedback-panel state-uploading">
-        <div class="progress-bar-track">
-          <div class="progress-bar-fill" [style.width.%]="uploadProgress"></div>
+    @if (uploadTasks.length > 0) {
+      <div class="batch-list">
+        <div class="batch-list-header">
+          <span>{{ uploadTasks.length }} ficheiro(s) neste lote</span>
+          <button type="button" class="btn-link" (click)="clearCompletedTasks()" [disabled]="isBusy">Limpar lista</button>
         </div>
-        <span class="feedback-text">A enviar ficheiro... {{ uploadProgress }}%</span>
-      </div>
-    }
 
-    @if (stage === 'parsing') {
-      <div class="feedback-panel state-parsing">
-        <span class="spinner" aria-hidden="true"></span>
-        <span class="feedback-text">A processar PDF...</span>
-      </div>
-    }
+        @for (task of uploadTasks; track task.id) {
+          <div class="batch-item" [ngClass]="'batch-item-' + task.stage">
+            <span class="batch-filename" [title]="task.fileName">{{ task.fileName }}</span>
 
-    @if (stage === 'success') {
-      <div class="feedback-panel state-success">
-        <div class="summary-card">
-          <div class="summary-heading">
-            <span class="feedback-icon success">✓</span>
-            <h3>Documento recebido com sucesso</h3>
+            @if (task.stage === 'uploading') {
+              <div class="batch-progress">
+                <div class="progress-bar-track">
+                  <div class="progress-bar-fill" [style.width.%]="task.progress"></div>
+                </div>
+                <span class="batch-status-text">A enviar... {{ task.progress }}%</span>
+              </div>
+            }
+
+            @if (task.stage === 'parsing') {
+              <span class="batch-status-text with-spinner">
+                <span class="spinner" aria-hidden="true"></span>
+                A processar PDF...
+              </span>
+            }
+
+            @if (task.stage === 'success') {
+              <span class="batch-status-text success">✓ Enviado com sucesso</span>
+            }
+
+            @if (task.stage === 'error') {
+              <span class="batch-status-text error" [title]="task.errorMessage ?? ''">✕ {{ task.errorMessage }}</span>
+            }
           </div>
-          <p class="summary-message">{{ lastResult?.message || 'O ficheiro foi enviado e está em processamento.' }}</p>
-
-          @if (lastResult?.period || lastResult?.recordsImported || lastResult?.totalValue) {
-            <dl class="summary-details">
-              @if (lastResult?.period) {
-                <div class="summary-row">
-                  <dt>Período</dt>
-                  <dd>{{ lastResult?.period }}</dd>
-                </div>
-              }
-              @if (lastResult?.recordsImported) {
-                <div class="summary-row">
-                  <dt>Registos importados</dt>
-                  <dd>{{ lastResult?.recordsImported }}</dd>
-                </div>
-              }
-              @if (lastResult?.totalValue) {
-                <div class="summary-row">
-                  <dt>Valor total</dt>
-                  <dd>{{ lastResult?.totalValue | currency:'EUR':'symbol':'1.2-2' }}</dd>
-                </div>
-              }
-            </dl>
-          }
-
-          <button type="button" class="btn-secondary" (click)="resetUpload()">Carregar outro documento</button>
-        </div>
-      </div>
-    }
-
-    @if (stage === 'error') {
-      <div class="feedback-panel state-error">
-        <div class="summary-card">
-          <div class="summary-heading">
-            <span class="feedback-icon error">✕</span>
-            <h3>Não foi possível processar o documento</h3>
-          </div>
-          <p class="summary-message">{{ errorMessage }}</p>
-          <button type="button" class="btn-secondary" (click)="resetUpload()">Tentar novamente</button>
-        </div>
+        }
       </div>
     }
 
