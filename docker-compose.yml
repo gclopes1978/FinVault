@@ -275,7 +275,11 @@ services:
     container_name: market-prices-service
     ports:
       - "7012:8080"
-    restart: unless-stopped
+    networks:
+      finvault-network:
+        aliases:
+          - market-prices-service
+    restart: on-failure
 
 volumes:
   rabbitmq_data:

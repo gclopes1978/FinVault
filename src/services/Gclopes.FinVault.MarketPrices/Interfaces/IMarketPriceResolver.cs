@@ -3,6 +3,7 @@
     public interface IMarketPriceResolver
     {
         IMarketPriceProvider GetProvider(string assetType);
+        Task<string?> ResolveTickerFromIsinAsync(string isin);
     }
 
 }

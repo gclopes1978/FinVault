@@ -8,7 +8,7 @@ public static class MarketPricesEndpoints
     {
         var group = app.MapGroup("/api/marketprices")
             .WithName("MarketPrices")
-            .RequireAuthorization() // tira se não quiseres auth
+            .RequireAuthorization() 
             .WithOpenApi();
 
         group.MapGet("/{assetType}/{symbol}", GetRawPriceAsync)
