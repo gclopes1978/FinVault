@@ -15,16 +15,30 @@ export type PdfDocumentType =
   | 'ARBancoInvestPPR';
 
 // Define a type-safe contract for the response returned once the document has been accepted.
-// NOTE: the DocumentIngestion service (api/v1/document/upload) currently only returns
-// message/documentId/path — it does not yet parse the PDF synchronously. The optional
-// period/recordsImported/totalValue fields are kept here so the UI can display a richer
-// summary automatically once the backend contract is extended to return them.
+// NOTE: the DocumentIngestion service (api/v1/document/upload) returns message/documentId/path
+// synchronously — actual parsing happens asynchronously via the PdfParser and is reflected in
+// the import history (see UploadHistoryItem below). The optional period/recordsImported/
+// totalValue fields are kept here so the summary card can display richer data automatically if
+// the upload endpoint is ever extended to return it synchronously.
 export interface PdfUploadResult {
   documentId?: string;
   message?: string;
   period?: string;
   recordsImported?: number;
   totalValue?: number;
+}
+
+// A single row of the import history, as persisted by DocumentIngestion and updated once the
+// PdfParser reports back whether processing succeeded. `success` is null while still pending.
+export interface UploadHistoryItem {
+  id: string;
+  fileName: string;
+  documentType: string | null;
+  fileSizeBytes: number;
+  uploadedAt: string;
+  processedAt: string | null;
+  success: boolean | null;
+  errorMessage: string | null;
 }
 
 @Injectable({
@@ -38,8 +52,6 @@ export class PdfUploadService {
   uploadPdf(file: File, documentType: PdfDocumentType): Observable<HttpEvent<PdfUploadResult>> {
     const formData = new FormData();
     formData.append('file', file, file.name);
-    // Sent for forward-compatibility: the current DocumentIngestion endpoint does not yet bind
-    // this field, but the PDF Upload Centre already passes the type hint the API is expected to use.
     formData.append('documentType', documentType);
 
     const request = new HttpRequest<FormData>(
@@ -50,5 +62,12 @@ export class PdfUploadService {
     );
 
     return this.http.request<PdfUploadResult>(request);
+  }
+
+  // Fetch the most recent uploads (default: last 20) to populate the import history table.
+  getHistory(take: number = 20): Observable<UploadHistoryItem[]> {
+    return this.http.get<UploadHistoryItem[]>(`${environment.gatewayUrl}/v1/document/history`, {
+      params: { take }
+    });
   }
 }

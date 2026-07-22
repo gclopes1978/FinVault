@@ -107,32 +107,36 @@
   <section class="history-section">
     <h2 class="history-title">Histórico de importações</h2>
 
-    @if (importHistory.length === 0) {
-      <p class="text-muted">Ainda não existem importações nesta sessão.</p>
+    @if (isHistoryLoading && importHistory.length === 0) {
+      <p class="text-muted">A carregar histórico...</p>
+    } @else if (importHistory.length === 0) {
+      <p class="text-muted">Ainda não existem importações registadas.</p>
     } @else {
       <div class="table-responsive">
         <table class="history-table">
           <thead>
             <tr>
-              <th>Data</th>
+              <th>Ficheiro</th>
+              <th>Data de upload</th>
+              <th>Data de processamento</th>
               <th>Tipo de documento</th>
+              <th>Tamanho</th>
               <th>Estado</th>
-              <th>Registos importados</th>
             </tr>
           </thead>
           <tbody>
-            @for (entry of importHistory; track entry.date) {
+            @for (entry of importHistory; track entry.id) {
               <tr>
-                <td>{{ entry.date | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td>{{ entry.documentTypeLabel }}</td>
+                <td class="filename-cell" [title]="entry.fileName">{{ entry.fileName }}</td>
+                <td>{{ entry.uploadedAt | date:'dd/MM/yyyy HH:mm' }}</td>
+                <td>{{ entry.processedAt ? (entry.processedAt | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+                <td>{{ documentTypeLabel(entry.documentType) }}</td>
+                <td>{{ formatFileSize(entry.fileSizeBytes) }}</td>
                 <td>
-                  <span
-                    class="badge"
-                    [class.badge-success]="entry.status !== 'Erro'"
-                    [class.badge-error]="entry.status === 'Erro'"
-                  >{{ entry.status }}</span>
+                  <span class="badge" [ngClass]="historyStatusClass(entry)" [title]="entry.errorMessage ?? ''">
+                    {{ historyStatusLabel(entry) }}
+                  </span>
                 </td>
-                <td>{{ entry.recordsImported ?? '—' }}</td>
               </tr>
             }
           </tbody>
