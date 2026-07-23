@@ -1,0 +1,179 @@
+<div class="current-account-container">
+
+  <div class="current-account-header">
+    <h1>Conta Corrente</h1>
+    <p>Consulte o saldo atual e o histórico de movimentos da sua conta.</p>
+  </div>
+
+  @if (isLoading) {
+    <div class="loading-state-box">
+      <p>A carregar movimentos...</p>
+    </div>
+  }
+
+  @if (errorMessage) {
+    <div class="error-state-box">
+      <p>{{ errorMessage }}</p>
+      <button type="button" class="retry-button" (click)="loadMovements()">Tentar novamente</button>
+    </div>
+  }
+
+  @if (!isLoading && !errorMessage) {
+
+    <div class="summary-cards">
+      <div class="summary-card balance-card">
+        <span class="summary-label">Saldo Atual</span>
+        <span class="summary-value">{{ currentBalance ?? 0 | currency: 'EUR' }}</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-label">Total de Créditos</span>
+        <span class="summary-value amount-positive">+ {{ totalCredits | currency: 'EUR' }}</span>
+      </div>
+      <div class="summary-card">
+        <span class="summary-label">Total de Débitos</span>
+        <span class="summary-value amount-negative">- {{ totalDebits | currency: 'EUR' }}</span>
+      </div>
+    </div>
+
+    <div class="statement-import-panel">
+      <div class="statement-import-header">
+        <h2>Importar Extrato Bancário</h2>
+        <p>Carregue um extrato em PDF para importar automaticamente os movimentos.</p>
+      </div>
+
+      @if (uploadState === 'idle') {
+        <label class="upload-button">
+          Escolher ficheiro PDF
+          <input type="file" accept="application/pdf" (change)="onStatementFileSelected($event)" hidden />
+        </label>
+      }
+
+      @if (uploadState === 'uploading') {
+        <div class="upload-status uploading">
+          <p>A carregar extrato... {{ uploadProgress }}%</p>
+          <div class="progress-bar">
+            <div class="progress-bar-fill" [style.width.%]="uploadProgress"></div>
+          </div>
+        </div>
+      }
+
+      @if (uploadState === 'processing') {
+        <div class="upload-status processing">
+          <p>Extrato recebido, a processar movimentos...</p>
+        </div>
+      }
+
+      @if (uploadState === 'success') {
+        <div class="upload-status success">
+          <p>Extrato importado com sucesso. A lista de movimentos foi atualizada.</p>
+          <button type="button" class="dismiss-button" (click)="dismissUploadStatus()">Fechar</button>
+        </div>
+      }
+
+      @if (uploadState === 'error') {
+        <div class="upload-status error">
+          <p>{{ uploadErrorMessage }}</p>
+          <button type="button" class="dismiss-button" (click)="dismissUploadStatus()">Fechar</button>
+        </div>
+      }
+    </div>
+
+    <div class="filter-panel">
+      <div class="filter-group">
+        <label for="typeFilter">Filtrar por tipo:</label>
+        <select
+          id="typeFilter"
+          [(ngModel)]="selectedTypeFilter"
+          (change)="applyFilters()"
+          class="filter-select">
+          <option value="All">Todos os movimentos</option>
+          <option value="C">Créditos (+)</option>
+          <option value="D">Débitos (-)</option>
+        </select>
+      </div>
+    </div>
+
+    @if (filteredMovements.length === 0) {
+      <div class="empty-state-box">
+        <p>Não foram encontrados movimentos para o filtro selecionado.</p>
+      </div>
+    }
+
+    @if (filteredMovements.length > 0) {
+      <div class="table-responsive">
+        <table class="movements-table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Descrição</th>
+              <th>Tipo</th>
+              <th>Montante</th>
+              <th>Saldo</th>
+              <th>Nota</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (movement of pagedMovements; track movement.id) {
+              <tr class="movement-row">
+                <td>{{ movement.transactionDate | date: 'dd/MM/yyyy' }}</td>
+                <td class="text-bold">{{ movement.description }}</td>
+                <td>
+                  <span [ngClass]="getTypeClass(movement.type)">
+                    {{ getTypeLabel(movement.type) }}
+                  </span>
+                </td>
+                <td [ngClass]="getAmountClass(movement.type)" class="text-bold">
+                  {{ movement.type === 'C' ? '+' : '-' }} {{ movement.amount | currency: 'EUR' }}
+                </td>
+                <td class="text-bold">{{ movement.balance | currency: 'EUR' }}</td>
+                <td class="note-cell">
+                  @if (editingMovementId === movement.id) {
+                    <div class="note-editor">
+                      <input
+                        type="text"
+                        class="note-input"
+                        [(ngModel)]="noteDraft"
+                        placeholder="Adicionar nota..."
+                        [disabled]="isSavingNote" />
+                      <button
+                        type="button"
+                        class="note-save-button"
+                        [disabled]="isSavingNote"
+                        (click)="saveNote(movement)">
+                        Guardar
+                      </button>
+                      <button
+                        type="button"
+                        class="note-cancel-button"
+                        [disabled]="isSavingNote"
+                        (click)="cancelEditingNote()">
+                        Cancelar
+                      </button>
+                    </div>
+                  } @else {
+                    <button type="button" class="note-display" (click)="startEditingNote(movement)">
+                      @if (movement.userNote) {
+                        <span>{{ movement.userNote }}</span>
+                      } @else {
+                        <span class="note-placeholder">+ Adicionar nota</span>
+                      }
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      @if (totalPages > 1) {
+        <div class="pagination-controls">
+          <button type="button" [disabled]="currentPage === 1" (click)="goToPage(currentPage - 1)">Anterior</button>
+          <span class="pagination-label">Página {{ currentPage }} de {{ totalPages }}</span>
+          <button type="button" [disabled]="currentPage === totalPages" (click)="goToPage(currentPage + 1)">Seguinte</button>
+        </div>
+      }
+    }
+  }
+
+</div>

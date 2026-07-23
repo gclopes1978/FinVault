@@ -38,11 +38,10 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/pdf-upload/pdf-upload').then(m => m.PdfUploadComponent)
   },
   {
-    // Lazy-loaded placeholder route for the Current Account module, reached from the Dashboard Hub and Sidebar
+    // Current Account module: balance overview and movement history, backed by the CurrentAccount microservice
     path: 'current-account',
     canActivate: [authGuard],
-    data: { moduleName: 'Current Account' },
-    loadComponent: () => import('./pages/module-placeholder/module-placeholder').then(m => m.ModulePlaceholderComponent)
+    loadComponent: () => import('./pages/current-account/current-account').then(m => m.CurrentAccountComponent)
   },
   {
     // Lazy-loaded placeholder route for the Investments module, reached from the Dashboard Hub and Sidebar

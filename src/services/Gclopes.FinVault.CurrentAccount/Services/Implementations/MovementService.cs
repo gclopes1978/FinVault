@@ -21,6 +21,7 @@ public class MovementService(ApplicationDbContext context) : IMovementService
             m.Id,
             m.Amount,
             m.Type,
+            m.Balance,
             m.Description,
             m.UserNote,
             m.TransactionDate,
