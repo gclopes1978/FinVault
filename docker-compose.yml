@@ -18,10 +18,14 @@ services:
       - RABBITMQ_PASS=${RABBITMQ_PASS}
       - RABBITMQ_HOST=${RABBITMQ_HOST}
       - StorageSettings__Path=/app/uploadPdf
+      - ConnectionStrings__DefaultConnection=${SQLSERVER_CONNECTION_DOCUMENT_INGESTION}
     volumes:
       - ./data/uploads:/app/uploadPdf
     depends_on:
-      - finvault-rabbitmq
+      finvault-rabbitmq:
+        condition: service_healthy
+      finvault-sqlserver:
+        condition: service_healthy
     networks:
       - finvault-network
 
@@ -244,6 +248,7 @@ services:
       - RABBITMQ_USER=${RABBITMQ_USER}
       - RABBITMQ_PASS=${RABBITMQ_PASS}
       - RABBITMQ_PORT=${RABBITMQ_PORT}
+      - DOCUMENT_INGESTION_SERVICE_URL=${DOCUMENT_INGESTION_SERVICE_URL}
     depends_on:
       finvault-rabbitmq:
         condition: service_healthy

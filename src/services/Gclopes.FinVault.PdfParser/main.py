@@ -14,29 +14,69 @@ from parsers.payroll import PayrollParser
 from parsers.pension_insurance import PensionInsuranceParser
 from parsers.pension_fund import PensionFundParser
 
+# Base URL of the DocumentIngestion service's completion callback, e.g.
+# "http://document-ingestion:8080/api/document". Called directly over the internal Docker
+# network (not through the Gateway) once a document has finished processing, successfully or not,
+# so the PDF Upload Centre's import history reflects the real outcome.
+DOCUMENT_INGESTION_URL = os.getenv("DOCUMENT_INGESTION_SERVICE_URL")
+
+# Sentinel used by the /parse HTTP endpoint when no queue-originated document is being tracked;
+# there is nothing to report back to DocumentIngestion in that case.
+_MANUAL_UPLOAD_SENTINEL = "manual-upload"
+
+
+async def notify_document_ingestion(source_document_id: str, success: bool, document_type: str | None, error_message: str | None) -> None:
+    if not DOCUMENT_INGESTION_URL:
+        print("[DocumentIngestion] DOCUMENT_INGESTION_SERVICE_URL not configured, skipping completion callback.")
+        return
+
+    if source_document_id == _MANUAL_UPLOAD_SENTINEL:
+        return
+
+    try:
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                f"{DOCUMENT_INGESTION_URL}/{source_document_id}/completed",
+                json={"success": success, "documentType": document_type, "errorMessage": error_message},
+                timeout=10.0
+            )
+            response.raise_for_status()
+    except Exception as e:
+        # Reporting the outcome is best-effort: a failure to notify DocumentIngestion should
+        # never mask the original processing result, so it's only logged here.
+        print(f"[DocumentIngestion] Failed to report completion for {source_document_id}: {e}")
+
+
 class PDFProcessorService:
     def __init__(self, service_urls: dict):
         self.service_urls = service_urls
 
     async def process_pdf(self, file_bytes: bytes, filename: str, source_document_id: str) -> dict:
-        if not filename.endswith('.pdf'):
-            raise ValueError("Only PDF files are supported.")
-            
-        with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
-            first_page_text = pdf.pages[0].extract_text() or ""
-            print(f"[PDFProcessor] Extracted text from first page of {filename}: {first_page_text[:100]}...")  # Log first 100 chars
-            doc_type = DocumentClassifier.classify(first_page_text)
-            
-            if doc_type == "unknown":
-                raise ValueError("Document type could not be classified.")
-                
-            payload = self._delegate_to_parser(doc_type, pdf)
-            envelope = {"sourceDocumentId": source_document_id, "data": payload}
-            print(f"envelope--> {envelope}")
-            # The downstream .NET services expect the full envelope
-            # ({ sourceDocumentId, data }), not the bare parser payload.
-            await self._forward_to_dotnet_service(doc_type, envelope)
+        doc_type = None
+        try:
+            if not filename.endswith('.pdf'):
+                raise ValueError("Only PDF files are supported.")
+
+            with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
+                first_page_text = pdf.pages[0].extract_text() or ""
+                print(f"[PDFProcessor] Extracted text from first page of {filename}: {first_page_text[:100]}...")  # Log first 100 chars
+                doc_type = DocumentClassifier.classify(first_page_text)
+
+                if doc_type == "unknown":
+                    raise ValueError("Document type could not be classified.")
+
+                payload = self._delegate_to_parser(doc_type, pdf)
+                envelope = {"sourceDocumentId": source_document_id, "data": payload}
+                print(f"envelope--> {envelope}")
+                # The downstream .NET services expect the full envelope
+                # ({ sourceDocumentId, data }), not the bare parser payload.
+                await self._forward_to_dotnet_service(doc_type, envelope)
+
+            await notify_document_ingestion(source_document_id, True, doc_type, None)
             return {"status": "success", "documentType": doc_type, "data": envelope}
+        except Exception as e:
+            await notify_document_ingestion(source_document_id, False, doc_type, str(e))
+            raise
 
     def _delegate_to_parser(self, doc_type: str, pdf: pdfplumber.PDF) -> dict:
         parsers = {

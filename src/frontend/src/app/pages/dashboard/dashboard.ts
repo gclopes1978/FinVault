@@ -31,6 +31,7 @@ export class DashboardComponent {
     { label: 'Current Account', description: 'View balances and transaction history', icon: '💳', route: '/current-account' },
     { label: 'Investments', description: 'Track your portfolio performance', icon: '📈', route: '/investments' },
     { label: 'Pension Plans', description: 'Monitor PPR funds and insurance', icon: '🏦', route: '/pension-plans' },
-    { label: 'Savings Certificates', description: 'Follow Certificados de Aforro returns', icon: '🎯', route: '/savings-certificates' }
+    { label: 'Savings Certificates', description: 'Follow Certificados de Aforro returns', icon: '🎯', route: '/savings-certificates' },
+    { label: 'PDF Upload Centre', description: 'Import statements, payroll and PPR PDFs', icon: '📄', route: '/pdf-upload' }
   ];
 }

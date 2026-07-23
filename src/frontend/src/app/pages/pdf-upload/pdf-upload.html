@@ -1,0 +1,121 @@
+<div class="pdf-upload-container">
+
+  <header class="pdf-upload-header">
+    <h1>Centro de Upload de PDF</h1>
+    <p class="text-muted">Importe extratos ActivoBank, recibos de vencimento e movimentos de PPR para processamento automático.</p>
+  </header>
+
+  <section class="upload-panel">
+
+    <div class="type-selector">
+      <label for="documentType">Tipo de documento</label>
+      <select
+        id="documentType"
+        class="type-select"
+        [(ngModel)]="selectedDocumentType"
+        [disabled]="isBusy"
+      >
+        @for (type of documentTypes; track type.value) {
+          <option [value]="type.value">{{ type.label }}</option>
+        }
+      </select>
+    </div>
+
+    <div
+      class="drop-zone"
+      [class.dragging]="isDragging"
+      [class.disabled]="isBusy"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+      (click)="!isBusy && fileInput.click()"
+    >
+      <input #fileInput type="file" accept="application/pdf,.pdf" multiple hidden [disabled]="isBusy" (change)="onFileSelected($event)" />
+      <span class="drop-icon">📄</span>
+      <p class="drop-text">Arraste um ou vários PDF para aqui, ou <span class="drop-link">clique para selecionar</span></p>
+      <p class="drop-hint">Podes selecionar vários ficheiros de uma vez — são enviados um a um</p>
+    </div>
+
+    @if (uploadTasks.length > 0) {
+      <div class="batch-list">
+        <div class="batch-list-header">
+          <span>{{ uploadTasks.length }} ficheiro(s) neste lote</span>
+          <button type="button" class="btn-link" (click)="clearCompletedTasks()" [disabled]="isBusy">Limpar lista</button>
+        </div>
+
+        @for (task of uploadTasks; track task.id) {
+          <div class="batch-item" [ngClass]="'batch-item-' + task.stage">
+            <span class="batch-filename" [title]="task.fileName">{{ task.fileName }}</span>
+
+            @if (task.stage === 'uploading') {
+              <div class="batch-progress">
+                <div class="progress-bar-track">
+                  <div class="progress-bar-fill" [style.width.%]="task.progress"></div>
+                </div>
+                <span class="batch-status-text">A enviar... {{ task.progress }}%</span>
+              </div>
+            }
+
+            @if (task.stage === 'parsing') {
+              <span class="batch-status-text with-spinner">
+                <span class="spinner" aria-hidden="true"></span>
+                A processar PDF...
+              </span>
+            }
+
+            @if (task.stage === 'success') {
+              <span class="batch-status-text success">✓ Enviado com sucesso</span>
+            }
+
+            @if (task.stage === 'error') {
+              <span class="batch-status-text error" [title]="task.errorMessage ?? ''">✕ {{ task.errorMessage }}</span>
+            }
+          </div>
+        }
+      </div>
+    }
+
+  </section>
+
+  <section class="history-section">
+    <h2 class="history-title">Histórico de importações</h2>
+
+    @if (isHistoryLoading && importHistory.length === 0) {
+      <p class="text-muted">A carregar histórico...</p>
+    } @else if (importHistory.length === 0) {
+      <p class="text-muted">Ainda não existem importações registadas.</p>
+    } @else {
+      <div class="table-responsive">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Ficheiro</th>
+              <th>Data de upload</th>
+              <th>Data de processamento</th>
+              <th>Tipo de documento</th>
+              <th>Tamanho</th>
+              <th>Estado</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (entry of importHistory; track entry.id) {
+              <tr>
+                <td class="filename-cell" [title]="entry.fileName">{{entry.fileName}}</td>
+                <td>{{entry.uploadedAt | date:'dd/MM/yyyy HH:mm'}}</td>
+                <td>{{entry.processedAt ? (entry.processedAt | date:'dd/MM/yyyy HH:mm') : '—'}}</td>
+                <td>{{documentTypeLabel(entry.documentType)}}</td>
+                <td>{{formatFileSize(entry.fileSizeBytes)}}</td>
+                <td>
+                  <span class="badge" [ngClass]="historyStatusClass(entry)" [title]="entry.errorMessage ?? ''">
+                    {{historyStatusLabel(entry)}}
+                  </span>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </section>
+
+</div>

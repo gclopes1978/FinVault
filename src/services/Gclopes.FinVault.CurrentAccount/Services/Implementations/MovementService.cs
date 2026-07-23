@@ -33,25 +33,25 @@ public class MovementService(ApplicationDbContext context) : IMovementService
     {
         // 1. Validação de Domínio (usando o BalanceCalculator que criámos)
         // Extraímos os dados para uma forma simples (tupla) que o Domain entende
-        var movementsForCalc = dto.Transactions.Select(t => (t.Amount, t.Type));
+        var movementsForCalc = dto.Data.Transactions.Select(t => (t.Amount, t.Type));
 
-        var calculatedFinalBalance = BalanceCalculator.CalculateFinalBalance(dto.InitialBalance, movementsForCalc);
+        var calculatedFinalBalance = BalanceCalculator.CalculateFinalBalance(dto.Data.InitialBalance, movementsForCalc);
 
         // Verificação matemática de segurança
-        if (Math.Abs(calculatedFinalBalance - dto.FinalBalance) > 0.01m)
+        if (Math.Abs(calculatedFinalBalance - dto.Data.FinalBalance) > 0.01m)
         {
-            throw new InvalidOperationException($"Inconsistência financeira: O saldo calculado ({calculatedFinalBalance}) não bate com o saldo final fornecido ({dto.FinalBalance}).");
+            throw new InvalidOperationException($"Inconsistência financeira: O saldo calculado ({calculatedFinalBalance}) não bate com o saldo final fornecido ({dto.Data.FinalBalance}).");
         }
 
         // 2. Criação do Objeto (Infraestrutura)
         var statement = new BankStatement
         {
             Id = Guid.NewGuid(),
-            InitialBalance = dto.InitialBalance,
-            FinalBalance = dto.FinalBalance,
+            InitialBalance = dto.Data.InitialBalance,
+            FinalBalance = dto.Data.FinalBalance,
         };
 
-        foreach (var t in dto.Transactions)
+        foreach (var t in dto.Data.Transactions)
         {
             var movement = new Movement
             {
