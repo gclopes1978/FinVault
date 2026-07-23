@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 import { AccountService } from '../../services/account.service';
 import { PdfUploadService, UploadHistoryItem } from '../../services/pdf-upload.service';
 import { DocumentProcessingHubService } from '../../services/document-processing-hub.service';
+import { MonthlyEvolutionChartComponent } from '../../components/monthly-evolution-chart/monthly-evolution-chart';
 import { MovementDto } from '../../models/movement';
 
 // Options exposed in the "filter by type" dropdown
@@ -20,7 +21,7 @@ const PAGE_SIZE = 10;
 @Component({
   selector: 'app-current-account',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, MonthlyEvolutionChartComponent],
   templateUrl: './current-account.html',
   styleUrl: './current-account.scss'
 })
