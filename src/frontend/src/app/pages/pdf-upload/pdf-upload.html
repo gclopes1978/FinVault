@@ -100,14 +100,14 @@
           <tbody>
             @for (entry of importHistory; track entry.id) {
               <tr>
-                <td class="filename-cell" [title]="entry.fileName">{{ entry.fileName }}</td>
-                <td>{{ entry.uploadedAt | date:'dd/MM/yyyy HH:mm' }}</td>
-                <td>{{ entry.processedAt ? (entry.processedAt | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
-                <td>{{ documentTypeLabel(entry.documentType) }}</td>
-                <td>{{ formatFileSize(entry.fileSizeBytes) }}</td>
+                <td class="filename-cell" [title]="entry.fileName">{{entry.fileName}}</td>
+                <td>{{entry.uploadedAt | date:'dd/MM/yyyy HH:mm'}}</td>
+                <td>{{entry.processedAt ? (entry.processedAt | date:'dd/MM/yyyy HH:mm') : '—'}}</td>
+                <td>{{documentTypeLabel(entry.documentType)}}</td>
+                <td>{{formatFileSize(entry.fileSizeBytes)}}</td>
                 <td>
                   <span class="badge" [ngClass]="historyStatusClass(entry)" [title]="entry.errorMessage ?? ''">
-                    {{ historyStatusLabel(entry) }}
+                    {{historyStatusLabel(entry)}}
                   </span>
                 </td>
               </tr>

@@ -1,5 +1,5 @@
 // Import Component/OnInit/OnDestroy from the Angular framework
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef  } from '@angular/core';
 // Import CommonModule for structural directives and pipes (date, currency, etc.)
 import { CommonModule } from '@angular/common';
 // Import FormsModule to support the two-way bound document type selector
@@ -12,6 +12,7 @@ import { Subscription } from 'rxjs';
 import { PdfDocumentType, PdfUploadService, UploadHistoryItem } from '../../services/pdf-upload.service';
 // Import the SignalR hub client that pushes live processing updates
 import { DocumentProcessingHubService } from '../../services/document-processing-hub.service';
+
 
 // Describe a selectable entry in the document type dropdown/selector
 interface DocumentTypeOption {
@@ -78,10 +79,12 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
 
   constructor(
     private pdfUploadService: PdfUploadService,
-    private documentProcessingHub: DocumentProcessingHubService
+    private documentProcessingHub: DocumentProcessingHubService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   public ngOnInit(): void {
+    console.log('PDF Upload Component INIT');
     this.loadHistory();
 
     // Push-based updates: DocumentIngestion broadcasts "documentProcessed" as soon as the
@@ -97,6 +100,11 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
     this.hubSubscription?.unsubscribe();
     this.documentProcessingHub.disconnect();
   }
+
+  public debug(entry: any): null {
+    console.log('%c[IMPORT HISTORY ENTRY]', 'color: #0af; font-weight: bold;', entry);
+    return null; // garante que nada aparece no HTML
+}
 
   // Whether user interaction with the drop zone should currently be blocked
   public get isBusy(): boolean {
@@ -183,14 +191,23 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
     this.isHistoryLoading = true;
     this.pdfUploadService.getHistory(20).subscribe({
       next: (history) => {
-        this.importHistory = history;
-        this.isHistoryLoading = false;
+        // Garante que o @for re-renderiza corretamente
+        queueMicrotask(() => {
+          this.importHistory = [...history];
+          this.isHistoryLoading = false;
+          this.cdr.detectChanges();
+        });
       },
+
       error: (err: HttpErrorResponse) => {
-        // Surface the failure instead of swallowing it, so a stuck "A carregar histórico..."
-        // state is diagnosable from the console (CORS block, 404, 500, etc.) rather than silent.
-        console.error('[PdfUploadComponent] Failed to load import history:', err.status, err.message, err.error);
+        console.error(
+          '[PdfUploadComponent] Failed to load import history:',
+          err.status,
+          err.message,
+          err.error
+        );
         this.isHistoryLoading = false;
+       
       }
     });
   }
