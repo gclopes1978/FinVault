@@ -6,10 +6,12 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 // Import the HTTP primitives used to interpret upload progress and error responses
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
-// Import the subscription type used to stop the post-upload history polling
-import { Subscription, interval } from 'rxjs';
+// Import the subscription type used to stop listening to live hub updates on destroy
+import { Subscription } from 'rxjs';
 // Import the upload service and its supporting types
 import { PdfDocumentType, PdfUploadService, UploadHistoryItem } from '../../services/pdf-upload.service';
+// Import the SignalR hub client that pushes live processing updates
+import { DocumentProcessingHubService } from '../../services/document-processing-hub.service';
 
 // Describe a selectable entry in the document type dropdown/selector
 interface DocumentTypeOption {
@@ -31,13 +33,6 @@ interface UploadTask {
   errorMessage: string | null;
   documentId: string | null;
 }
-
-// How often (ms) to refresh the history table while just-uploaded documents are still pending,
-// so their status updates automatically once the PdfParser reports back
-const HISTORY_POLL_INTERVAL_MS = 2500;
-// Stop polling after this many attempts even if a document never reports back, so the app
-// doesn't poll forever if the PdfParser callback is misconfigured
-const HISTORY_POLL_MAX_ATTEMPTS = 20;
 
 @Component({
   selector: 'app-pdf-upload',
@@ -79,16 +74,28 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
 
   private uploadQueue: { file: File; task: UploadTask }[] = [];
   private isProcessingQueue = false;
-  private historyPollSubscription: Subscription | null = null;
+  private hubSubscription: Subscription | null = null;
 
-  constructor(private pdfUploadService: PdfUploadService) {}
+  constructor(
+    private pdfUploadService: PdfUploadService,
+    private documentProcessingHub: DocumentProcessingHubService
+  ) {}
 
   public ngOnInit(): void {
     this.loadHistory();
+
+    // Push-based updates: DocumentIngestion broadcasts "documentProcessed" as soon as the
+    // PdfParser reports a document finished (success or error), so the history row updates
+    // live instead of the frontend having to poll for it.
+    this.documentProcessingHub.connect();
+    this.hubSubscription = this.documentProcessingHub.onDocumentProcessed().subscribe((item) => {
+      this.mergeHistoryItem(item);
+    });
   }
 
   public ngOnDestroy(): void {
-    this.historyPollSubscription?.unsubscribe();
+    this.hubSubscription?.unsubscribe();
+    this.documentProcessingHub.disconnect();
   }
 
   // Whether user interaction with the drop zone should currently be blocked
@@ -185,6 +192,20 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
     });
   }
 
+  // Insert/replace a single row in the in-memory history list, used both by the live hub push
+  // and by the optimistic "just uploaded" refresh — avoids a full table reload on every event.
+  private mergeHistoryItem(item: UploadHistoryItem): void {
+    const index = this.importHistory.findIndex((existing) => existing.id === item.id);
+    if (index >= 0) {
+      this.importHistory[index] = item;
+      // Re-assign so Angular's default change detection picks up the mutated array content
+      this.importHistory = [...this.importHistory];
+      return;
+    }
+
+    this.importHistory = [item, ...this.importHistory].slice(0, 20);
+  }
+
   private handleFiles(files: File[]): void {
     for (const file of files) {
       const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
@@ -217,7 +238,9 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
 
     if (!next) {
       this.isProcessingQueue = false;
-      this.onBatchDrained();
+      // Safety net in case a push event was missed (e.g. hub reconnecting): a plain reload
+      // once the whole batch has been sent still catches up to the real state.
+      this.loadHistory();
       return;
     }
 
@@ -238,6 +261,9 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
           } else if (event.type === HttpEventType.Response) {
             task.stage = 'success';
             task.documentId = event.body?.documentId ?? null;
+            // Show the new "Em processamento" row immediately; the hub will push the final
+            // Sucesso/Erro state once the PdfParser finishes with it.
+            this.loadHistory();
             resolve();
           }
         },
@@ -245,48 +271,6 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
           task.stage = 'error';
           task.errorMessage = this.extractErrorMessage(err);
           resolve();
-        }
-      });
-    });
-  }
-
-  // Once every file in the batch has been sent, refresh the history table and poll it briefly so
-  // the newly uploaded rows move from "Em processamento" to "Sucesso"/"Erro" automatically.
-  private onBatchDrained(): void {
-    this.loadHistory();
-
-    const pendingDocumentIds = this.uploadTasks
-      .filter((task) => task.stage === 'success' && task.documentId)
-      .map((task) => task.documentId as string);
-
-    this.pollHistoryUntilProcessed(pendingDocumentIds);
-  }
-
-  private pollHistoryUntilProcessed(documentIds: string[]): void {
-    this.historyPollSubscription?.unsubscribe();
-
-    if (documentIds.length === 0) {
-      return;
-    }
-
-    let attempts = 0;
-    this.historyPollSubscription = interval(HISTORY_POLL_INTERVAL_MS).subscribe(() => {
-      attempts++;
-      this.pdfUploadService.getHistory(20).subscribe({
-        next: (history) => {
-          this.importHistory = history;
-
-          const stillPending = documentIds.some((id) => {
-            const item = history.find((h) => h.id === id);
-            return !item || item.success === null;
-          });
-
-          if (!stillPending || attempts >= HISTORY_POLL_MAX_ATTEMPTS) {
-            this.historyPollSubscription?.unsubscribe();
-          }
-        },
-        error: () => {
-          this.historyPollSubscription?.unsubscribe();
         }
       });
     });

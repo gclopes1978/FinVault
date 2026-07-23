@@ -2,6 +2,7 @@ using MassTransit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using Gclopes.FinVault.DocumentIngestion.Data;
+using Gclopes.FinVault.DocumentIngestion.Hubs;
 using Gclopes.FinVault.DocumentIngestion.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -13,6 +14,10 @@ builder.Services.AddSwaggerGen(c =>
 {
     c.SwaggerDoc("v1", new OpenApiInfo { Title = "Gclopes.FinVault.DocumentIngestion API", Version = "v1" });
 });
+
+// Pushes "documentProcessed" events to the PDF Upload Centre once the PdfParser reports a
+// document as finished, so the import history updates live instead of polling.
+builder.Services.AddSignalR();
 
 // Configure the Application Database Context with SQL Server, used to persist the
 // upload/processing history (UploadedDocument) shown in the PDF Upload Centre.
@@ -67,6 +72,7 @@ ApplyMigrations(app);
 app.UseHttpsRedirection();
 app.UseAuthorization();
 app.MapControllers();
+app.MapHub<DocumentProcessingHub>("/api/document/hub");
 
 app.Run();
 

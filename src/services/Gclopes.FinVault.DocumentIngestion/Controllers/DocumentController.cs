@@ -1,7 +1,9 @@
 ﻿using MassTransit;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 using Gclopes.FinVault.DocumentIngestion.Data;
+using Gclopes.FinVault.DocumentIngestion.Hubs;
 using Gclopes.FinVault.DocumentIngestion.Models;
 using Gclopes.FinVault.DocumentIngestion.Services;
 
@@ -13,6 +15,7 @@ public class DocumentController(
     IPublishEndpoint publishEndpoint,
     IPdfProcessingQueuePublisher pdfProcessingQueuePublisher,
     ApplicationDbContext dbContext,
+    IHubContext<DocumentProcessingHub> hubContext,
     ILogger<DocumentController> logger,
     IConfiguration configuration) : ControllerBase
 {
@@ -104,6 +107,20 @@ public class DocumentController(
         logger.LogInformation(
             "Document {DocumentId} processing completed. Success: {Success}.",
             id, request.Success);
+
+        // Push the updated record to every connected PDF Upload Centre client so the import
+        // history table updates live, without the frontend needing to poll for it.
+        await hubContext.Clients.All.SendAsync("documentProcessed", new
+        {
+            document.Id,
+            document.FileName,
+            document.DocumentType,
+            document.FileSizeBytes,
+            document.UploadedAt,
+            document.ProcessedAt,
+            document.Success,
+            document.ErrorMessage
+        });
 
         return Ok();
     }
