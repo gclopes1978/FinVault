@@ -186,7 +186,10 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
         this.importHistory = history;
         this.isHistoryLoading = false;
       },
-      error: () => {
+      error: (err: HttpErrorResponse) => {
+        // Surface the failure instead of swallowing it, so a stuck "A carregar histórico..."
+        // state is diagnosable from the console (CORS block, 404, 500, etc.) rather than silent.
+        console.error('[PdfUploadComponent] Failed to load import history:', err.status, err.message, err.error);
         this.isHistoryLoading = false;
       }
     });
