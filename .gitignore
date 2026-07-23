@@ -1,27 +1,40 @@
-# .NET
+########################################
+# .NET build & IDE artifacts
+########################################
 **/bin/
 **/obj/
 **/.vs/
 **/*.user
 **/.env
-**/logs_*.txt
+
+########################################
+# Python (scripts auxiliares)
+########################################
 **/__pycache__/
 **/.venv/
 
-# Pasta de dados e logs
-# FIX: this used to be the unanchored pattern "Data/", which matched ANY folder
-# named "Data" anywhere in the repo (e.g. src/services/*/Data/), not just the
-# root-level local uploads folder it was meant for. That silently prevented
-# "git add" from ever picking up source files under .../Data/ in any microservice,
-# which is why SavingsBondDbContext.cs and the SavingsBond entity were never
-# committed for the new SavingsCertificates service. Anchored and scoped back to
-# the original intent (see git history: "Data/uploads/").
-/Data/uploads/
+########################################
+# Logs
+########################################
 docker-compose.log
 logs_*.txt
+*.log
 
-# Configurações de frontend
+########################################
+# Pasta de dados (root-level only)
+########################################
+# Evita ignorar pastas "Data" dentro dos microserviços
+/Data/uploads/
+
+########################################
+# Frontend (Angular)
+########################################
+src/frontend/node_modules/
+src/frontend/dist/
 src/frontend/.vscode/
 
-# Ignorar ficheiros específicos de utilizador
-*.user
+########################################
+# Scripts locais (não versionados)
+########################################
+*.bat
+*.ps1

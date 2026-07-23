@@ -18,7 +18,7 @@ services:
       - RABBITMQ_PASS=${RABBITMQ_PASS}
       - RABBITMQ_HOST=${RABBITMQ_HOST}
       - StorageSettings__Path=/app/uploadPdf
-      - ConnectionStrings__DefaultConnection=${SQLSERVER_CONNECTION_DOCUMENTINGESTION}
+      - ConnectionStrings__DefaultConnection=${SQLSERVER_CONNECTION_DOCUMENT_INGESTION}
     volumes:
       - ./data/uploads:/app/uploadPdf
     depends_on:
