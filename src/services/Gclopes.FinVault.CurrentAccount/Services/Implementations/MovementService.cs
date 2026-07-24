@@ -11,23 +11,73 @@ namespace Gclopes.FinVault.CurrentAccount.Services.Implementations;
 public class MovementService(ApplicationDbContext context) : IMovementService
 {
 
-    public async Task<IEnumerable<MovementResponse>> GetAllMovementsAsync()
+    public async Task<PagedResult<MovementResponse>> GetMovementsAsync(MovementQueryParameters query)
     {
-        var movements = await context.Movements
-        .OrderBy(m => m.TransactionDate)
-        .ToListAsync();
+        // AsNoTracking: this is a read-only projection, so skip EF's change-tracking overhead
+        var filtered = ApplyDateFilters(context.Movements.AsNoTracking(), query);
 
-        return movements.Select(m => new MovementResponse(
-            m.Id,
-            m.Amount,
-            m.Type,
-            m.Balance,
-            m.Description,
-            m.UserNote,
-            m.TransactionDate,
-            m.ValueDate,
-            m.CreatedAt
-        ));
+        // COUNT is done against the filtered set in SQL, not by materializing rows
+        var totalCount = await filtered.CountAsync();
+
+        // Default sort: TransactionDate desc, ValueDate desc, applied before paging so the
+        // right page of results is fetched directly from the database instead of in memory
+        var items = await filtered
+            .OrderByDescending(m => m.TransactionDate)
+            .ThenByDescending(m => m.ValueDate)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .Select(m => new MovementResponse(
+                m.Id,
+                m.Amount,
+                m.Type,
+                m.Balance,
+                m.Description,
+                m.UserNote,
+                m.TransactionDate,
+                m.ValueDate,
+                m.CreatedAt))
+            .ToListAsync();
+
+        return new PagedResult<MovementResponse>(items, query.Page, query.PageSize, totalCount);
+    }
+
+    public async Task<MovementTotalsResponse> GetMovementTotalsAsync(MovementQueryParameters query)
+    {
+        var filtered = ApplyDateFilters(context.Movements.AsNoTracking(), query);
+
+        // Sums are computed in SQL (SUM ... WHERE) instead of pulling every row into memory
+        var totalCredits = await filtered.Where(m => m.Type == "C").SumAsync(m => (decimal?)m.Amount) ?? 0m;
+        var totalDebits = await filtered.Where(m => m.Type == "D").SumAsync(m => (decimal?)m.Amount) ?? 0m;
+
+        // The current balance is always the running balance of the single most recent movement
+        // in the whole account, independent of the active date filters
+        var currentBalance = await context.Movements
+            .AsNoTracking()
+            .OrderByDescending(m => m.TransactionDate)
+            .ThenByDescending(m => m.ValueDate)
+            .Select(m => (decimal?)m.Balance)
+            .FirstOrDefaultAsync();
+
+        return new MovementTotalsResponse(totalCredits, totalDebits, currentBalance);
+    }
+
+    // Shared WHERE clause for both the paginated list and the totals endpoint, so the two
+    // stay consistent for the same filter selection
+    private static IQueryable<Movement> ApplyDateFilters(IQueryable<Movement> source, MovementQueryParameters query)
+    {
+        if (query.TransactionDateFrom.HasValue)
+            source = source.Where(m => m.TransactionDate >= query.TransactionDateFrom.Value.Date);
+
+        if (query.TransactionDateTo.HasValue)
+            source = source.Where(m => m.TransactionDate < query.TransactionDateTo.Value.Date.AddDays(1));
+
+        if (query.ValueDateFrom.HasValue)
+            source = source.Where(m => m.ValueDate >= query.ValueDateFrom.Value.Date);
+
+        if (query.ValueDateTo.HasValue)
+            source = source.Where(m => m.ValueDate < query.ValueDateTo.Value.Date.AddDays(1));
+
+        return source;
     }
 
     public async Task<BankStatementResponse> RegisterBankStatementAsync(BankStatementPayloadDto dto, string userId)
@@ -78,13 +128,13 @@ public class MovementService(ApplicationDbContext context) : IMovementService
         return new BankStatementResponse(statement.Id, "Bank statement processed successfully.", statement.ProcessedAt);
     }
 
-    public async Task<bool> UpdateNoteAsync(Guid movementId, string note)
+    public async Task<MovementResponse?> UpdateNoteAsync(Guid movementId, string note)
     {
         // Procura o movimento, mas garante que o utilizador é o dono!
         var movement = await context.Movements
             .FirstOrDefaultAsync(m => m.Id == movementId);
 
-        if (movement == null) return false;
+        if (movement == null) return null;
 
         // Atualiza apenas a nota
         movement.UserNote = note;
@@ -92,6 +142,15 @@ public class MovementService(ApplicationDbContext context) : IMovementService
         // Grava no banco
         await context.SaveChangesAsync();
 
-        return true;
+        return new MovementResponse(
+            movement.Id,
+            movement.Amount,
+            movement.Type,
+            movement.Balance,
+            movement.Description,
+            movement.UserNote,
+            movement.TransactionDate,
+            movement.ValueDate,
+            movement.CreatedAt);
     }
 }

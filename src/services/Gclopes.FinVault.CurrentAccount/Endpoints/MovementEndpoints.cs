@@ -21,9 +21,17 @@ public static class MovementEndpoints
              .RequireAuthorization()
              .WithOpenApi();
 
-        // GET /api/movements - Retrieve all financial movements using the service layer
+        // GET /api/movements - Retrieve a page of financial movements, optionally filtered by
+        // TransactionDate/ValueDate range, sorted TransactionDate desc, ValueDate desc by default
         group.MapGet("/", GetMovementsAsync)
              .WithName("GetMovements")
+             .RequireAuthorization()
+             .WithOpenApi();
+
+        // GET /api/movements/totals - Aggregate credit/debit totals (same date filters) plus the
+        // account's current balance, so the frontend doesn't need to load every movement to show them
+        group.MapGet("/totals", GetMovementTotalsAsync)
+             .WithName("GetMovementTotals")
              .RequireAuthorization()
              .WithOpenApi();
 
@@ -50,8 +58,9 @@ public static class MovementEndpoints
         .WithOpenApi();
     }
 
-    // Handles the retrieval of all recorded movements
+    // Handles the retrieval of a page of recorded movements, filtered by date range
     private static async Task<IResult> GetMovementsAsync(
+        [AsParameters] MovementQueryParameters query,
         IMovementService movementService,
         ClaimsPrincipal user)
     {
@@ -60,11 +69,23 @@ public static class MovementEndpoints
                   ?? user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
         if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
-        var result = await movementService.GetAllMovementsAsync();
+        var result = await movementService.GetMovementsAsync(query);
         return Results.Ok(result);
     }
 
-    
+    // Handles the retrieval of credit/debit totals plus the current account balance
+    private static async Task<IResult> GetMovementTotalsAsync(
+        [AsParameters] MovementQueryParameters query,
+        IMovementService movementService,
+        ClaimsPrincipal user)
+    {
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                  ?? user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+        if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+
+        var result = await movementService.GetMovementTotalsAsync(query);
+        return Results.Ok(result);
+    }
 
     private static async Task<IResult> UpdateMovementNoteAsync(
         Guid id,
@@ -75,10 +96,13 @@ public static class MovementEndpoints
         var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
                   ?? user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
         if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
- 
-        // Chamamos o serviço para atualizar
-        var success = await movementService.UpdateNoteAsync(id, request.Note);
 
-        return success ? Results.NoContent() : Results.NotFound();
+        if (request?.Note is null) return Results.BadRequest("Note is required.");
+
+        // Chamamos o serviço para atualizar; devolvemos o movimento atualizado para que o
+        // frontend possa confirmar o novo estado sem depender apenas da mutação local
+        var updated = await movementService.UpdateNoteAsync(id, request.Note);
+
+        return updated is not null ? Results.Ok(updated) : Results.NotFound();
     }
 }

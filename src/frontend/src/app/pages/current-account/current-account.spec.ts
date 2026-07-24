@@ -6,28 +6,17 @@ import { CurrentAccountComponent } from './current-account';
 import { AccountService } from '../../services/account.service';
 import { PdfUploadService, UploadHistoryItem } from '../../services/pdf-upload.service';
 import { DocumentProcessingHubService } from '../../services/document-processing-hub.service';
-import { MovementDto } from '../../models/movement';
+import { MovementDto, MovementTotals, PagedMovementsResponse } from '../../models/movement';
 
 describe('CurrentAccountComponent', () => {
   let component: CurrentAccountComponent;
   let fixture: ComponentFixture<CurrentAccountComponent>;
-  let accountServiceSpy: { getMovements: jest.Mock; updateMovementNote: jest.Mock };
+  let accountServiceSpy: { getMovements: jest.Mock; getMovementTotals: jest.Mock; updateMovementNote: jest.Mock };
   let pdfUploadServiceSpy: { uploadPdf: jest.Mock; getHistory: jest.Mock };
   let documentProcessedSubject: Subject<UploadHistoryItem>;
   let documentHubSpy: { connect: jest.Mock; disconnect: jest.Mock; onDocumentProcessed: jest.Mock };
 
   const mockMovements: MovementDto[] = [
-    {
-      id: 'm1',
-      amount: 1000,
-      type: 'C',
-      balance: 1000,
-      description: 'Salário',
-      userNote: null,
-      transactionDate: '2026-06-01T10:00:00Z',
-      valueDate: '2026-06-01T10:00:00Z',
-      createdAt: '2026-06-01T10:00:00Z'
-    },
     {
       id: 'm2',
       amount: 150,
@@ -38,12 +27,40 @@ describe('CurrentAccountComponent', () => {
       transactionDate: '2026-06-05T10:00:00Z',
       valueDate: '2026-06-05T10:00:00Z',
       createdAt: '2026-06-05T10:00:00Z'
+    },
+    {
+      id: 'm1',
+      amount: 1000,
+      type: 'C',
+      balance: 1000,
+      description: 'Salário',
+      userNote: null,
+      transactionDate: '2026-06-01T10:00:00Z',
+      valueDate: '2026-06-01T10:00:00Z',
+      createdAt: '2026-06-01T10:00:00Z'
     }
   ];
 
+  const mockTotals: MovementTotals = {
+    totalCredits: 1000,
+    totalDebits: 150,
+    currentBalance: 850
+  };
+
+  function pagedResponse(items: MovementDto[], page = 1, pageSize = 10): PagedMovementsResponse {
+    return {
+      items,
+      page,
+      pageSize,
+      totalCount: items.length,
+      totalPages: Math.max(1, Math.ceil(items.length / pageSize))
+    };
+  }
+
   beforeEach(async () => {
     accountServiceSpy = {
-      getMovements: jest.fn().mockReturnValue(of(mockMovements)),
+      getMovements: jest.fn().mockReturnValue(of(pagedResponse(mockMovements))),
+      getMovementTotals: jest.fn().mockReturnValue(of(mockTotals)),
       updateMovementNote: jest.fn()
     };
     pdfUploadServiceSpy = {
@@ -75,12 +92,12 @@ describe('CurrentAccountComponent', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should load movements and derive the current balance from the latest entry', () => {
+  it('should load the current page of movements and the summary totals', () => {
     fixture.detectChanges();
     expect(component.currentBalance).toBe(850);
     expect(component.totalCredits).toBe(1000);
     expect(component.totalDebits).toBe(150);
-    expect(component.filteredMovements.length).toBe(2);
+    expect(component.pagedMovements.length).toBe(2);
   });
 
   it('should surface an error message when loading movements fails', () => {
@@ -90,19 +107,41 @@ describe('CurrentAccountComponent', () => {
     expect(component.isLoading).toBe(false);
   });
 
-  it('should filter movements by type', () => {
+  it('should send the active date filter to the backend and reset to page 1', () => {
     fixture.detectChanges();
-    component.selectedTypeFilter = 'D';
-    component.applyFilters();
-    expect(component.filteredMovements.length).toBe(1);
-    expect(component.filteredMovements[0].type).toBe('D');
+    accountServiceSpy.getMovements.mockClear();
+    accountServiceSpy.getMovementTotals.mockClear();
+
+    component.dateFilterMode = 'valueDate';
+    component.dateFrom = '2026-06-01';
+    component.dateTo = '2026-06-30';
+    component.currentPage = 3;
+    component.applyDateFilter();
+
+    expect(component.currentPage).toBe(1);
+    expect(accountServiceSpy.getMovements).toHaveBeenCalledWith(
+      expect.objectContaining({ page: 1, valueDateFrom: '2026-06-01', valueDateTo: '2026-06-30' })
+    );
+    expect(accountServiceSpy.getMovementTotals).toHaveBeenCalled();
   });
 
-  it('should save an edited note through the account service', () => {
-    accountServiceSpy.updateMovementNote.mockReturnValue(of(undefined));
+  it('should clear the active date filter and reload', () => {
+    fixture.detectChanges();
+    component.dateFrom = '2026-06-01';
+    component.dateTo = '2026-06-30';
+
+    component.clearDateFilter();
+
+    expect(component.dateFrom).toBe('');
+    expect(component.dateTo).toBe('');
+  });
+
+  it('should save an edited note through the account service and sync from its response', () => {
+    const updatedMovement: MovementDto = { ...mockMovements[1], userNote: 'Nota de teste' };
+    accountServiceSpy.updateMovementNote.mockReturnValue(of(updatedMovement));
     fixture.detectChanges();
 
-    const movement = component.allMovements[0];
+    const movement = component.pagedMovements.find((m) => m.id === 'm1')!;
     component.startEditingNote(movement);
     component.noteDraft = 'Nota de teste';
     component.saveNote(movement);
@@ -112,28 +151,31 @@ describe('CurrentAccountComponent', () => {
     expect(component.editingMovementId).toBeNull();
   });
 
-  it('should paginate movements according to the page size', () => {
-    const manyMovements: MovementDto[] = Array.from({ length: 25 }, (_, i) => ({
-      id: `m${i}`,
-      amount: 10,
-      type: 'C',
-      balance: 10 * (i + 1),
-      description: `Movimento ${i}`,
-      userNote: null,
-      transactionDate: new Date(2026, 0, i + 1).toISOString(),
-      valueDate: new Date(2026, 0, i + 1).toISOString(),
-      createdAt: new Date(2026, 0, i + 1).toISOString()
-    }));
-    accountServiceSpy.getMovements.mockReturnValue(of(manyMovements));
-
+  it('should surface an error message when saving a note fails', () => {
+    accountServiceSpy.updateMovementNote.mockReturnValue(throwError(() => new Error('network error')));
     fixture.detectChanges();
 
-    expect(component.pagedMovements.length).toBe(component.pageSize);
-    expect(component.totalPages).toBe(3);
+    const movement = component.pagedMovements[0];
+    component.startEditingNote(movement);
+    component.noteDraft = 'Nota de teste';
+    component.saveNote(movement);
+
+    expect(component.errorMessage).toBeTruthy();
+    expect(component.isSavingNote).toBe(false);
+  });
+
+  it('should request the next page from the backend instead of paginating locally', () => {
+    accountServiceSpy.getMovements.mockReturnValue(of(pagedResponse(mockMovements, 1, 10)));
+    fixture.detectChanges();
+
+    accountServiceSpy.getMovements.mockClear();
+    accountServiceSpy.getMovements.mockReturnValue(of(pagedResponse(mockMovements, 2, 10)));
+    component.totalPages = 3;
 
     component.goToPage(2);
+
     expect(component.currentPage).toBe(2);
-    expect(component.pagedMovements.length).toBe(component.pageSize);
+    expect(accountServiceSpy.getMovements).toHaveBeenCalledWith(expect.objectContaining({ page: 2 }));
   });
 
   it('should track upload progress and move to processing once the upload completes', () => {

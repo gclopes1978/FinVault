@@ -35,7 +35,7 @@
       </div>
     </div>
 
-    <app-monthly-evolution-chart [movements]="allMovements"></app-monthly-evolution-chart>
+    <app-monthly-evolution-chart [movements]="chartMovements"></app-monthly-evolution-chart>
 
     <div class="statement-import-panel">
       <div class="statement-import-header">
@@ -82,26 +82,57 @@
 
     <div class="filter-panel">
       <div class="filter-group">
-        <label for="typeFilter">Filtrar por tipo:</label>
+        <label for="dateFilterMode">Filtrar por:</label>
         <select
-          id="typeFilter"
-          [(ngModel)]="selectedTypeFilter"
-          (change)="applyFilters()"
+          id="dateFilterMode"
+          [(ngModel)]="dateFilterMode"
           class="filter-select">
-          <option value="All">Todos os movimentos</option>
-          <option value="C">Créditos (+)</option>
-          <option value="D">Débitos (-)</option>
+          <option value="transactionDate">Data de Transação</option>
+          <option value="valueDate">Data Valor</option>
         </select>
+      </div>
+
+      <div class="filter-group">
+        <label for="dateFrom">De:</label>
+        <div class="filter-date-inputs">
+          <input
+            id="dateFrom"
+            type="date"
+            [(ngModel)]="dateFrom"
+            class="filter-date-input" />
+        </div>
+      </div>
+
+      <div class="filter-group">
+        <label for="dateTo">Até:</label>
+        <div class="filter-date-inputs">
+          <input
+            id="dateTo"
+            type="date"
+            [(ngModel)]="dateTo"
+            class="filter-date-input" />
+        </div>
+      </div>
+
+      <div class="filter-actions">
+        <button type="button" class="filter-apply-button" (click)="applyDateFilter()">Aplicar</button>
+        <button type="button" class="filter-clear-button" (click)="clearDateFilter()">Limpar</button>
       </div>
     </div>
 
-    @if (filteredMovements.length === 0) {
+    @if (isPageLoading) {
+      <div class="loading-state-box">
+        <p>A atualizar movimentos...</p>
+      </div>
+    }
+
+    @if (!isPageLoading && pagedMovements.length === 0) {
       <div class="empty-state-box">
         <p>Não foram encontrados movimentos para o filtro selecionado.</p>
       </div>
     }
 
-    @if (filteredMovements.length > 0) {
+    @if (!isPageLoading && pagedMovements.length > 0) {
       <div class="table-responsive">
         <table class="movements-table">
           <thead>

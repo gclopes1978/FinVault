@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ChangeDetectorRef} from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
@@ -7,16 +7,20 @@ import { AccountService } from '../../services/account.service';
 import { PdfUploadService, UploadHistoryItem } from '../../services/pdf-upload.service';
 import { DocumentProcessingHubService } from '../../services/document-processing-hub.service';
 import { MonthlyEvolutionChartComponent } from '../../components/monthly-evolution-chart/monthly-evolution-chart';
-import { MovementDto } from '../../models/movement';
+import { DateFilterField, MovementDto, MovementQueryParams } from '../../models/movement';
 
-// Options exposed in the "filter by type" dropdown
-type TypeFilter = 'All' | 'C' | 'D';
+// Which date field the active date-range filter applies to
+type DateFilterMode = 'transactionDate' | 'valueDate';
 
 // Visual state of the bank statement import widget
 type StatementUploadState = 'idle' | 'uploading' | 'processing' | 'success' | 'error';
 
-// Number of movements shown per page in the transaction list
+// Number of movements requested per page from the backend
 const PAGE_SIZE = 10;
+
+// Number of movements requested for the evolution chart, which needs the whole history to
+// aggregate by month/day and is loaded separately from the (small, server-paginated) table page
+const CHART_PAGE_SIZE = 2000;
 
 @Component({
   selector: 'app-current-account',
@@ -26,31 +30,32 @@ const PAGE_SIZE = 10;
   styleUrl: './current-account.scss'
 })
 export class CurrentAccountComponent implements OnInit, OnDestroy {
-  // Full set of movements returned by the backend, ordered oldest -> newest
-  public allMovements: MovementDto[] = [];
-
-  // Subset currently rendered (after filtering, before pagination), newest first
-  public filteredMovements: MovementDto[] = [];
-
-  // Slice of filteredMovements shown on the current page
+  // Movements for the page currently being displayed, already filtered/sorted by the backend
   public pagedMovements: MovementDto[] = [];
 
-  // Active type filter selection bound to the dropdown
-  public selectedTypeFilter: TypeFilter = 'All';
+  // Full movement history, loaded once (and after a successful statement import) for the chart,
+  // independent of the table's date filters/pagination
+  public chartMovements: MovementDto[] = [];
 
-  // Current account balance, taken from the most recent movement's running balance
+  // --- Date range filter ---
+  public dateFilterMode: DateFilterMode = 'transactionDate';
+  public dateFrom = '';
+  public dateTo = '';
+
+  // Current account balance (from the most recent movement, independent of filters)
   public currentBalance: number | null = null;
 
-  // Sum of all credit ("C") movements currently loaded
+  // Sum of credit ("C") / debit ("D") movements matching the active filter
   public totalCredits = 0;
-
-  // Sum of all debit ("D") movements currently loaded
   public totalDebits = 0;
 
-  // True while the initial movements request is in flight
+  // True while the initial movements + totals request is in flight
   public isLoading = true;
 
-  // Populated with a user-facing message when the movements request fails
+  // True while a page/filter change is being fetched (keeps old rows visible underneath)
+  public isPageLoading = false;
+
+  // Populated with a user-facing message when a movements/totals request fails
   public errorMessage: string | null = null;
 
   // Tracks which movement row currently has its note field open for editing
@@ -62,8 +67,9 @@ export class CurrentAccountComponent implements OnInit, OnDestroy {
   // True while a note update request is in flight
   public isSavingNote = false;
 
-  // --- Pagination ---
+  // --- Pagination (server-side) ---
   public currentPage = 1;
+  public totalPages = 1;
   public readonly pageSize = PAGE_SIZE;
 
   // --- Bank statement (PDF) import ---
@@ -81,7 +87,13 @@ export class CurrentAccountComponent implements OnInit, OnDestroy {
   ) {}
 
   public ngOnInit(): void {
+    this.isLoading = true;
+    this.errorMessage = null;
+
+    // Load the first table page, the summary totals, and the chart's full history in parallel
     this.loadMovements();
+    this.loadTotals();
+    this.loadChartMovements();
 
     // Listen for live "documentProcessed" pushes so a statement import submitted from this
     // page reflects success/failure without the user needing to refresh
@@ -94,82 +106,98 @@ export class CurrentAccountComponent implements OnInit, OnDestroy {
     this.documentHub.disconnect();
   }
 
-  // Fetch every movement for the account and derive the summary figures shown at the top
+  // Build the query params for the active date-range filter, applied to whichever
+  // date field (transaction or value date) the user picked
+  private buildQueryParams(page: number): MovementQueryParams {
+    const params: MovementQueryParams = { page, pageSize: this.pageSize };
+
+    if (this.dateFrom || this.dateTo) {
+      const field: DateFilterField = this.dateFilterMode;
+      if (field === 'transactionDate') {
+        if (this.dateFrom) params.transactionDateFrom = this.dateFrom;
+        if (this.dateTo) params.transactionDateTo = this.dateTo;
+      } else {
+        if (this.dateFrom) params.valueDateFrom = this.dateFrom;
+        if (this.dateTo) params.valueDateTo = this.dateTo;
+      }
+    }
+
+    return params;
+  }
+
+  // Fetch the current table page from the backend (already filtered/sorted/paginated)
   public loadMovements(): void {
-    this.isLoading = true;
+    this.isPageLoading = true;
     this.errorMessage = null;
 
-    this.accountService.getMovements().subscribe({
-      next: (movements) => {
-        queueMicrotask(() => {
-        this.allMovements = movements;
-        this.computeSummary(movements);
-        this.currentPage = 1;
-        this.applyFilters();
+    this.accountService.getMovements(this.buildQueryParams(this.currentPage)).subscribe({
+      next: (response) => {
+        this.pagedMovements = response.items;
+        this.totalPages = Math.max(1, response.totalPages);
+        this.currentPage = response.page;
+        this.isPageLoading = false;
         this.isLoading = false;
         this.cdr.detectChanges();
-        });
       },
       error: () => {
         this.errorMessage = 'Não foi possível carregar os movimentos da conta. Tente novamente mais tarde.';
+        this.isPageLoading = false;
         this.isLoading = false;
       }
     });
   }
 
-  // Recalculate the balance and totals shown in the summary cards
-  private computeSummary(movements: MovementDto[]): void {
-    if (movements.length === 0) {
-      this.currentBalance = null;
-      this.totalCredits = 0;
-      this.totalDebits = 0;
-      return;
-    }
-
-    // The backend returns movements ordered by TransactionDate ascending, so the
-    // running balance on the last entry is the current account balance
-    this.currentBalance = movements[movements.length - 1].balance;
-
-    this.totalCredits = movements
-      .filter((m) => m.type === 'C')
-      .reduce((sum, m) => sum + m.amount, 0);
-
-    this.totalDebits = movements
-      .filter((m) => m.type === 'D')
-      .reduce((sum, m) => sum + m.amount, 0);
+  // Fetch the summary totals (credits/debits for the active filter, plus the current balance)
+  public loadTotals(): void {
+    this.accountService.getMovementTotals(this.buildQueryParams(1)).subscribe({
+      next: (totals) => {
+        this.totalCredits = totals.totalCredits;
+        this.totalDebits = totals.totalDebits;
+        this.currentBalance = totals.currentBalance;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.errorMessage = 'Não foi possível carregar os totais da conta. Tente novamente mais tarde.';
+      }
+    });
   }
 
-  // Apply the active type filter, sort newest-first, and reset pagination to the first page
-  public applyFilters(): void {
-    const source = this.selectedTypeFilter === 'All'
-      ? this.allMovements
-      : this.allMovements.filter((m) => m.type === this.selectedTypeFilter);
+  // Fetch the full movement history feeding the evolution chart; independent of the table's
+  // active date filter/pagination so the chart always shows the whole account history
+  private loadChartMovements(): void {
+    this.accountService.getMovements({ page: 1, pageSize: CHART_PAGE_SIZE }).subscribe({
+      next: (response) => {
+        this.chartMovements = response.items;
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        // Non-fatal: the chart simply stays empty if this call fails, the rest of the page still works
+      }
+    });
+  }
 
-    this.filteredMovements = [...source].sort(
-      (a, b) => new Date(b.transactionDate).getTime() - new Date(a.transactionDate).getTime()
-    );
-
+  // Reload the table and totals for the current filter selection (resets to page 1)
+  public applyDateFilter(): void {
     this.currentPage = 1;
-    this.applyPagination();
+    this.loadMovements();
+    this.loadTotals();
   }
 
-  // --- Pagination helpers ---
-
-  public get totalPages(): number {
-    return Math.max(1, Math.ceil(this.filteredMovements.length / this.pageSize));
+  // Clear the active date filter and reload
+  public clearDateFilter(): void {
+    this.dateFrom = '';
+    this.dateTo = '';
+    this.applyDateFilter();
   }
 
-  private applyPagination(): void {
-    const start = (this.currentPage - 1) * this.pageSize;
-    this.pagedMovements = this.filteredMovements.slice(start, start + this.pageSize);
-  }
+  // --- Pagination helpers (server-side: each page change triggers a new request) ---
 
   public goToPage(page: number): void {
-    if (page < 1 || page > this.totalPages) {
+    if (page < 1 || page > this.totalPages || page === this.currentPage) {
       return;
     }
     this.currentPage = page;
-    this.applyPagination();
+    this.loadMovements();
   }
 
   public getTypeClass(type: 'C' | 'D'): Record<string, boolean> {
@@ -207,8 +235,9 @@ export class CurrentAccountComponent implements OnInit, OnDestroy {
     this.isSavingNote = true;
 
     this.accountService.updateMovementNote(movement.id, trimmedNote).subscribe({
-      next: () => {
-        movement.userNote = trimmedNote;
+      next: (updatedMovement) => {
+        // Sync the row from the backend's response, rather than assuming the request succeeded silently
+        movement.userNote = updatedMovement.userNote;
         this.isSavingNote = false;
         this.editingMovementId = null;
         this.noteDraft = '';
@@ -265,8 +294,11 @@ export class CurrentAccountComponent implements OnInit, OnDestroy {
 
     if (item.success) {
       this.uploadState = 'success';
-      // Refresh the movement list and balance so the newly imported statement is reflected
+      // Refresh the table, totals and chart so the newly imported statement is reflected everywhere
+      this.currentPage = 1;
       this.loadMovements();
+      this.loadTotals();
+      this.loadChartMovements();
     } else {
       this.uploadState = 'error';
       this.uploadErrorMessage = item.errorMessage ?? 'O extrato não pôde ser processado.';

@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { MovementDto } from '../models/movement';
+import { MovementDto, MovementQueryParams, MovementTotals, PagedMovementsResponse } from '../models/movement';
 
 @Injectable({
   providedIn: 'root'
@@ -14,14 +14,32 @@ export class AccountService {
 
   constructor(private readonly http: HttpClient) {}
 
-  // Fetch every recorded movement for the authenticated user's current account
-  public getMovements(): Observable<MovementDto[]> {
-    return this.http.get<MovementDto[]>(this.apiUrl);
+  // Fetch a single page of movements for the authenticated user's current account, filtered by
+  // date range and sorted server-side (TransactionDate desc, ValueDate desc by default)
+  public getMovements(params: MovementQueryParams): Observable<PagedMovementsResponse> {
+    return this.http.get<PagedMovementsResponse>(this.apiUrl, { params: this.buildHttpParams(params) });
   }
 
-  // Update the personal note attached to a single movement
-  public updateMovementNote(movementId: string, note: string): Observable<void> {
-    console.log(`Updating note for movement ${movementId}`);
-    return this.http.patch<void>(`${this.apiUrl}/${movementId}/note`, { note });
+  // Fetch aggregate credit/debit totals (respecting the same date filters) plus the current balance
+  public getMovementTotals(params: MovementQueryParams): Observable<MovementTotals> {
+    return this.http.get<MovementTotals>(`${this.apiUrl}/totals`, { params: this.buildHttpParams(params) });
+  }
+
+  // Update the personal note attached to a single movement; the backend returns the updated movement
+  public updateMovementNote(movementId: string, note: string): Observable<MovementDto> {
+    return this.http.patch<MovementDto>(`${this.apiUrl}/${movementId}/note`, { note });
+  }
+
+  private buildHttpParams(params: MovementQueryParams): HttpParams {
+    let httpParams = new HttpParams();
+
+    if (params.page != null) httpParams = httpParams.set('page', params.page);
+    if (params.pageSize != null) httpParams = httpParams.set('pageSize', params.pageSize);
+    if (params.transactionDateFrom) httpParams = httpParams.set('transactionDateFrom', params.transactionDateFrom);
+    if (params.transactionDateTo) httpParams = httpParams.set('transactionDateTo', params.transactionDateTo);
+    if (params.valueDateFrom) httpParams = httpParams.set('valueDateFrom', params.valueDateFrom);
+    if (params.valueDateTo) httpParams = httpParams.set('valueDateTo', params.valueDateTo);
+
+    return httpParams;
   }
 }
