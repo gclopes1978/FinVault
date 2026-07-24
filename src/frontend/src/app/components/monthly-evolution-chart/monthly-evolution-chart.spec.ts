@@ -1,3 +1,5 @@
+jest.mock('chart.js');
+
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { MonthlyEvolutionChartComponent } from './monthly-evolution-chart';
