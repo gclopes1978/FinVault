@@ -8,10 +8,13 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Chart, ChartConfiguration, registerables } from 'chart.js';
+
+// ✔️ Chart.js v4 import correto
+import Chart from 'chart.js/auto';
+import { ChartConfiguration } from 'chart.js';
+
 import { MovementDto } from '../../models/movement';
 
-Chart.register(...registerables);
 
 // One data point in the aggregated chart: either a month (year view) or a day (year+month view)
 interface AggregatedPoint {
@@ -35,9 +38,6 @@ const MONTH_LABELS = [
 export class MonthlyEvolutionChartComponent implements AfterViewInit, OnDestroy {
   private _movements: MovementDto[] = [];
 
-  // Full movement list for the account; aggregation is derived from this on every change.
-  // Implemented as a setter (rather than relying on ngOnChanges) so it also reacts when
-  // assigned directly, e.g. from tests that don't go through a bound host template.
   @Input()
   public set movements(value: MovementDto[]) {
     this._movements = value ?? [];
@@ -51,13 +51,8 @@ export class MonthlyEvolutionChartComponent implements AfterViewInit, OnDestroy 
 
   @ViewChild('chartCanvas') private readonly chartCanvasRef!: ElementRef<HTMLCanvasElement>;
 
-  // Every calendar year present in the movement list, newest first
   public availableYears: number[] = [];
-
-  // Currently selected year; null until movements are loaded
   public selectedYear: number | null = null;
-
-  // Currently selected month (1-12); null means "whole year" (monthly aggregation)
   public selectedMonth: number | null = null;
 
   public readonly monthOptions = MONTH_LABELS.map((label, index) => ({ value: index + 1, label }));
@@ -74,7 +69,6 @@ export class MonthlyEvolutionChartComponent implements AfterViewInit, OnDestroy 
     this.chart?.destroy();
   }
 
-  // Rebuild the list of selectable years from the current movements, defaulting to the most recent one
   private recomputeAvailableYears(): void {
     const years = new Set(this.movements.map((m) => new Date(m.transactionDate).getFullYear()));
     this.availableYears = Array.from(years).sort((a, b) => b - a);
@@ -93,9 +87,6 @@ export class MonthlyEvolutionChartComponent implements AfterViewInit, OnDestroy 
     this.renderChart();
   }
 
-  // Aggregate the loaded movements into the points shown on the chart, according to the
-  // current year/month selection: monthly totals for the whole year, or daily totals for
-  // a single selected month.
   public buildAggregatedPoints(): AggregatedPoint[] {
     if (this.selectedYear === null) {
       return [];
@@ -151,7 +142,6 @@ export class MonthlyEvolutionChartComponent implements AfterViewInit, OnDestroy 
     const canvas = this.chartCanvasRef.nativeElement;
     const context = canvas.getContext('2d');
     if (!context) {
-      // No 2D context available (e.g. running under a test environment without canvas support)
       return;
     }
 

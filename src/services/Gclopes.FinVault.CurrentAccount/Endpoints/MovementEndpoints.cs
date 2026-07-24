@@ -3,6 +3,7 @@ using Gclopes.FinVault.CurrentAccount.Endpoints.DTO;
 using Gclopes.FinVault.CurrentAccount.Models;
 using Gclopes.FinVault.CurrentAccount.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace Gclopes.FinVault.CurrentAccount.Endpoints;
@@ -55,7 +56,8 @@ public static class MovementEndpoints
         ClaimsPrincipal user)
     {
         // Extract UserId from token claims
-        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                  ?? user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
         if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
 
         var result = await movementService.GetAllMovementsAsync();
@@ -70,9 +72,10 @@ public static class MovementEndpoints
         IMovementService movementService,
         ClaimsPrincipal user)
     {
-        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                  ?? user.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
         if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
-
+ 
         // Chamamos o serviço para atualizar
         var success = await movementService.UpdateNoteAsync(id, request.Note);
 

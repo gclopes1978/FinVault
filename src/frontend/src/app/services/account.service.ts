@@ -21,6 +21,7 @@ export class AccountService {
 
   // Update the personal note attached to a single movement
   public updateMovementNote(movementId: string, note: string): Observable<void> {
+    console.log(`Updating note for movement ${movementId}`);
     return this.http.patch<void>(`${this.apiUrl}/${movementId}/note`, { note });
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse, HttpEventType } from '@angular/common/http';
@@ -76,7 +76,8 @@ export class CurrentAccountComponent implements OnInit, OnDestroy {
   constructor(
     private readonly accountService: AccountService,
     private readonly pdfUploadService: PdfUploadService,
-    private readonly documentHub: DocumentProcessingHubService
+    private readonly documentHub: DocumentProcessingHubService,
+    private cdr: ChangeDetectorRef
   ) {}
 
   public ngOnInit(): void {
@@ -100,11 +101,14 @@ export class CurrentAccountComponent implements OnInit, OnDestroy {
 
     this.accountService.getMovements().subscribe({
       next: (movements) => {
+        queueMicrotask(() => {
         this.allMovements = movements;
         this.computeSummary(movements);
         this.currentPage = 1;
         this.applyFilters();
         this.isLoading = false;
+        this.cdr.detectChanges();
+        });
       },
       error: () => {
         this.errorMessage = 'Não foi possível carregar os movimentos da conta. Tente novamente mais tarde.';

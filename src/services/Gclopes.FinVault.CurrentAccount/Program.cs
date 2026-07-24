@@ -129,7 +129,6 @@ public class Program
         ApplyMigrations(app);
 
         app.MapOpenApi();
-        app.UseHttpsRedirection();
         app.UseCors("AllowAll");
         app.UseAuthentication();
         app.UseAuthorization();

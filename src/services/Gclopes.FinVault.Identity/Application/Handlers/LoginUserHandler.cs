@@ -47,7 +47,9 @@ public class LoginUserHandler(
 
         var authClaims = new List<Claim>
         {
+            new(ClaimTypes.NameIdentifier, user.Id),
             new(ClaimTypes.Name, user.Email!),
+            new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 
