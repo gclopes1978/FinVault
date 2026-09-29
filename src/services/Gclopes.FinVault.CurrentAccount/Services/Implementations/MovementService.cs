@@ -80,7 +80,7 @@ public class MovementService(ApplicationDbContext context) : IMovementService
         return source;
     }
 
-    public async Task<BankStatementResponse> RegisterBankStatementAsync(BankStatementPayloadDto dto, string userId)
+    public async Task<BankStatementResponse> RegisterBankStatementAsync(BankStatementPayloadDto dto)
     {
         // 1. Validação de Domínio (usando o BalanceCalculator que criámos)
         // Extraímos os dados para uma forma simples (tupla) que o Domain entende

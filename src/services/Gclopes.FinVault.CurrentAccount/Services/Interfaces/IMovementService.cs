@@ -9,7 +9,7 @@ public interface IMovementService
     Task<MovementResponse?> UpdateNoteAsync(Guid movementId, string note);
 
     // Registra um extrato completo (via importação de PDF/JSON)
-    Task<BankStatementResponse> RegisterBankStatementAsync(BankStatementPayloadDto statementDto, string userId);
+    Task<BankStatementResponse> RegisterBankStatementAsync(BankStatementPayloadDto statementDto);
 
     // Recupera os movimentos paginados, filtrados por intervalo de datas e ordenados por
     // TransactionDate desc, ValueDate desc (default)
