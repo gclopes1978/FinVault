@@ -72,7 +72,7 @@ namespace Gclopes.FinVault.CurrentAccount.Data.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Movements_TransactionDate_ValueDate",
                 table: "Movements",
-                columns: new[] { "TransactionDate", "ValueDate" });
+                columns: ["TransactionDate", "ValueDate"]);
 
             // Speeds up SUM(...) WHERE Type = 'C'/'D' in the totals endpoint
             migrationBuilder.CreateIndex(
