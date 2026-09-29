@@ -69,13 +69,12 @@ public class Program
             });
 
         // Authorization + Policy for YARP
-        builder.Services.AddAuthorization(options =>
-        {
-            options.AddPolicy("Default", policy =>
+        builder.Services.AddAuthorizationBuilder()
+        // Authorization + Policy for YARP
+                        .AddPolicy("Default", policy =>
             {
                 policy.RequireAuthenticatedUser();
             });
-        });
 
         // YARP
         builder.Services.AddReverseProxy()
