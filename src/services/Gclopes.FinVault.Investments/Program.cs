@@ -11,14 +11,11 @@ using System.Text;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
-builder.Services.AddControllers();
 builder.Services.AddOpenApi();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("Frontend", policy =>
     {
         policy.WithOrigins("http://localhost:4200")
               .AllowAnyMethod()
@@ -26,34 +23,35 @@ builder.Services.AddCors(options =>
     });
 });
 
-// Database configuration
-//var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-// Certifica-te que usas a chave definida no teu .env
-// Substitui a linha do connectionString por esta:
+
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
 if (string.IsNullOrEmpty(connectionString))
 {
-    throw new InvalidOperationException("Connection string 'SQLSERVER_CONNECTION_INVESTMENTS' not found.");
+    throw new InvalidOperationException(
+     "Connection string 'DefaultConnection' is not configured (compose: SQLSERVER_CONNECTION_INVESTMENTS).");
 }
 
 builder.Services.AddDbContext<FinVaultInvestmentsDb>(options =>
-    options.UseSqlServer(connectionString, sqlOptions =>
-    {
-        sqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 5,
-            maxRetryDelay: TimeSpan.FromSeconds(30),
-            errorNumbersToAdd: null);
-    }));
+options.UseSqlServer(connectionString, sqlOptions =>
+{
+    sqlOptions.EnableRetryOnFailure(
+        maxRetryCount: 5,
+        maxRetryDelay: TimeSpan.FromSeconds(30),
+        errorNumbersToAdd: null);
+}));
 
 
 // Register services
 builder.Services.AddScoped<IInvestmentsService, InvestmentsService>();
 builder.Services.AddScoped<IXtbCsvImporter, XtbCsvImporter>();
 builder.Services.AddScoped<ITrading212CsvImporter, Trading212CsvImporter>();
+builder.Services.AddAuthorization();
 
+var jwtSecret = builder.Configuration["JwtSettings:Secret"];
+if (string.IsNullOrWhiteSpace(jwtSecret))
+    throw new InvalidOperationException("JwtSettings:Secret is not configured.");
 
-builder.Services.AddLogging();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
@@ -65,34 +63,35 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuerSigningKey = true,
             ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
             ValidAudience = builder.Configuration["JwtSettings:Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"] ??
-                throw new InvalidOperationException("JwtSettings:Secret is missing!")))
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))
         };
     });
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
-app.MapOpenApi();
+    app.MapOpenApi();
+    app.UseSwaggerUI(options =>
+       options.SwaggerEndpoint("/openapi/v1.json", "Investments API")); // UI at /swagger
 
-app.UseHttpsRedirection();
-app.UseCors("AllowAll");
+}
+
+app.UseCors("Frontend");
 app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapInvestmentsEndpoints();
 
 
-// Garantir a criação da BD no arranque
-using (var scope = app.Services.CreateScope())
-{
-    var dbContext = scope.ServiceProvider.GetRequiredService<FinVaultInvestmentsDb>();
-    // Cria a base de dados e aplica migrações se necessário
-    dbContext.Database.EnsureCreated();
-}
+// Aplicar migrations apenas à BD existente
+//using (var scope = app.Services.CreateScope())
+//{
+//    var dbContext = scope.ServiceProvider.GetRequiredService<FinVaultInvestmentsDb>();
+
+//    if (dbContext.Database.CanConnect())
+//    {
+//        dbContext.Database.Migrate();
+//    }
+//}
 
 app.Run();
