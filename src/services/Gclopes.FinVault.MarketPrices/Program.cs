@@ -6,7 +6,6 @@ using Gclopes.FinVault.MarketPrices.Providers;
 using Gclopes.FinVault.MarketPrices.Resolver;
 using Gclopes.FinVault.MarketPrices.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.IdentityModel.Tokens;
 using Polly;

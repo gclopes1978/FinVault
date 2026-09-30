@@ -1,5 +1,4 @@
 ﻿using Gclopes.FinVault.CurrentAccount.Endpoints.DTO;
-using Gclopes.FinVault.CurrentAccount.Models;
 using Gclopes.FinVault.CurrentAccount.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 

@@ -5,7 +5,6 @@ using Gclopes.FinVault.Identity.Application.Commands;
 using Gclopes.FinVault.Identity.Application.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Gclopes.FinVault.Identity.Application.Handlers;
