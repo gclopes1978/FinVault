@@ -22,6 +22,16 @@ public static class MovementEndpoints
             .RequireAuthorization()
             .WithOpenApi();
 
+        group.MapGet("/years", GetAvailableYearsAsync)
+            .WithName("GetAvailableMovementYears")
+            .RequireAuthorization()
+            .WithOpenApi();
+
+        group.MapGet("/totals/year", GetTotalsByMonthAndYearAsync)
+             .WithName("GetTotalsByMonthAndYear")
+             .RequireAuthorization()
+             .WithOpenApi();
+
         group.MapGet("/totals", GetMovementTotalsAsync)
             .WithName("GetMovementTotals")
             .RequireAuthorization()
@@ -33,7 +43,26 @@ public static class MovementEndpoints
             .WithOpenApi();
     }
 
+    private static async Task<IResult> GetAvailableYearsAsync(IMovementService movementService)
+    {
+        List<int> years = await movementService.GetAvailableYearsAsync();
+
+        return Results.Ok(years);
+    }
+
     public sealed class MovementEndpointsLog;
+
+    private static async Task<IResult> GetTotalsByMonthAndYearAsync(
+        int year,
+        IMovementService movementService,
+        ILogger<MovementEndpointsLog> logger)
+    {
+        logger.LogInformation("GetTotalsByMonthAndYearAsync --> {year}", year);
+        var result = await movementService.GetTotalsByYearMonthResponse(year);
+
+        return Results.Ok(result);
+    }
+
 
     private static async Task<IResult> GetMovementsAsync(
         [AsParameters] MovementQueryParameters query,
