@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
-import { MovementDto, MovementQueryParams, MovementTotals, PagedMovementsResponse } from '../models/movement';
+import { MovementDto, MovementTotalsByYearMonth, MovementQueryParams, MovementTotals, PagedMovementsResponse } from '../models/movement';
 
 @Injectable({
   providedIn: 'root'
@@ -25,10 +25,24 @@ export class AccountService {
     return this.http.get<MovementTotals>(`${this.apiUrl}/totals`, { params: this.buildHttpParams(params) });
   }
 
+  public getAvailableYears(): Observable<number[]> {
+    return this.http.get<number[]>(`${this.apiUrl}/years`);
+  }
+
+  public getTotalsByYearMonth(year: number): Observable<MovementTotalsByYearMonth[]> {
+    const params = new HttpParams()
+      .set('year', year);
+
+    return this.http.get<MovementTotalsByYearMonth[]>(
+      `${this.apiUrl}/totals/year`,
+      { params }
+    );
+  }
   // Update the personal note attached to a single movement; the backend returns the updated movement
   public updateMovementNote(movementId: string, note: string): Observable<MovementDto> {
     return this.http.patch<MovementDto>(`${this.apiUrl}/${movementId}/note`, { note });
   }
+
 
   private buildHttpParams(params: MovementQueryParams): HttpParams {
     let httpParams = new HttpParams();
