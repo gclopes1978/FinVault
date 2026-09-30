@@ -17,4 +17,8 @@ public interface IMovementService
 
     // Recupera os totais de crédito/débito (respeitando os mesmos filtros de data) e o saldo atual
     Task<MovementTotalsResponse> GetMovementTotalsAsync(MovementQueryParameters query);
+
+    Task<List<MovementTotalsByYearMonthResponse>> GetTotalsByYearMonthResponse(int year);
+
+    Task<List<int>> GetAvailableYearsAsync();
 }
