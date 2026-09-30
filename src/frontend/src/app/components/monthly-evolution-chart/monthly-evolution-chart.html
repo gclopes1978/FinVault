@@ -4,34 +4,26 @@
     <p>Consulte a evolução mensal (ou diária, ao escolher um mês) dos créditos e débitos.</p>
   </div>
 
-  @if (availableYears.length === 0) {
-    <div class="chart-empty-state">
-      <p>Sem movimentos suficientes para gerar o gráfico.</p>
-    </div>
-  } @else {
-    <div class="chart-controls">
-      <div class="control-group">
-        <label for="yearSelect">Ano:</label>
-        <select id="yearSelect" [(ngModel)]="selectedYear" (change)="onYearChange()" class="control-select">
-          @for (year of availableYears; track year) {
-            <option [ngValue]="year">{{ year }}</option>
-          }
-        </select>
-      </div>
+  <div class="chart-controls">
+    <div class="control-group">
+      <label for="yearSelect">Ano:</label>
 
-      <div class="control-group">
-        <label for="monthSelect">Mês:</label>
-        <select id="monthSelect" [(ngModel)]="selectedMonth" (change)="onMonthChange()" class="control-select">
-          <option [ngValue]="null">Ano completo</option>
-          @for (month of monthOptions; track month.value) {
-            <option [ngValue]="month.value">{{ month.label }}</option>
-          }
-        </select>
-      </div>
-    </div>
+      <select
+        id="yearSelect"
+        [value]="selectedYear"
+        (change)="selectedYear = +$any($event.target).value; onYearChange()"
+        class="control-select">
 
-    <div class="chart-canvas-wrapper">
-      <canvas #chartCanvas></canvas>
+        @for (year of availableYears; track year) {
+          <option [value]="year">
+            {{ year }}
+          </option>
+        }
+      </select>
     </div>
-  }
+  </div>
+
+  <div class="chart-canvas-wrapper">
+    <canvas #chartCanvas></canvas>
+  </div>
 </div>
