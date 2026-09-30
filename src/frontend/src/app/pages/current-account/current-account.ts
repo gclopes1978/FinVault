@@ -18,10 +18,6 @@ type StatementUploadState = 'idle' | 'uploading' | 'processing' | 'success' | 'e
 // Number of movements requested per page from the backend
 const PAGE_SIZE = 10;
 
-// Number of movements requested for the evolution chart, which needs the whole history to
-// aggregate by month/day and is loaded separately from the (small, server-paginated) table page
-const CHART_PAGE_SIZE = 2000;
-
 @Component({
   selector: 'app-current-account',
   standalone: true,
@@ -33,9 +29,10 @@ export class CurrentAccountComponent implements OnInit, OnDestroy {
   // Movements for the page currently being displayed, already filtered/sorted by the backend
   public pagedMovements: MovementDto[] = [];
 
-  // Full movement history, loaded once (and after a successful statement import) for the chart,
-  // independent of the table's date filters/pagination
-  public chartMovements: MovementDto[] = [];
+  // Bumped whenever the movements change so the evolution chart drops any history it cached
+  // for its per-day breakdown. The chart loads that history itself, and only when a month is
+  // actually selected, so this page never pulls the full movement list up front.
+  public chartDataVersion = 0;
 
   // --- Date range filter ---
   public dateFilterMode: DateFilterMode = 'transactionDate';
@@ -90,10 +87,9 @@ export class CurrentAccountComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.errorMessage = null;
 
-    // Load the first table page, the summary totals, and the chart's full history in parallel
+    // Load the first table page and the summary totals in parallel
     this.loadMovements();
     this.loadTotals();
-    this.loadChartMovements();
 
     // Listen for live "documentProcessed" pushes so a statement import submitted from this
     // page reflects success/failure without the user needing to refresh
@@ -158,20 +154,6 @@ export class CurrentAccountComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.errorMessage = 'Não foi possível carregar os totais da conta. Tente novamente mais tarde.';
-      }
-    });
-  }
-
-  // Fetch the full movement history feeding the evolution chart; independent of the table's
-  // active date filter/pagination so the chart always shows the whole account history
-  private loadChartMovements(): void {
-    this.accountService.getMovements({ page: 1, pageSize: CHART_PAGE_SIZE }).subscribe({
-      next: (response) => {
-        this.chartMovements = response.items;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        // Non-fatal: the chart simply stays empty if this call fails, the rest of the page still works
       }
     });
   }
@@ -294,11 +276,14 @@ export class CurrentAccountComponent implements OnInit, OnDestroy {
 
     if (item.success) {
       this.uploadState = 'success';
-      // Refresh the table, totals and chart so the newly imported statement is reflected everywhere
+      // Refresh the table and totals so the newly imported statement is reflected everywhere
       this.currentPage = 1;
       this.loadMovements();
       this.loadTotals();
-      this.loadChartMovements();
+
+      // Signal the chart that the movements changed, so it drops any history it cached
+      this.chartDataVersion++;
+      this.cdr.detectChanges();
     } else {
       this.uploadState = 'error';
       this.uploadErrorMessage = item.errorMessage ?? 'O extrato não pôde ser processado.';
