@@ -29,6 +29,13 @@ export interface MovementTotals {
   currentBalance: number | null;
 }
 
+export interface MovementTotalsByYearMonth {
+  year: number;
+  month: number;
+  totalCredit: number;
+  totalDebit: number;
+}
+
 // Which date field a date-range filter applies to
 export type DateFilterField = 'transactionDate' | 'valueDate';
 
