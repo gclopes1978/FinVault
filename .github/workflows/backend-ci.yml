@@ -36,4 +36,6 @@ jobs:
 
     # Step 5: Execute Automated Tests (if any test projects exist in the solution)
     - name: Run Tests
+      env:
+        JwtSettings__Secret: ${{ secrets.TEST_JWT_SECRET }}
       run: dotnet test --no-build --configuration Release --verbosity normal
