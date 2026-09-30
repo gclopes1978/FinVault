@@ -1,5 +1,4 @@
-﻿using Xunit;
-using FluentAssertions;
+﻿using FluentAssertions;
 using Gclopes.FinVault.CurrentAccount.Domain;
 
 namespace Gclopes.FinVault.CurrentAccount.Tests.UnitTests;

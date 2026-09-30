@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+
 namespace Gclopes.FinVault.Identity;
 
 /// <summary>
@@ -23,14 +24,32 @@ public class Program
         // --- Configuration Setup ---
         // Binds JWT settings from appsettings.json
         var jwtSettings = builder.Configuration.GetSection("JwtSettings");
-        var secretKey = jwtSettings["Secret"]!;
-        var issuer = jwtSettings["Issuer"]!;
-        var audience = jwtSettings["Audience"]!;
+
+        var secretKey = jwtSettings["Secret"];
+        var issuer = jwtSettings["Issuer"];
+        var audience = jwtSettings["Audience"];
+
+        if (string.IsNullOrWhiteSpace(secretKey))
+        {
+            throw new InvalidOperationException(
+                "JwtSettings:Secret was not found.");
+        }
+
+        if (string.IsNullOrWhiteSpace(issuer))
+        {
+            throw new InvalidOperationException(
+                "JwtSettings:Issuer was not found.");
+        }
+
+        if (string.IsNullOrWhiteSpace(audience))
+        {
+            throw new InvalidOperationException(
+                "JwtSettings:Audience was not found.");
+        }
 
         // --- Dependency Injection ---
         // Registers the TokenService as Scoped, ensuring a new instance per request
         builder.Services.AddScoped<TokenService>();
-
 
         // --- Authentication & Authorization ---
         // Configures the Authentication services using JWT Bearer schema
@@ -50,7 +69,7 @@ public class Program
                 ValidIssuer = issuer,
                 ValidAudience = audience,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secretKey)),
-                ClockSkew = TimeSpan.Zero // Remove o atraso de 5 minutos na expiração
+                ClockSkew = TimeSpan.Zero // Removes the default 5-minute clock skew
             };
         });
 
@@ -58,15 +77,17 @@ public class Program
         builder.Services.AddAuthorization();
         builder.Services.AddControllers();
 
-
-        // Define the connection string (usually from appsettings.json)
+        // Configure database connection
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrWhiteSpace(connectionString))
+        {
+            throw new InvalidOperationException(
+                "ConnectionStrings:DefaultConnection was not found.");
+        }
 
-        // Register the DbContext to use SQL Server (or your DB provider of choice)
         builder.Services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(connectionString));
 
-        // Register Identity using our DbContext
         builder.Services.AddIdentity<IdentityUser, IdentityRole>()
             .AddEntityFrameworkStores<ApplicationDbContext>()
             .AddDefaultTokenProviders();
@@ -83,12 +104,12 @@ public class Program
         // Builds the application based on the configuration above
         var app = builder.Build();
 
-        // Adiciona isto logo após o var app = builder.Build();
-
-        using var scope = app.Services.CreateScope();
-        var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        db.Database.EnsureCreated(); // Cria a base de dados se não existir
-
+        if (!app.Environment.IsEnvironment("Testing"))
+        {
+            using var scope = app.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            db.Database.Migrate();
+        }
 
         app.UseMiddleware<ExceptionHandlingMiddleware>();
 

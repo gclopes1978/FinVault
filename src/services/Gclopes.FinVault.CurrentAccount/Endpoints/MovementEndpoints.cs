@@ -1,9 +1,6 @@
-﻿using FluentValidation;
-using Gclopes.FinVault.CurrentAccount.Endpoints.DTO;
-using Gclopes.FinVault.CurrentAccount.Models;
+﻿using Gclopes.FinVault.CurrentAccount.Endpoints.DTO;
 using Gclopes.FinVault.CurrentAccount.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace Gclopes.FinVault.CurrentAccount.Endpoints;
 
@@ -12,70 +9,137 @@ public static class MovementEndpoints
     public static void MapMovementEndpoints(this IEndpointRouteBuilder app)
     {
         var group = app.MapGroup("/api/movements")
-                       .WithTags("Movements");
+            .WithTags("Movements");
 
-        // Dentro do teu MapMovementEndpoints...
         group.MapPatch("/{id}/note", UpdateMovementNoteAsync)
-             .WithName("UpdateMovementNote")
-             .RequireAuthorization()
-             .WithOpenApi();
+            .WithName("UpdateMovementNote")
+            .RequireAuthorization()
+            .WithOpenApi();
 
-        // GET /api/movements - Retrieve all financial movements using the service layer
         group.MapGet("/", GetMovementsAsync)
-             .WithName("GetMovements")
+            .WithName("GetMovements")
+            .RequireAuthorization()
+            .WithOpenApi();
+
+        group.MapGet("/years", GetAvailableYearsAsync)
+            .WithName("GetAvailableMovementYears")
+            .RequireAuthorization()
+            .WithOpenApi();
+
+        group.MapGet("/totals/year", GetTotalsByMonthAndYearAsync)
+             .WithName("GetTotalsByMonthAndYear")
              .RequireAuthorization()
              .WithOpenApi();
 
-        group.MapPost("/", async (BankStatementPayloadDto request, IMovementService service, ClaimsPrincipal user) =>
-        {
-            try
-            {
-                var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "system";
-                var result = await service.RegisterBankStatementAsync(request, userId);
-                return Results.Ok(result);
-            }
-            catch (InvalidOperationException ex)
-            {
-                // Erros de negócio (como matemática errada)
-                return Results.BadRequest(new BankStatementResponse(Guid.Empty, ex.Message, DateTime.UtcNow));
-            }
-            catch (Exception)
-            {
-                // Erros inesperados
-                return Results.Problem("An unexpected error occurred.");
-            }
-        })
-        .WithName("RegisterStatement")
-        .WithOpenApi();
+        group.MapGet("/totals", GetMovementTotalsAsync)
+            .WithName("GetMovementTotals")
+            .RequireAuthorization()
+            .WithOpenApi();
+
+        group.MapPost("/", RegisterStatementAsync)
+            .WithName("RegisterStatement")
+            .RequireAuthorization()
+            .WithOpenApi();
     }
 
-    // Handles the retrieval of all recorded movements
-    private static async Task<IResult> GetMovementsAsync(
-        IMovementService movementService,
-        ClaimsPrincipal user)
+    private static async Task<IResult> GetAvailableYearsAsync(IMovementService movementService)
     {
-        // Extract UserId from token claims
-        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+        List<int> years = await movementService.GetAvailableYearsAsync();
 
-        var result = await movementService.GetAllMovementsAsync();
+        return Results.Ok(years);
+    }
+
+    public sealed class MovementEndpointsLog;
+
+    private static async Task<IResult> GetTotalsByMonthAndYearAsync(
+        int year,
+        IMovementService movementService,
+        ILogger<MovementEndpointsLog> logger)
+    {
+        logger.LogInformation("GetTotalsByMonthAndYearAsync --> {year}", year);
+        var result = await movementService.GetTotalsByYearMonthResponse(year);
+
         return Results.Ok(result);
     }
 
-    
+
+    private static async Task<IResult> GetMovementsAsync(
+        [AsParameters] MovementQueryParameters query,
+        IMovementService movementService,
+        ILogger<MovementEndpointsLog> logger)
+    {
+        logger.LogInformation("Getting movements.");
+
+        logger.LogDebug(
+            "Movement query: {@Query}",
+            query);
+
+        var result = await movementService.GetMovementsAsync(query);
+
+        logger.LogDebug(
+            "Retrieved {Count} movements.",
+            result.Items?.Count ?? 0);
+
+        return Results.Ok(result);
+    }
+
+    private static async Task<IResult> GetMovementTotalsAsync(
+        [AsParameters] MovementQueryParameters query,
+        IMovementService movementService,
+        ILogger<MovementEndpointsLog> logger)
+    {
+        logger.LogInformation("Getting movement totals.");
+
+        logger.LogDebug(
+            "Movement totals query: {@Query}",
+            query);
+
+        var result = await movementService.GetMovementTotalsAsync(query);
+
+        return Results.Ok(result);
+    }
 
     private static async Task<IResult> UpdateMovementNoteAsync(
         Guid id,
         [FromBody] UpdateNoteRequest request,
-        IMovementService movementService,
-        ClaimsPrincipal user)
+        IMovementService movementService)
     {
-        var userId = user.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userId)) return Results.Unauthorized();
+        if (string.IsNullOrWhiteSpace(request.Note))
+        {
+            return Results.BadRequest("Note is required.");
+        }
 
-        // Chamamos o serviço para atualizar
-        var success = await movementService.UpdateNoteAsync(id, request.Note);
+        var updated = await movementService.UpdateNoteAsync(
+            id,
+            request.Note);
 
-        return success ? Results.NoContent() : Results.NotFound();
+        return updated is not null
+            ? Results.Ok(updated)
+            : Results.NotFound();
+    }
+
+    private static async Task<IResult> RegisterStatementAsync(
+        BankStatementPayloadDto request,
+        IMovementService movementService)
+    {
+        try
+        {
+            var result = await movementService.RegisterBankStatementAsync(request);
+
+            return Results.Ok(result);
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Results.BadRequest(
+                new BankStatementResponse(
+                    Guid.Empty,
+                    ex.Message,
+                    DateTime.UtcNow));
+        }
+        catch (Exception)
+        {
+            return Results.Problem(
+                "An unexpected error occurred.");
+        }
     }
 }

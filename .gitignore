@@ -38,3 +38,4 @@ src/frontend/.vscode/
 ########################################
 *.bat
 *.ps1
+/.vscode/launch.json

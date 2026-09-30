@@ -4,12 +4,17 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 // Import the Observable and operators used to react to the login response as a side effect
 import { Observable, map, switchMap, of, throwError, timeout } from 'rxjs';
+// Import the environment configuration to resolve the API Gateway base address
+import { environment } from '../../environments/environment';
+
+interface JwtPayload {
+  exp?: number;
+  [claim: string]: unknown;
+}
 
 // Maximum time (ms) to wait for the Identity service to answer a login request
 // before failing fast, so the UI never gets stuck on "Signing in..." indefinitely
 const LOGIN_TIMEOUT_MS = 15000;
-// Import the environment configuration to resolve the API Gateway base address
-import { environment } from '../../environments/environment';
 
 
 
@@ -86,11 +91,44 @@ export class AuthService {
 
   // Determine whether the current session holds a token, used by route guards
   isAuthenticated(): boolean {
-    return !!this.getToken();
+    const token = this.getToken();
+    return !!token && !this.isTokenExpired(token);
+  }
+
+  public getTokenPayload(): JwtPayload | null {
+    const token = this.getToken();
+    return token ? this.decodeToken(token) : null;
+  }
+
+  public isTokenExpired(token?: string): boolean {
+    const rawToken = token ?? this.getToken();
+    if (!rawToken) {
+      return true;
+    }
+
+    const payload = this.decodeToken(rawToken);
+    if (!payload) {
+      return false;
+    }
+    if (typeof payload.exp !== 'number') {
+      return false;
+    }
+
+    return payload.exp * 1000 <= Date.now();
   }
 
   // Persist the bearer token in sessionStorage so it is cleared automatically when the tab closes
   private setToken(token: string): void {
     sessionStorage.setItem(TOKEN_STORAGE_KEY, token);
+  }
+
+  private decodeToken(token: string): JwtPayload | null {
+    try {
+      const payloadBase64 = token.split('.')[1]?.replace(/-/g, '+').replace(/_/g, '/');
+      const paddedPayload = payloadBase64?.padEnd(payloadBase64.length + (4 - (payloadBase64.length % 4)) % 4, '=');
+      return JSON.parse(atob(paddedPayload));
+    } catch {
+      return null;
+    }
   }
 }

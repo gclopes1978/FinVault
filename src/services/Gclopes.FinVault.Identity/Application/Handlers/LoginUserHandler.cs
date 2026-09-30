@@ -5,7 +5,6 @@ using Gclopes.FinVault.Identity.Application.Commands;
 using Gclopes.FinVault.Identity.Application.DTOs;
 using MediatR;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 
 namespace Gclopes.FinVault.Identity.Application.Handlers;
@@ -47,7 +46,9 @@ public class LoginUserHandler(
 
         var authClaims = new List<Claim>
         {
+            new(ClaimTypes.NameIdentifier, user.Id),
             new(ClaimTypes.Name, user.Email!),
+            new(JwtRegisteredClaimNames.Sub, user.Id),
             new(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
         };
 

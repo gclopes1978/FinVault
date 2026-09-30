@@ -18,13 +18,13 @@ public class Program
     public static void Main(string[] args)
     {
         var builder = WebApplication.CreateBuilder(args);
+        var isDevelopment = builder.Environment.IsDevelopment();
 
-        // Configure OpenAPI/Swagger documentation
-        builder.Services.AddControllers();
+        // Swagger (Swashbuckle only; the built-in .NET 9 OpenAPI is not used)
         builder.Services.AddEndpointsApiExplorer();
-
         builder.Services.AddSwaggerGen(options =>
         {
+            // With Type = Http and Scheme = Bearer, Swagger UI adds the "Bearer " prefix itself
             options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
                 Name = "Authorization",
@@ -32,58 +32,74 @@ public class Program
                 Scheme = "Bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Description = "Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\""
+                Description = "Enter only the JWT token (without the 'Bearer' prefix)."
             });
 
-            // Require the Bearer scheme on protected endpoints so Swagger UI attaches the token automatically
             options.AddSecurityRequirement(new OpenApiSecurityRequirement
-                                            {
-                                                {
-                                                    new OpenApiSecurityScheme
-                                                    {
-                                                        Reference = new OpenApiReference
-                                                        {
-                                                            Type = ReferenceType.SecurityScheme,
-                                                            Id = "Bearer"
-                                                        }
-                                                    },
-                                                    Array.Empty<string>()
-                                                }
-                                            });
+            {
+                {
+                    new OpenApiSecurityScheme
+                    {
+                        Reference = new OpenApiReference
+                        {
+                            Type = ReferenceType.SecurityScheme,
+                            Id = "Bearer"
+                        }
+                    },
+                    Array.Empty<string>()
+                }
             });
+        });
 
-        // CORS policy used by app.UseCors("AllowAll") below.
-        // TODO: restrict origins before deploying to any shared/cloud environment.
+        // CORS: open only in Development, explicit origins from configuration elsewhere
+        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
         builder.Services.AddCors(options =>
         {
-            options.AddPolicy("AllowAll", policy =>
+            options.AddPolicy("Default", policy =>
             {
-                policy.AllowAnyOrigin()
-                      .AllowAnyMethod()
-                      .AllowAnyHeader();
+                if (isDevelopment)
+                {
+                    policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
+                }
+                else
+                {
+                    policy.WithOrigins(allowedOrigins).AllowAnyMethod().AllowAnyHeader();
+                }
             });
         });
 
-        // Inject the required standard baseline ProblemDetails schema generating dependencies into app runtime
         builder.Services.AddProblemDetails();
-
-        // Register the custom global runtime crash exception handler service into the IoC injection infrastructure
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
-        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+        // Registers all IValidator<T> found in this assembly
+        builder.Services.AddValidatorsFromAssemblyContaining<Program>();
 
-        // Configure the Application Database Context with SQL Server
-        builder.Services.AddDbContext<ApplicationDbContext>(options =>
+        var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+            ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is missing!");
+
+        // The interceptor is resolved from DI so it can use IHttpContextAccessor (current user) and logging
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<AuditLoggingInterceptor>();
+
+        builder.Services.AddDbContext<ApplicationDbContext>((sp, options) =>
         {
             options.UseSqlServer(connectionString)
-                   .AddInterceptors(new AuditLoggingInterceptor());
-            options.ConfigureWarnings(w => w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
+                   .AddInterceptors(sp.GetRequiredService<AuditLoggingInterceptor>());
         });
 
-        // Register the financial movement service interfaces and implementations
         builder.Services.AddScoped<IMovementService, MovementService>();
 
-        builder.Services.AddLogging();
+        // Backs the short-lived cache of the available-years list used by the chart dropdown
+        builder.Services.AddMemoryCache();
+
+        // JWT: the secret must come from user-secrets / environment variables, never from a versioned file
+        var jwtSecret = builder.Configuration["JwtSettings:Secret"]
+            ?? throw new InvalidOperationException("JwtSettings:Secret is missing!");
+        var jwtKeyBytes = Encoding.UTF8.GetBytes(jwtSecret);
+        if (jwtKeyBytes.Length < 32)
+        {
+            throw new InvalidOperationException("JwtSettings:Secret must be at least 32 bytes long for HS256.");
+        }
 
         builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
@@ -96,15 +112,12 @@ public class Program
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
                     ValidAudience = builder.Configuration["JwtSettings:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Secret"] ??
-                        throw new InvalidOperationException("JwtSettings:Secret is missing!")))
+                    IssuerSigningKey = new SymmetricSecurityKey(jwtKeyBytes)
                 };
                 options.Events = new JwtBearerEvents
                 {
                     OnAuthenticationFailed = context =>
                     {
-                        // Log via the framework logger instead of Console so this shows up in structured logs / containers
                         var logger = context.HttpContext.RequestServices
                             .GetRequiredService<ILoggerFactory>()
                             .CreateLogger("JwtAuthentication");
@@ -114,27 +127,34 @@ public class Program
                 };
             });
 
-        builder.Services.AddAuthorization();
+        // Secure by default: every endpoint requires an authenticated user unless marked with AllowAnonymous
+        builder.Services.AddAuthorizationBuilder()
+            .SetFallbackPolicy(new Microsoft.AspNetCore.Authorization.AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build());
+
+        builder.Services.AddHealthChecks();
 
         var app = builder.Build();
 
-        // Route outbound error traffic through the registered global exception handler middleware
         app.UseExceptionHandler();
-
-        // Enable Swagger JSON and UI (currently exposed in all environments; wrap in
-        // an app.Environment.IsDevelopment() check before shipping to a shared environment)
-        app.UseSwagger();
-        app.UseSwaggerUI();
-
-        ApplyMigrations(app);
-
-        app.MapOpenApi();
         app.UseHttpsRedirection();
-        app.UseCors("AllowAll");
+
+        if (isDevelopment)
+        {
+            app.UseSwagger();
+            app.UseSwaggerUI();
+
+            // Schema is managed through EF Core migrations; in shared environments
+            // apply them with a migration bundle in the deploy pipeline instead.
+            ApplyMigrations(app);
+        }
+
+        app.UseCors("Default");
         app.UseAuthentication();
         app.UseAuthorization();
 
-        // Configure application routing endpoints
+        app.MapHealthChecks("/health").AllowAnonymous();
         app.MapMovementEndpoints();
 
         app.Run();
@@ -148,21 +168,14 @@ public class Program
 
         try
         {
-            // Instead of Migrate(), which relies on the history table,
-            // use EnsureCreated() to map the current DbContext model to the database.
-            // If tables exist, it does nothing; if they don't, it creates them.
-            if (context.Database.EnsureCreated())
-            {
-                logger.LogInformation("Database created successfully.");
-            }
-            else
-            {
-                logger.LogInformation("Database already exists. Schema verification complete.");
-            }
+            context.Database.Migrate();
+            logger.LogInformation("Database migrations applied successfully.");
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred while synchronizing the database schema.");
+            // Fail fast: running against an out-of-sync schema is worse than not starting
+            logger.LogCritical(ex, "Failed to apply database migrations.");
+            throw;
         }
     }
 }

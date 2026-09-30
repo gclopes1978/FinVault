@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Gclopes.FinVault.Identity.Tests.IntegrationTests.Fixtures;
@@ -12,16 +11,8 @@ public class IntegrationTestFixture : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureAppConfiguration((context, config) =>
-        {
-            // Adiciona valores em memória que substituem o que estaria no appsettings.json
-            config.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                { "Jwt:Key", "SuperSecretKeyMustBeAtLeast16CharactersLong!!!" },
-                { "Jwt:Issuer", "FinVaultTest" },
-                { "Jwt:Audience", "FinVaultTest" }
-            });
-        });
+        builder.UseEnvironment("Testing");
+        
 
         builder.ConfigureServices(services =>
         {

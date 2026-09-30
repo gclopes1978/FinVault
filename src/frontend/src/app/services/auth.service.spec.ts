@@ -3,6 +3,13 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
 
+const jwtHeader = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9';
+const validPayload = 'eyJleHAiOiA5OTk5OTk5OTk5fQ';
+const expiredPayload = 'eyJleHAiOiAxfQ';
+const fakeSignature = 'signature';
+const validToken = `${jwtHeader}.${validPayload}.${fakeSignature}`;
+const expiredToken = `${jwtHeader}.${expiredPayload}.${fakeSignature}`;
+
 describe('AuthService', () => {
   let service: AuthService;
   let httpMock: HttpTestingController;
@@ -50,5 +57,17 @@ describe('AuthService', () => {
 
   it('should report unauthenticated when no token is present', () => {
     expect(service.isAuthenticated()).toBe(false);
+  });
+
+  it('should report unauthenticated for an expired token', () => {
+    sessionStorage.setItem('finvault_access_token', expiredToken);
+
+    expect(service.isAuthenticated()).toBe(false);
+  });
+
+  it('should report authenticated for a valid non-expired token', () => {
+    sessionStorage.setItem('finvault_access_token', validToken);
+
+    expect(service.isAuthenticated()).toBe(true);
   });
 });

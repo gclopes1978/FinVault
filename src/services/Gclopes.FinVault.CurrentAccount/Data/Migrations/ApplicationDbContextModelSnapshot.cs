@@ -22,6 +22,28 @@ namespace Gclopes.FinVault.CurrentAccount.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Gclopes.FinVault.CurrentAccount.Data.BankStatement", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("FinalBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<decimal>("InitialBalance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime>("ProcessedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("BankStatements");
+                });
+
             modelBuilder.Entity("Gclopes.FinVault.CurrentAccount.Data.Movement", b =>
                 {
                     b.Property<Guid>("Id")
@@ -32,34 +54,44 @@ namespace Gclopes.FinVault.CurrentAccount.Data.Migrations
                         .HasPrecision(18, 2)
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<string>("Category")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                    b.Property<decimal>("Balance")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<Guid>("BankStatementId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasMaxLength(255)
+                        .HasColumnType("nvarchar(255)");
 
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Type")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("nvarchar(10)");
+                        .HasMaxLength(1)
+                        .HasColumnType("nvarchar(1)");
 
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
+                    b.Property<string>("UserNote")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("ValueDate")
                         .HasColumnType("datetime2");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("BankStatementId");
+
+                    b.HasIndex("Type");
+
+                    b.HasIndex("TransactionDate", "ValueDate");
 
                     b.ToTable("Movements");
                 });
@@ -96,24 +128,22 @@ namespace Gclopes.FinVault.CurrentAccount.Data.Migrations
 
                     b.ToTable("AuditLogs");
                 });
-            modelBuilder.Entity("Gclopes.FinVault.CurrentAccount.Models.BankStatement", b =>
-            {
-                b.Property<Guid>("Id")
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("uniqueidentifier");
 
-                b.Property<decimal>("InitialBalance")
-                    .HasPrecision(18, 2)
-                    .HasColumnType("decimal(18,2)");
+            modelBuilder.Entity("Gclopes.FinVault.CurrentAccount.Data.Movement", b =>
+                {
+                    b.HasOne("Gclopes.FinVault.CurrentAccount.Data.BankStatement", "BankStatement")
+                        .WithMany("Movements")
+                        .HasForeignKey("BankStatementId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                b.Property<decimal>("FinalBalance")
-                    .HasPrecision(18, 2)
-                    .HasColumnType("decimal(18,2)");
+                    b.Navigation("BankStatement");
+                });
 
-                b.HasKey("Id");
-
-                b.ToTable("BankStatements");
-            });
+            modelBuilder.Entity("Gclopes.FinVault.CurrentAccount.Data.BankStatement", b =>
+                {
+                    b.Navigation("Movements");
+                });
 #pragma warning restore 612, 618
         }
     }

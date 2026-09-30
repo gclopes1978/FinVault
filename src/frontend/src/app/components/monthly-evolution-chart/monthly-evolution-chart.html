@@ -1,0 +1,29 @@
+<div class="chart-panel">
+  <div class="chart-header">
+    <h2>Evolução de Custos e Proveitos</h2>
+    <p>Consulte a evolução mensal (ou diária, ao escolher um mês) dos créditos e débitos.</p>
+  </div>
+
+  <div class="chart-controls">
+    <div class="control-group">
+      <label for="yearSelect">Ano:</label>
+
+      <select
+        id="yearSelect"
+        [value]="selectedYear"
+        (change)="selectedYear = +$any($event.target).value; onYearChange()"
+        class="control-select">
+
+        @for (year of availableYears; track year) {
+          <option [value]="year">
+            {{ year }}
+          </option>
+        }
+      </select>
+    </div>
+  </div>
+
+  <div class="chart-canvas-wrapper">
+    <canvas #chartCanvas></canvas>
+  </div>
+</div>

@@ -56,6 +56,13 @@ namespace Gclopes.FinVault.CurrentAccount.Data
                       .WithMany(s => s.Movements)
                       .HasForeignKey(m => m.BankStatementId) // Certifica-te que esta propriedade existe em Movement.cs
                       .OnDelete(DeleteBehavior.Cascade); // Recomendado para evitar órfãos
+
+                // Speeds up the default TransactionDate desc, ValueDate desc sort and the
+                // date-range filters used by GET /api/movements and /api/movements/totals
+                entity.HasIndex(m => new { m.TransactionDate, m.ValueDate });
+
+                // Speeds up SUM(...) WHERE Type = 'C'/'D' in the totals endpoint
+                entity.HasIndex(m => m.Type);
             });
 
             base.OnModelCreating(modelBuilder);
