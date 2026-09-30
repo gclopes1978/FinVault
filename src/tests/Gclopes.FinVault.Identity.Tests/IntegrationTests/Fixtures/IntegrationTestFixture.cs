@@ -12,16 +12,8 @@ public class IntegrationTestFixture : WebApplicationFactory<Program>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
-        builder.ConfigureAppConfiguration((context, config) =>
-        {
-            // Adiciona valores em memória que substituem o que estaria no appsettings.json
-            config.AddInMemoryCollection(new Dictionary<string, string?>
-            {
-                { "Jwt:Key", "SuperSecretKeyMustBeAtLeast16CharactersLong!!!" },
-                { "Jwt:Issuer", "FinVaultTest" },
-                { "Jwt:Audience", "FinVaultTest" }
-            });
-        });
+        builder.UseEnvironment("Testing");
+        
 
         builder.ConfigureServices(services =>
         {
