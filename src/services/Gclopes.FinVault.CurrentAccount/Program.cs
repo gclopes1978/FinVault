@@ -89,6 +89,9 @@ public class Program
 
         builder.Services.AddScoped<IMovementService, MovementService>();
 
+        // Backs the short-lived cache of the available-years list used by the chart dropdown
+        builder.Services.AddMemoryCache();
+
         // JWT: the secret must come from user-secrets / environment variables, never from a versioned file
         var jwtSecret = builder.Configuration["JwtSettings:Secret"]
             ?? throw new InvalidOperationException("JwtSettings:Secret is missing!");
