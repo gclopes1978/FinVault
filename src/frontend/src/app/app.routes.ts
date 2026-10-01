@@ -48,7 +48,7 @@ export const routes: Routes = [
     path: 'investments',
     canActivate: [authGuard],
     data: { moduleName: 'Investments' },
-    loadComponent: () => import('./pages/module-placeholder/module-placeholder').then(m => m.ModulePlaceholderComponent)
+    loadComponent: () => import('./pages/investments/investments').then(m => m.Investments)
   },
   {
     // Lazy-loaded placeholder route for the Pension Plans module, reached from the Dashboard Hub and Sidebar

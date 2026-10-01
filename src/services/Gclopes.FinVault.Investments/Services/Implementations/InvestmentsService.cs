@@ -9,17 +9,14 @@ namespace Gclopes.FinVault.Investments.Services.Implementations;
 public class InvestmentsService(
     FinVaultInvestmentsDb dbContext,
     IXtbCsvImporter xtbCsvImporter,
+    IXtbExcelImporter xtbExcelImporter,
     ITrading212CsvImporter trading212CsvImporter,
     ILogger<InvestmentsService> logger) : IInvestmentsService
 {
-    private readonly FinVaultInvestmentsDb _dbContext = dbContext;
-    private readonly IXtbCsvImporter _xtbCsvImporter = xtbCsvImporter;
-    private readonly ITrading212CsvImporter _trading212CsvImporter = trading212CsvImporter;
-    private readonly ILogger<InvestmentsService> _logger = logger;
 
     public async Task<List<PortfolioDto>> GetPortfolioAsync(CancellationToken cancellationToken = default)
     {
-        var positions = await _dbContext.Positions
+        var positions = await dbContext.Positions
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
@@ -39,12 +36,12 @@ public class InvestmentsService(
     public async Task<List<TransactionDto>> GetPortfolioHistoryAsync(CancellationToken cancellationToken = default)
     {
         // 1. Buscar transações da XTB (Tabela Raw)
-        var xtbTransactions = await _dbContext.XtbTransactions
+        var xtbTransactions = await dbContext.XtbTransactions
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         // 2. Buscar transações da Trading 212 (Tabela Raw)
-        var t212Transactions = await _dbContext.Trading212Transactions
+        var t212Transactions = await dbContext.Trading212Transactions
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
@@ -85,16 +82,16 @@ public class InvestmentsService(
 
     public async Task<int> ImportXtbCsvAsync(Stream csvStream, CancellationToken cancellationToken = default)
     {
-        var records = await _xtbCsvImporter.ParseCsvAsync(csvStream, cancellationToken);
+        var records = await xtbCsvImporter.ParseCsvAsync(csvStream, cancellationToken);
         int importedCount = 0;
 
         // 1. Buscar todos os IDs que já existem na tabela XtbTransactions
-        var existingXtbIds = await _dbContext.XtbTransactions
+        var existingXtbIds = await dbContext.XtbTransactions
             .Select(t => t.Id)
             .ToHashSetAsync(cancellationToken);
 
         // 2. Pré-carregar todas as Positions existentes da XTB para um dicionário em memória
-        var existingPositions = await _dbContext.Positions
+        var existingPositions = await dbContext.Positions
             .Where(p => p.Source == BrokerSource.XTB)
             .ToDictionaryAsync(p => p.Symbol, cancellationToken);
 
@@ -115,7 +112,7 @@ public class InvestmentsService(
                 Product = record.Product,
                 CreatedAt = DateTime.UtcNow
             };
-            _dbContext.XtbTransactions.Add(xtbTransaction);
+            dbContext.XtbTransactions.Add(xtbTransaction);
             existingXtbIds.Add(record.Id);
 
             // 3. Consultar o dicionário em memória em vez da BD
@@ -131,7 +128,7 @@ public class InvestmentsService(
                     LastUpdated = DateTime.UtcNow,
                     CreatedAt = DateTime.UtcNow
                 };
-                _dbContext.Positions.Add(position);
+                dbContext.Positions.Add(position);
                 existingPositions[record.Ticker] = position; // regista já no dicionário
             }
             else
@@ -142,22 +139,22 @@ public class InvestmentsService(
             importedCount++;
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("Successfully imported {Count} NEW transactions from XTB CSV", importedCount);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("Successfully imported {Count} NEW transactions from XTB CSV", importedCount);
 
         return importedCount;
     }
 
     public async Task<int> ImportTrading212CsvAsync(Stream csvStream, CancellationToken cancellationToken = default)
     {
-        var records = await _trading212CsvImporter.ParseCsvAsync(csvStream, cancellationToken);
+        var records = await trading212CsvImporter.ParseCsvAsync(csvStream, cancellationToken);
         int importedCount = 0;
 
-        HashSet<string> existingT212Ids = await _dbContext.Trading212Transactions
+        HashSet<string> existingT212Ids = await dbContext.Trading212Transactions
             .Select(t => t.T212Id)
             .ToHashSetAsync(cancellationToken);
 
-        var existingPositions = await _dbContext.Positions
+        var existingPositions = await dbContext.Positions
             .Where(p => p.Source == BrokerSource.Trading212)
             .ToDictionaryAsync(p => p.Symbol, cancellationToken);
         foreach (Trading212CsvRecord record in records)
@@ -184,7 +181,7 @@ public class InvestmentsService(
                 CurrencyWithholdingTax = record.CurrencyWithholdingTax,
                 CreatedAt = DateTime.UtcNow
             };
-            _dbContext.Trading212Transactions.Add(t212Transaction);
+            dbContext.Trading212Transactions.Add(t212Transaction);
 
             if (!existingPositions.TryGetValue(record.Ticker, out var position))
             {
@@ -198,7 +195,7 @@ public class InvestmentsService(
                     LastUpdated = DateTime.UtcNow,
                     CreatedAt = DateTime.UtcNow
                 };
-                _dbContext.Positions.Add(position);
+                dbContext.Positions.Add(position);
                 existingPositions[record.Ticker] = position; // regista já no dicionário
             }
             else
@@ -209,10 +206,35 @@ public class InvestmentsService(
             importedCount++;
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("Successfully imported {Count} NEW transactions from Trading212 CSV", importedCount);
+        await dbContext.SaveChangesAsync(cancellationToken);
+        logger.LogInformation("Successfully imported {Count} NEW transactions from Trading212 CSV", importedCount);
 
         return importedCount;
     }
-    
+
+    public async Task<int> ImportXtbExcelAsync(Stream xlsxStream, CancellationToken cancellationToken = default)
+    {
+        var workbook = await xtbExcelImporter.ParseAsync(
+            xlsxStream,
+            cancellationToken);
+
+        await dbContext.XtbClosedPositions.AddRangeAsync(
+            workbook.ClosedPositions,
+            cancellationToken);
+
+        await dbContext.XtbCashOperations.AddRangeAsync(
+            workbook.CashOperations,
+            cancellationToken);
+
+        await dbContext.XtbOpenPositions.AddRangeAsync(
+            workbook.OpenPositions,
+            cancellationToken);
+
+
+        var importedCount = await dbContext.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation("Successfully imported {Count} records from XTB Excel", importedCount);
+
+        return importedCount;
+    }
 }

@@ -46,6 +46,7 @@ options.UseSqlServer(connectionString, sqlOptions =>
 builder.Services.AddScoped<IInvestmentsService, InvestmentsService>();
 builder.Services.AddScoped<IXtbCsvImporter, XtbCsvImporter>();
 builder.Services.AddScoped<ITrading212CsvImporter, Trading212CsvImporter>();
+builder.Services.AddScoped<IXtbExcelImporter, XtbExcelImporter>();
 builder.Services.AddAuthorization();
 
 var jwtSecret = builder.Configuration["JwtSettings:Secret"];

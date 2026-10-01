@@ -12,7 +12,7 @@ public static class InvestmentsEndpoints
             .WithOpenApi();
 
         group.MapPost("/import/xtb", ImportXtbAsync)
-            .WithName("ImportXtbCsv")
+            .WithName("ImportXtbExcel")
             .DisableAntiforgery()
             .WithOpenApi()
             .Produces<ImportCsvResponse>(StatusCodes.Status200OK)
@@ -42,13 +42,50 @@ public static class InvestmentsEndpoints
         ILogger<Program> logger,
         CancellationToken cancellationToken)
     {
-        // Chamamos o método auxiliar e passamos o método específico da XTB
-        return await HandleCsvImportAsync(
-            file,
-            investmentsService.ImportXtbCsvAsync,
-            "XTB",
-            logger,
-            cancellationToken);
+        return await HandleExcelImportAsync(
+        file,
+        investmentsService.ImportXtbExcelAsync,
+        "XTB",
+        logger,
+        cancellationToken);
+    }
+
+    private static async Task<IResult> HandleExcelImportAsync(
+        IFormFile file,
+        Func<Stream, CancellationToken, Task<int>> importFunction,
+        string sourceName,
+        ILogger<Program> logger,
+        CancellationToken cancellationToken)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return Results.BadRequest(new { message = "No file uploaded" });
+        }
+
+        try
+        {
+            using var stream = file.OpenReadStream();
+
+            var importedCount = await importFunction(
+                stream,
+                cancellationToken);
+
+            return Results.Ok(
+                new ImportCsvResponse
+                {
+                    ImportedRecords = importedCount
+                });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Error importing {SourceName} Excel",
+                sourceName);
+
+            return Results.BadRequest(
+                new { message = ex.Message });
+        }
     }
 
     private static async Task<IResult> ImportTrading212Async(
