@@ -10,13 +10,11 @@ public interface IInvestmentsService
     Task<List<TransactionDto>> GetPortfolioHistoryAsync(
         CancellationToken cancellationToken = default);
 
-    Task<int> ImportXtbCsvAsync(
-        Stream csvStream,
-        CancellationToken cancellationToken = default);
 
     Task<int> ImportXtbExcelAsync(
         Stream xlsxStream,
         CancellationToken cancellationToken = default);
+
 
     Task<int> ImportTrading212CsvAsync(
         Stream csvStream,
