@@ -19,6 +19,9 @@ public class Trading212Transaction
     public string CurrencyTotal { get; set; } = string.Empty;
     public decimal WithholdingTax { get; set; }
     public string CurrencyWithholdingTax { get; set; } = string.Empty;
-
+    public decimal StampDutyReserveTax { get; set; }
+    public string CurrencyStampDutyReserveTax { get; set; } = string.Empty;
+    public decimal CurrencyConversionFee { get; set; }
+    public string CurrencyCurrencyConversionFee { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
 }
