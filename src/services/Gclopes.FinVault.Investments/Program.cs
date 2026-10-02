@@ -44,7 +44,6 @@ options.UseSqlServer(connectionString, sqlOptions =>
 
 // Register services
 builder.Services.AddScoped<IInvestmentsService, InvestmentsService>();
-builder.Services.AddScoped<IXtbCsvImporter, XtbCsvImporter>();
 builder.Services.AddScoped<ITrading212CsvImporter, Trading212CsvImporter>();
 builder.Services.AddScoped<IXtbExcelImporter, XtbExcelImporter>();
 builder.Services.AddAuthorization();
