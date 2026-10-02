@@ -30,4 +30,36 @@ export class InvestmentsService {
       formData
     );
   }
+
+  importTrading212Csv(file: File): Observable<{ importedRecords: number }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    return this.http.post<{ importedRecords: number }>(
+      `${this.apiUrl}/import/trading212`,
+      formData
+    );
+  }
+
+  getMarketPrice(assetType: string, symbol: string): Observable<{
+    symbol: string;
+    price: number;
+    currency: string;
+    timestamp: string;
+  }> {
+    return this.http.get<{
+      symbol: string;
+      price: number;
+      currency: string;
+      timestamp: string;
+    }>(
+      `${environment.gatewayUrl}/v1/Market-Prices/${assetType}/${symbol}`
+    );
+  }
+
+  getExchangeRate(fromCurrency: string, toCurrency: string): Observable<number> {
+    return this.http.get<number>(
+      `${environment.gatewayUrl}/v1/market-prices/exchange-rate/${fromCurrency}/${toCurrency}`
+    );
+  }
 }
