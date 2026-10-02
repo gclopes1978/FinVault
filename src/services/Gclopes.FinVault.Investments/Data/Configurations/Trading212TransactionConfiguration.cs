@@ -48,5 +48,13 @@ public class Trading212TransactionConfiguration
         entity.Property(x => x.CurrencyWithholdingTax)
             .HasMaxLength(3)
             .IsRequired();
+        
+        entity.Property(x => x.CurrencyStampDutyReserveTax)
+            .HasMaxLength(3)
+            .IsRequired();
+
+        entity.Property(x => x.CurrencyCurrencyConversionFee)
+            .HasMaxLength(3)
+            .IsRequired();
     }
 }
