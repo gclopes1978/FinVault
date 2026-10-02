@@ -1,36 +1,38 @@
 <section class="investments-page">
   <h1>Investments</h1>
 
-  
   @if (portfolio.length === 0) {
     <p>No investments found.</p>
   } @else {
     <table>
       <thead>
         <tr>
-          <th>Asset</th>
           <th>Symbol</th>
+          <th>Broker</th>
           <th>Quantity</th>
-          <th>Avg Buy Price</th>
+          <th>Avg. Cost</th>
           <th>Current Price</th>
-          <th>Total Value EUR</th>
-          <th>Return %</th>
+          <th>Currency</th>
+          <th>Current Value</th>
+          <th>Return</th>
         </tr>
       </thead>
 
       <tbody>
-        @for (investment of portfolio; track investment.id) {
+        @for (investment of portfolio; track investment.symbol + investment.source) {
           <tr>
             <td>{{ investment.symbol }}</td>
-            <td>{{ investment.symbol }}</td>
+            <td>{{ investment.source }}</td>
             <td>{{ investment.quantity }}</td>
             <td>{{ investment.averageCost }}</td>
             <td>{{ investment.currentPrice }}</td>
+            <td>{{ investment.currency }}</td>
             <td>{{ investment.currentValue }}</td>
-            <td>—</td>
+            <td>{{ investment.returnPercentage | number:'1.2-2' }}%</td>
           </tr>
         }
       </tbody>
     </table>
   }
 </section>
+
