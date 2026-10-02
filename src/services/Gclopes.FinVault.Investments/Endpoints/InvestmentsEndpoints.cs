@@ -15,14 +15,14 @@ public static class InvestmentsEndpoints
             .WithName("ImportXtbExcel")
             .DisableAntiforgery()
             .WithOpenApi()
-            .Produces<ImportCsvResponse>(StatusCodes.Status200OK)
+            .Produces<ImportResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest);
 
         group.MapPost("/import/trading212", ImportTrading212Async)
             .WithName("ImportTrading212Csv")
             .DisableAntiforgery()
             .WithOpenApi()
-            .Produces<ImportCsvResponse>(StatusCodes.Status200OK)
+            .Produces<ImportResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest);
 
         group.MapGet("/portfolio", GetPortfolioAsync)
@@ -34,6 +34,20 @@ public static class InvestmentsEndpoints
             .WithName("GetPortfolioHistory")
             .WithOpenApi()
             .Produces<List<object>>(StatusCodes.Status200OK);
+    }
+
+    private static async Task<IResult> ImportTrading212Async(
+    IFormFile file,
+    IInvestmentsService investmentsService,
+    ILogger<Program> logger,
+    CancellationToken cancellationToken)
+    {
+        return await HandleCsvImportAsync(
+            file,
+            investmentsService.ImportTrading212CsvAsync,
+            "Trading212",
+            logger,
+            cancellationToken);
     }
 
     private static async Task<IResult> ImportXtbAsync(
@@ -48,6 +62,44 @@ public static class InvestmentsEndpoints
         "XTB",
         logger,
         cancellationToken);
+    }
+
+    private static async Task<IResult> HandleCsvImportAsync(
+    IFormFile file,
+    Func<Stream, CancellationToken, Task<int>> importFunction,
+    string sourceName,
+    ILogger<Program> logger,
+    CancellationToken cancellationToken)
+    {
+        if (file == null || file.Length == 0)
+        {
+            return Results.BadRequest(new { message = "No file uploaded" });
+        }
+
+        try
+        {
+            using var stream = file.OpenReadStream();
+
+            var importedCount = await importFunction(
+                stream,
+                cancellationToken);
+
+            return Results.Ok(
+                new ImportResponse
+                {
+                    ImportedRecords = importedCount
+                });
+        }
+        catch (Exception ex)
+        {
+            logger.LogError(
+                ex,
+                "Error importing {SourceName} CSV",
+                sourceName);
+
+            return Results.BadRequest(
+                new { message = ex.Message });
+        }
     }
 
     private static async Task<IResult> HandleExcelImportAsync(
@@ -71,7 +123,7 @@ public static class InvestmentsEndpoints
                 cancellationToken);
 
             return Results.Ok(
-                new ImportCsvResponse
+                new ImportResponse
                 {
                     ImportedRecords = importedCount
                 });
@@ -88,48 +140,6 @@ public static class InvestmentsEndpoints
         }
     }
 
-    private static async Task<IResult> ImportTrading212Async(
-        IFormFile file,
-        IInvestmentsService investmentsService,
-        ILogger<Program> logger,
-        CancellationToken cancellationToken)
-    {
-        // Chamamos o mesmo método auxiliar mas passamos o método da T212
-        return await HandleCsvImportAsync(
-            file,
-            investmentsService.ImportTrading212CsvAsync,
-            "Trading212",
-            logger,
-            cancellationToken);
-    }
-
-    private static async Task<IResult> HandleCsvImportAsync(
-        IFormFile file,
-        Func<Stream, CancellationToken, Task<int>> importFunction,
-        string sourceName,
-        ILogger<Program> logger,
-        CancellationToken cancellationToken)
-    {
-        if (file == null || file.Length == 0)
-        {
-            return Results.BadRequest(new { message = "No file uploaded" });
-        }
-
-        try
-        {
-            using var stream = file.OpenReadStream();
-
-            // Executa a função que lhe foi passada (seja XTB ou T212)
-            var importedCount = await importFunction(stream, cancellationToken);
-
-            return Results.Ok(new ImportCsvResponse { ImportedRecords = importedCount });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(ex, "Error importing {SourceName} CSV", sourceName);
-            return Results.BadRequest(new { message = ex.Message });
-        }
-    }
 
     private static async Task<IResult> GetPortfolioAsync(
         IInvestmentsService investmentsService,
@@ -149,7 +159,7 @@ public static class InvestmentsEndpoints
     
 }
 
-public class ImportCsvResponse
+public class ImportResponse
 {
     public int ImportedRecords { get; set; }
 }
