@@ -22,6 +22,16 @@ public class MarketPriceResolver(
         };
     }
 
+    public string? ResolveYahooSymbol(string symbol)
+    {
+        return symbol switch
+        {
+            "IGLN.UK" => "IGLN.L",
+            "BP" => "BP.L",
+            _ => null
+        };
+    }
+
     public async Task<string?> ResolveTickerFromIsinAsync(string isin)
     {
         var response = await _searchClient.GetAsync($"?q={isin}");
@@ -34,6 +44,14 @@ public class MarketPriceResolver(
 
         if (quotes.GetArrayLength() == 0)
             return null;
+
+        foreach (var quote in quotes.EnumerateArray())
+        {
+            var symbol = quote.GetProperty("symbol").GetString();
+
+            Console.WriteLine(
+                $"ISIN {isin} -> Yahoo result: {symbol}");
+        }
 
         return quotes[0].GetProperty("symbol").GetString();
     }
