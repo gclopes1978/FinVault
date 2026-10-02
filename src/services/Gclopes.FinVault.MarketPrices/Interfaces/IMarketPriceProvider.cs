@@ -1,6 +1,10 @@
-﻿namespace Gclopes.FinVault.MarketPrices.Interfaces;
+﻿using Gclopes.FinVault.MarketPrices.Models;
+
+namespace Gclopes.FinVault.MarketPrices.Interfaces;
 
 public interface IMarketPriceProvider
 {
-    Task<string> GetRawAsync(string symbol, CancellationToken cancellationToken);
+    Task<AssetQuoteDto> GetQuoteAsync(
+        string symbol,
+        CancellationToken cancellationToken);
 }
