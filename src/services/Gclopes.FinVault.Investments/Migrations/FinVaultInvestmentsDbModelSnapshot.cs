@@ -80,10 +80,22 @@ namespace Gclopes.FinVault.Investments.Migrations
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<decimal>("CurrencyConversionFee")
+                        .HasPrecision(18, 8)
+                        .HasColumnType("decimal(18,8)");
+
+                    b.Property<string>("CurrencyCurrencyConversionFee")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("CurrencyPricePerShare")
                         .IsRequired()
                         .HasMaxLength(3)
                         .HasColumnType("nvarchar(3)");
+
+                    b.Property<string>("CurrencyStampDutyReserveTax")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("CurrencyTotal")
                         .IsRequired()
@@ -118,6 +130,10 @@ namespace Gclopes.FinVault.Investments.Migrations
                         .HasColumnType("decimal(18,8)");
 
                     b.Property<decimal>("PricePerShare")
+                        .HasPrecision(18, 8)
+                        .HasColumnType("decimal(18,8)");
+
+                    b.Property<decimal>("StampDutyReserveTax")
                         .HasPrecision(18, 8)
                         .HasColumnType("decimal(18,8)");
 
