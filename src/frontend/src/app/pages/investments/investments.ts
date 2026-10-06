@@ -11,6 +11,36 @@ import { Portfolio } from '../../models/portfolio';
 export class Investments implements OnInit {
   portfolio: Portfolio[] = [];
 
+  get totalValue(): number {
+    return this.portfolio.reduce(
+      (total, investment) =>
+        total + (investment.currentValue ?? 0),
+      0
+    );
+  }
+
+  get totalInvested(): number {
+    return this.portfolio.reduce(
+      (total, investment) =>
+        total +
+        investment.quantity * investment.averageCost,
+      0
+    );
+  }
+
+  get totalReturn(): number {
+    return this.totalValue - this.totalInvested;
+  }
+
+  get totalReturnPercentage(): number {
+    if (this.totalInvested <= 0) {
+      return 0;
+    }
+
+    return (this.totalReturn / this.totalInvested) * 100;
+  }
+
+
   constructor(
     private readonly investmentsService: InvestmentsService,
     private readonly changeDetectorRef: ChangeDetectorRef
