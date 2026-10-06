@@ -50,6 +50,58 @@ export class Investments implements OnInit {
     this.loadPortfolio();
   }
 
+
+  onXtbFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const file = input.files[0];
+
+    this.investmentsService.importXtbFile(file).subscribe({
+      next: (result) => {
+        console.log(
+          `XTB import successful: ${result.importedRecords} records imported`
+        );
+
+        this.loadPortfolio();
+        input.value = '';
+      },
+      error: (error) => {
+        console.error('Failed to import XTB CSV', error);
+        input.value = '';
+      }
+    });
+  }
+
+  onTrading212FileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const file = input.files[0];
+
+    this.investmentsService.importTrading212Csv(file).subscribe({
+      next: (result) => {
+        console.log(
+          `Trading 212 import successful: ${result.importedRecords} records imported`
+        );
+
+        this.loadPortfolio();
+        input.value = '';
+      },
+      error: (error) => {
+        console.error('Failed to import Trading 212 CSV', error);
+        input.value = '';
+      }
+    });
+  }
+
+
   private loadPortfolio(): void {
     this.investmentsService.getPortfolio().subscribe({
       next: (portfolio) => {
