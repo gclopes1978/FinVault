@@ -21,7 +21,7 @@ public class Trading212CsvImporter(ILogger<Trading212CsvImporter> logger) : ITra
 
         // Mapear os índices das colunas
         var actionIdx = Array.IndexOf(headers, "Action");
-        var timeIdx = Array.IndexOf(headers, "Time");
+        var timeIdx = Array.IndexOf(headers, "Time (UTC)");
         var isinIdx = Array.IndexOf(headers, "ISIN");
         var tickerIdx = Array.IndexOf(headers, "Ticker");
         var nameIdx = Array.IndexOf(headers, "Name");
@@ -35,7 +35,16 @@ public class Trading212CsvImporter(ILogger<Trading212CsvImporter> logger) : ITra
         var currencyTotalIdx = Array.IndexOf(headers, "Currency (Total)");
         var taxIdx = Array.IndexOf(headers, "Withholding tax");
         var currencyTaxIdx = Array.IndexOf(headers, "Currency (Withholding tax)");
-
+        var stampDutyIdx = Array.IndexOf(headers, "Stamp duty reserve tax");
+        var currencyStampDutyIdx = Array.IndexOf(headers, "Currency (Stamp duty reserve tax)");
+        var currencyConversionFeeIdx = Array.IndexOf(headers, "Currency conversion fee");
+        var currencyCurrencyConversionFeeIdx = Array.IndexOf(headers, "Currency (Currency conversion fee)");
+        var resultIdx = Array.IndexOf(headers, "Result");
+        var currencyResultIdx = Array.IndexOf(headers, "Currency (Result)");
+        var chargeAmountIdx = Array.IndexOf(headers, "Charge amount");
+        var currencyChargeAmountIdx = Array.IndexOf(headers, "Currency (Charge amount)");
+        var depositFeeIdx = Array.IndexOf(headers, "Deposit fee");
+        var currencyDepositFeeIdx = Array.IndexOf(headers, "Currency (Deposit fee)");
         string? line;
         while ((line = await reader.ReadLineAsync(cancellationToken)) != null)
         {
@@ -46,7 +55,27 @@ public class Trading212CsvImporter(ILogger<Trading212CsvImporter> logger) : ITra
                 var columns = SplitCsvLine(line);
 
                 // A T212 às vezes deixa linhas em branco no final ou separadores estranhos
-                if (columns.Length < 15 || string.IsNullOrEmpty(columns[idIdx])) continue;
+                if (columns.Length < 15)
+                    continue;
+
+                var id = columns[idIdx].Trim().Replace("\"", "");
+
+                if (string.IsNullOrEmpty(id))
+                {
+                    var key = string.Join("|",
+                        columns[actionIdx],
+                        columns[timeIdx],
+                        columns[isinIdx],
+                        columns[tickerIdx],
+                        columns[sharesIdx],
+                        columns[priceIdx],
+                        columns[totalIdx]);
+
+                    var hash = System.Security.Cryptography.SHA256.HashData(
+                        Encoding.UTF8.GetBytes(key));
+
+                    id = new Guid(hash[..16]).ToString();
+                }
 
                 records.Add(new Trading212CsvRecord
                 {
@@ -56,7 +85,7 @@ public class Trading212CsvImporter(ILogger<Trading212CsvImporter> logger) : ITra
                     Ticker = columns[tickerIdx].Trim().Replace("\"", ""),
                     Name = columns[nameIdx].Trim().Replace("\"", ""),
                     Notes = columns[notesIdx].Trim().Replace("\"", ""),
-                    Id = columns[idIdx].Trim().Replace("\"", ""),
+                    Id = id,
                     NumberOfShares = ParseDecimal(columns[sharesIdx]),
                     PricePerShare = ParseDecimal(columns[priceIdx]),
                     CurrencyPricePerShare = columns[currencyPriceIdx].Trim().Replace("\"", ""),
@@ -64,7 +93,17 @@ public class Trading212CsvImporter(ILogger<Trading212CsvImporter> logger) : ITra
                     Total = ParseDecimal(columns[totalIdx]),
                     CurrencyTotal = columns[currencyTotalIdx].Trim().Replace("\"", ""),
                     WithholdingTax = ParseDecimal(columns[taxIdx]),
-                    CurrencyWithholdingTax = columns[currencyTaxIdx].Trim().Replace("\"", "")
+                    CurrencyWithholdingTax = columns[currencyTaxIdx].Trim().Replace("\"", ""),
+                    StampDutyReserveTax = ParseDecimal(GetColumn(columns, stampDutyIdx)),
+                    CurrencyStampDutyReserveTax = GetColumn(columns, currencyStampDutyIdx),
+                    CurrencyConversionFee = ParseDecimal(GetColumn(columns, currencyConversionFeeIdx)),
+                    CurrencyCurrencyConversionFee = GetColumn(columns, currencyCurrencyConversionFeeIdx),
+                    Result = ParseDecimal(GetColumn(columns, resultIdx)),
+                    CurrencyResult = GetColumn(columns, currencyResultIdx),
+                    ChargeAmount = ParseDecimal(GetColumn(columns, chargeAmountIdx)),
+                    CurrencyChargeAmount = GetColumn(columns, currencyChargeAmountIdx),
+                    DepositFee = ParseDecimal(GetColumn(columns, depositFeeIdx)),
+                    CurrencyDepositFee = GetColumn(columns, currencyDepositFeeIdx)
                 });
             }
             catch (Exception ex)
@@ -72,7 +111,7 @@ public class Trading212CsvImporter(ILogger<Trading212CsvImporter> logger) : ITra
                 logger.LogWarning(ex, "Erro ao processar linha da T212: {Line}. A saltar.", line);
             }
         }
-
+        logger.LogInformation("Trading212 CSV parsed {Count} records",  records.Count);
         return records;
     }
 
@@ -111,5 +150,12 @@ public class Trading212CsvImporter(ILogger<Trading212CsvImporter> logger) : ITra
         // Remove aspas e vírgulas de milhar (ex: "1,234.56" -> "1234.56")
         var cleaned = value.Trim().Replace("\"", "").Replace(",", "");
         return decimal.Parse(cleaned, CultureInfo.InvariantCulture);
+    }
+
+    private static string GetColumn(string[] columns, int index)
+    {
+        return index >= 0 && index < columns.Length
+            ? columns[index].Trim().Replace("\"", "")
+            : string.Empty;
     }
 }

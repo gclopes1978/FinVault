@@ -8,43 +8,46 @@ namespace Gclopes.FinVault.Investments.Services.Implementations;
 
 public class InvestmentsService(
     FinVaultInvestmentsDb dbContext,
-    IXtbCsvImporter xtbCsvImporter,
+    IXtbExcelImporter xtbExcelImporter,
     ITrading212CsvImporter trading212CsvImporter,
     ILogger<InvestmentsService> logger) : IInvestmentsService
 {
-    private readonly FinVaultInvestmentsDb _dbContext = dbContext;
-    private readonly IXtbCsvImporter _xtbCsvImporter = xtbCsvImporter;
-    private readonly ITrading212CsvImporter _trading212CsvImporter = trading212CsvImporter;
-    private readonly ILogger<InvestmentsService> _logger = logger;
 
     public async Task<List<PortfolioDto>> GetPortfolioAsync(CancellationToken cancellationToken = default)
     {
-        var positions = await _dbContext.Positions
-            .AsNoTracking()
-            .ToListAsync(cancellationToken);
+        var xtbPositions = await CalculateXtbPositionsAsync(
+            cancellationToken);
+
+        var trading212Positions = await CalculateTrading212PositionsAsync(
+            cancellationToken);
+
+        var positions = xtbPositions
+            .Concat(trading212Positions)
+            .ToList();
 
         return [.. positions.Select(p => new PortfolioDto
-        {
-            Id = p.Id,
-            Symbol = p.Symbol,
-            Source = p.Source.ToString(),
-            Quantity = p.Quantity,
-            AverageCost = p.AverageCost,
-            CurrentPrice = p.CurrentPrice,
-            CurrentValue = p.CurrentValue,
-            LastUpdated = p.LastUpdated
-        })];
+    {
+        Id = p.Id,
+        Symbol = p.Symbol,
+        Isin = p.Isin,
+        Source = p.Source.ToString(),
+        Quantity = p.Quantity,
+        AverageCost = p.AverageCost,
+        CurrentPrice = p.CurrentPrice,
+        CurrentValue = p.CurrentValue,
+        LastUpdated = p.LastUpdated
+    })];
     }
 
     public async Task<List<TransactionDto>> GetPortfolioHistoryAsync(CancellationToken cancellationToken = default)
     {
         // 1. Buscar transações da XTB (Tabela Raw)
-        var xtbTransactions = await _dbContext.XtbTransactions
+        var xtbTransactions = await dbContext.XtbTransactions
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
         // 2. Buscar transações da Trading 212 (Tabela Raw)
-        var t212Transactions = await _dbContext.Trading212Transactions
+        var t212Transactions = await dbContext.Trading212Transactions
             .AsNoTracking()
             .ToListAsync(cancellationToken);
 
@@ -83,89 +86,89 @@ public class InvestmentsService(
         return fullHistory;
     }
 
-    public async Task<int> ImportXtbCsvAsync(Stream csvStream, CancellationToken cancellationToken = default)
+    public async Task<int> ImportXtbExcelAsync(
+        Stream xlsxStream,
+        CancellationToken cancellationToken = default)
     {
-        var records = await _xtbCsvImporter.ParseCsvAsync(csvStream, cancellationToken);
-        int importedCount = 0;
+        var workbook = await xtbExcelImporter.ParseAsync(
+            xlsxStream,
+            cancellationToken);
 
-        // 1. Buscar todos os IDs que já existem na tabela XtbTransactions
-        var existingXtbIds = await _dbContext.XtbTransactions
-            .Select(t => t.Id)
+        var existingOperationIds = await dbContext.XtbCashOperations
+            .Select(x => x.OperationId)
             .ToHashSetAsync(cancellationToken);
 
-        // 2. Pré-carregar todas as Positions existentes da XTB para um dicionário em memória
-        var existingPositions = await _dbContext.Positions
-            .Where(p => p.Source == BrokerSource.XTB)
-            .ToDictionaryAsync(p => p.Symbol, cancellationToken);
+        var existingPositionIds = await dbContext.XtbClosedPositions
+            .Select(x => x.PositionId)
+            .ToHashSetAsync(cancellationToken);
 
-        foreach (var record in records)
-        {
-            if (existingXtbIds.Contains(record.Id))
-                continue;
+        var existingInstrumentPositions = await dbContext.XtbOpenPositions
+            .Select(x => x.InstrumentPosition)
+            .ToHashSetAsync(cancellationToken);
 
-            var xtbTransaction = new XtbTransaction
-            {
-                Id = record.Id,
-                Type = record.Type,
-                Ticker = record.Ticker,
-                Instrument = record.Instrument,
-                TransactionDate = record.TransactionDate,
-                Amount = record.Amount,
-                Comment = record.Comment,
-                Product = record.Product,
-                CreatedAt = DateTime.UtcNow
-            };
-            _dbContext.XtbTransactions.Add(xtbTransaction);
-            existingXtbIds.Add(record.Id);
+        var newCashOperations = workbook.CashOperations
+            .Where(x => !existingOperationIds.Contains(x.OperationId))
+            .ToList();
 
-            // 3. Consultar o dicionário em memória em vez da BD
-            if (!existingPositions.TryGetValue(record.Ticker, out var position))
-            {
-                position = new Position
-                {
-                    Symbol = record.Ticker,
-                    Source = BrokerSource.XTB,
-                    Quantity = 0,
-                    AverageCost = 0,
-                    CurrentPrice = 0,
-                    LastUpdated = DateTime.UtcNow,
-                    CreatedAt = DateTime.UtcNow
-                };
-                _dbContext.Positions.Add(position);
-                existingPositions[record.Ticker] = position; // regista já no dicionário
-            }
-            else
-            {
-                position.LastUpdated = DateTime.UtcNow;
-            }
+        var newClosedPositions = workbook.ClosedPositions
+            .Where(x => !existingPositionIds.Contains(x.PositionId))
+            .ToList();
 
-            importedCount++;
-        }
+        var newOpenPositions = workbook.OpenPositions
+            .Where(x => !existingInstrumentPositions.Contains(x.InstrumentPosition))
+            .ToList();
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("Successfully imported {Count} NEW transactions from XTB CSV", importedCount);
+
+        foreach (var operation in newCashOperations)
+            operation.CreatedAt = DateTime.UtcNow;
+
+        foreach (var position in newClosedPositions)
+            position.CreatedAt = DateTime.UtcNow;
+
+        await dbContext.XtbCashOperations.AddRangeAsync(
+            newCashOperations,
+            cancellationToken);
+
+        await dbContext.XtbClosedPositions.AddRangeAsync(
+            newClosedPositions,
+            cancellationToken);
+
+        foreach (var position in newOpenPositions)
+            position.CreatedAt = DateTime.UtcNow;
+
+        await dbContext.XtbOpenPositions.AddRangeAsync(newOpenPositions, cancellationToken);
+        
+
+        var importedCount = await dbContext.SaveChangesAsync(
+            cancellationToken);
+
+        logger.LogInformation(
+            "Successfully imported {Count} new records from XTB Excel",
+            importedCount);
 
         return importedCount;
     }
 
-    public async Task<int> ImportTrading212CsvAsync(Stream csvStream, CancellationToken cancellationToken = default)
+    public async Task<int> ImportTrading212CsvAsync(
+        Stream csvStream,
+        CancellationToken cancellationToken = default)
     {
-        var records = await _trading212CsvImporter.ParseCsvAsync(csvStream, cancellationToken);
-        int importedCount = 0;
+        var records = await trading212CsvImporter.ParseCsvAsync(
+            csvStream,
+            cancellationToken);
 
-        HashSet<string> existingT212Ids = await _dbContext.Trading212Transactions
+        var existingT212Ids = await dbContext.Trading212Transactions
             .Select(t => t.T212Id)
             .ToHashSetAsync(cancellationToken);
 
-        var existingPositions = await _dbContext.Positions
-            .Where(p => p.Source == BrokerSource.Trading212)
-            .ToDictionaryAsync(p => p.Symbol, cancellationToken);
-        foreach (Trading212CsvRecord record in records)
+        var importedCount = 0;
+
+        foreach (var record in records)
         {
             if (existingT212Ids.Contains(record.Id))
                 continue;
 
-            var t212Transaction = new Trading212Transaction
+            var transaction = new Trading212Transaction
             {
                 T212Id = record.Id,
                 Action = record.Action,
@@ -182,37 +185,104 @@ public class InvestmentsService(
                 CurrencyTotal = record.CurrencyTotal,
                 WithholdingTax = record.WithholdingTax,
                 CurrencyWithholdingTax = record.CurrencyWithholdingTax,
+                StampDutyReserveTax = record.StampDutyReserveTax,
+                CurrencyStampDutyReserveTax = record.CurrencyStampDutyReserveTax,
+                CurrencyConversionFee = record.CurrencyConversionFee,
+                CurrencyCurrencyConversionFee = record.CurrencyCurrencyConversionFee,
                 CreatedAt = DateTime.UtcNow
             };
-            _dbContext.Trading212Transactions.Add(t212Transaction);
 
-            if (!existingPositions.TryGetValue(record.Ticker, out var position))
-            {
-                position = new Position
-                {
-                    Symbol = record.Ticker,
-                    Source = BrokerSource.Trading212,
-                    Quantity = 0,
-                    AverageCost = 0,
-                    CurrentPrice = 0,
-                    LastUpdated = DateTime.UtcNow,
-                    CreatedAt = DateTime.UtcNow
-                };
-                _dbContext.Positions.Add(position);
-                existingPositions[record.Ticker] = position; // regista já no dicionário
-            }
-            else
-            {
-                position.LastUpdated = DateTime.UtcNow;
-            }
+            dbContext.Trading212Transactions.Add(transaction);
+            existingT212Ids.Add(record.Id);
 
             importedCount++;
         }
 
-        await _dbContext.SaveChangesAsync(cancellationToken);
-        _logger.LogInformation("Successfully imported {Count} NEW transactions from Trading212 CSV", importedCount);
+        await dbContext.SaveChangesAsync(cancellationToken);
+
+        logger.LogInformation(
+            "Successfully imported {Count} NEW transactions from Trading212 CSV",
+            importedCount);
 
         return importedCount;
     }
-    
+
+    private async Task<List<Position>> CalculateTrading212PositionsAsync(
+    CancellationToken cancellationToken)
+    {
+        var transactions = await dbContext.Trading212Transactions
+            .AsNoTracking()
+            .Where(t =>
+                t.Action == "Market buy" ||
+                t.Action == "Market sell")
+            .OrderBy(t => t.Time)
+            .ToListAsync(cancellationToken);
+
+        var positions = new List<Position>();
+
+        foreach (var group in transactions.GroupBy(t => new { t.Ticker, t.Isin }))
+        {
+            decimal quantity = 0;
+            decimal totalCost = 0;
+            
+            foreach (var transaction in group)
+            {
+                if (transaction.Action == "Market buy")
+                {
+                    quantity += transaction.NumberOfShares;
+                    totalCost += transaction.Total;
+                }
+                else if (transaction.Action == "Market sell")
+                {
+                    var averageCost = quantity > 0
+                        ? totalCost / quantity
+                        : 0;
+
+                    quantity -= transaction.NumberOfShares;
+                    totalCost -=
+                        transaction.NumberOfShares *
+                        averageCost;
+                }
+            }
+
+            if (quantity <= 0 || string.IsNullOrWhiteSpace(group.Key.Ticker))
+                continue;
+
+            positions.Add(new Position
+            {
+                Symbol = group.Key.Ticker,
+                Isin = group.Key.Isin,
+                Source = BrokerSource.Trading212,
+                Quantity = quantity,
+                AverageCost = totalCost / quantity,
+                CurrentPrice = 0,
+                LastUpdated = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        return positions;
+    }
+
+    private async Task<List<Position>> CalculateXtbPositionsAsync(CancellationToken cancellationToken)
+    {
+        var positions = await dbContext.XtbOpenPositions
+            .AsNoTracking()
+            .ToListAsync(cancellationToken);
+
+        return [.. positions
+            .Where(p => !string.IsNullOrWhiteSpace(p.Ticker))
+            .GroupBy(p => p.Ticker)
+            .Select(group => new Position
+            {
+                Symbol = group.Key,
+                Source = BrokerSource.XTB,
+                Quantity = group.Sum(p => p.Volume),
+                AverageCost = group.Sum(p => p.Volume * p.OpenPrice) /
+                              group.Sum(p => p.Volume),
+                CurrentPrice = group.First().CurrentPrice,
+                LastUpdated = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            })];
+    }
 }

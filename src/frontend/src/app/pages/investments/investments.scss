@@ -1,0 +1,758 @@
+:host {
+  display: block;
+}
+
+.investments-page {
+  --bg: #080b10;
+  --surface: #0e131a;
+  --surface-hover: #131a23;
+
+  --border: rgba(255, 255, 255, 0.07);
+  --border-strong: rgba(255, 255, 255, 0.11);
+
+  --text: #f4f7fb;
+  --muted: #7f8998;
+  --muted-light: #a8b1bf;
+
+  --green: #43d89a;
+  --green-bg: rgba(67, 216, 154, 0.09);
+
+  --red: #ff6f7d;
+  --red-bg: rgba(255, 111, 125, 0.09);
+
+  min-height: 100%;
+
+  padding: 48px;
+
+  color: var(--text);
+
+  background:
+    radial-gradient(
+      circle at 80% -10%,
+      rgba(64, 113, 255, 0.12),
+      transparent 35%
+    ),
+    radial-gradient(
+      circle at 10% 20%,
+      rgba(67, 216, 154, 0.035),
+      transparent 30%
+    ),
+    var(--bg);
+
+  font-family:
+    Inter,
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.page-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+
+  gap: 32px;
+
+  max-width: 1500px;
+  margin: 0 auto 36px;
+}
+
+
+.page-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.action-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 0 16px;
+
+  border: 1px solid var(--border-strong);
+  border-radius: 10px;
+
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+
+  background: var(--surface);
+
+  cursor: pointer;
+  user-select: none;
+
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.2s ease;
+
+  &:hover {
+    background: var(--surface-hover);
+    border-color: rgba(255, 255, 255, 0.18);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.action-button.secondary {
+  color: var(--muted-light);
+}
+
+.eyebrow {
+  display: inline-block;
+
+  margin-bottom: 10px;
+
+  color: #7f8cff;
+
+  font-size: 11px;
+  font-weight: 700;
+
+  letter-spacing: 0.18em;
+}
+
+h1 {
+  margin: 0;
+
+  font-size: clamp(36px, 4vw, 54px);
+  line-height: 1;
+
+  letter-spacing: -0.045em;
+
+  font-weight: 700;
+}
+
+.subtitle {
+  margin: 14px 0 0;
+
+  color: var(--muted);
+
+  font-size: 14px;
+}
+
+
+/* =========================================================
+   MARKET STATUS
+   ========================================================= */
+
+.market-status {
+  display: inline-flex;
+  align-items: center;
+
+  gap: 9px;
+
+  padding: 9px 13px;
+
+  border: 1px solid var(--border);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  color: var(--muted-light);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.status-dot {
+  width: 7px;
+  height: 7px;
+
+  border-radius: 50%;
+
+  background: var(--green);
+
+  box-shadow:
+    0 0 0 4px rgba(67, 216, 154, 0.08),
+    0 0 14px rgba(67, 216, 154, 0.5);
+}
+
+
+/* =========================================================
+   PORTFOLIO OVERVIEW
+   ========================================================= */
+
+.portfolio-overview {
+  display: grid;
+
+  grid-template-columns: 1.4fr 1fr 1fr;
+
+  gap: 16px;
+
+  max-width: 1500px;
+
+  margin: 0 auto 20px;
+}
+
+.overview-card {
+  position: relative;
+
+  min-height: 150px;
+
+  padding: 24px;
+
+  overflow: hidden;
+
+  border: 1px solid var(--border);
+  border-radius: 18px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.035),
+      rgba(255, 255, 255, 0.012)
+    );
+
+  box-shadow:
+    0 20px 60px rgba(0, 0, 0, 0.18);
+
+  transition:
+    transform 180ms ease,
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.overview-card:hover {
+  transform: translateY(-2px);
+
+  border-color: var(--border-strong);
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.05),
+      rgba(255, 255, 255, 0.015)
+    );
+}
+
+.overview-card--primary {
+  background:
+    radial-gradient(
+      circle at 90% 10%,
+      rgba(87, 112, 255, 0.16),
+      transparent 45%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.045),
+      rgba(255, 255, 255, 0.012)
+    );
+}
+
+.card-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  color: var(--muted);
+
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.card-icon {
+  display: grid;
+  place-items: center;
+
+  width: 30px;
+  height: 30px;
+
+  border: 1px solid var(--border);
+  border-radius: 9px;
+
+  color: #8794ff;
+
+  background: rgba(127, 140, 255, 0.07);
+}
+
+.overview-card strong {
+  display: block;
+
+  margin-top: 20px;
+
+  font-size: 29px;
+  line-height: 1;
+
+  letter-spacing: -0.035em;
+}
+
+.overview-card .main-value {
+  font-size: 36px;
+}
+
+.card-meta {
+  display: block;
+
+  margin-top: 12px;
+
+  color: var(--muted);
+
+  font-size: 11px;
+}
+
+.return-value.positive,
+.return-percentage.positive {
+  color: var(--green);
+}
+
+.return-value.negative,
+.return-percentage.negative {
+  color: var(--red);
+}
+
+.return-percentage {
+  display: inline-block;
+
+  margin-top: 11px;
+
+  font-size: 12px;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   INVESTMENTS CARD
+   ========================================================= */
+
+.investments-card {
+  max-width: 1500px;
+
+  margin: 0 auto;
+
+  overflow: hidden;
+
+  border: 1px solid var(--border);
+  border-radius: 20px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.025),
+      rgba(255, 255, 255, 0.01)
+    );
+
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.22);
+}
+
+.table-header {
+  display: flex;
+
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 25px 28px;
+
+  border-bottom: 1px solid var(--border);
+}
+
+.table-header h2 {
+  margin: 0;
+
+  font-size: 16px;
+
+  letter-spacing: -0.02em;
+}
+
+.table-header p {
+  margin: 6px 0 0;
+
+  color: var(--muted);
+
+  font-size: 12px;
+}
+
+.position-count {
+  padding: 7px 11px;
+
+  border: 1px solid var(--border);
+  border-radius: 999px;
+
+  color: var(--muted-light);
+
+  background: rgba(255, 255, 255, 0.025);
+
+  font-size: 11px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   TABLE
+   ========================================================= */
+
+.table-wrapper {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+
+  min-width: 900px;
+
+  border-collapse: collapse;
+}
+
+thead {
+  background: rgba(255, 255, 255, 0.015);
+}
+
+th {
+  padding: 13px 22px;
+
+  color: #687282;
+
+  font-size: 10px;
+  font-weight: 700;
+
+  letter-spacing: 0.08em;
+
+  text-transform: uppercase;
+
+  white-space: nowrap;
+}
+
+th:first-child,
+td:first-child {
+  padding-left: 28px;
+}
+
+th:last-child,
+td:last-child {
+  padding-right: 28px;
+}
+
+th.numeric,
+td.numeric {
+  text-align: right;
+}
+
+tbody tr {
+  border-top: 1px solid var(--border);
+
+  transition:
+    background 160ms ease;
+}
+
+tbody tr:hover {
+  background: rgba(255, 255, 255, 0.025);
+}
+
+td {
+  padding: 18px 22px;
+
+  color: var(--muted-light);
+
+  font-size: 13px;
+
+  white-space: nowrap;
+}
+
+.currency {
+  margin-left: 3px;
+
+  color: #626c7b;
+
+  font-size: 10px;
+}
+
+
+/* =========================================================
+   ASSET
+   ========================================================= */
+
+.asset {
+  display: flex;
+
+  align-items: center;
+
+  gap: 12px;
+}
+
+.asset-avatar {
+  display: grid;
+  place-items: center;
+
+  width: 38px;
+  height: 38px;
+
+  flex: 0 0 38px;
+
+  border: 1px solid rgba(127, 140, 255, 0.16);
+
+  border-radius: 11px;
+
+  background:
+    linear-gradient(
+      145deg,
+      rgba(127, 140, 255, 0.16),
+      rgba(127, 140, 255, 0.035)
+    );
+
+  color: #9ca8ff;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.asset-info {
+  display: flex;
+
+  flex-direction: column;
+
+  gap: 4px;
+}
+
+.asset-info strong {
+  color: var(--text);
+
+  font-size: 13px;
+  font-weight: 700;
+
+  letter-spacing: 0.01em;
+}
+
+.asset-info span {
+  color: #606a78;
+
+  font-size: 10px;
+  font-weight: 600;
+
+  text-transform: uppercase;
+}
+
+
+/* =========================================================
+   BROKER
+   ========================================================= */
+
+.broker-badge {
+  display: inline-flex;
+
+  align-items: center;
+
+  padding: 6px 9px;
+
+  border: 1px solid var(--border);
+
+  border-radius: 7px;
+
+  background: rgba(255, 255, 255, 0.025);
+
+  color: #919baa;
+
+  font-size: 10px;
+  font-weight: 600;
+}
+
+
+/* =========================================================
+   NUMBERS
+   ========================================================= */
+
+.price {
+  color: #dbe1e9;
+
+  font-weight: 600;
+}
+
+.value {
+  color: var(--text);
+
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   RETURN
+   ========================================================= */
+
+.return-badge {
+  display: inline-flex;
+
+  align-items: center;
+  justify-content: center;
+
+  gap: 5px;
+
+  min-width: 82px;
+
+  padding: 7px 9px;
+
+  border-radius: 8px;
+
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.return-badge.positive {
+  color: var(--green);
+
+  background: var(--green-bg);
+}
+
+.return-badge.negative {
+  color: var(--red);
+
+  background: var(--red-bg);
+}
+
+.return-arrow {
+  font-size: 12px;
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.empty-state {
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  min-height: 400px;
+
+  max-width: 700px;
+
+  margin: 0 auto;
+
+  padding: 50px;
+
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+
+  border-radius: 22px;
+
+  background: rgba(255, 255, 255, 0.015);
+
+  text-align: center;
+}
+
+.empty-icon {
+  display: grid;
+  place-items: center;
+
+  width: 58px;
+  height: 58px;
+
+  margin-bottom: 20px;
+
+  border: 1px solid rgba(127, 140, 255, 0.15);
+
+  border-radius: 16px;
+
+  background: rgba(127, 140, 255, 0.07);
+
+  color: #8995ff;
+
+  font-size: 25px;
+}
+
+.empty-state h2 {
+  margin: 0;
+
+  font-size: 20px;
+
+  letter-spacing: -0.025em;
+}
+
+.empty-state p {
+  max-width: 400px;
+
+  margin: 10px 0 0;
+
+  color: var(--muted);
+
+  font-size: 13px;
+
+  line-height: 1.6;
+}
+
+
+/* =========================================================
+   RESPONSIVE
+   ========================================================= */
+
+@media (max-width: 900px) {
+  .investments-page {
+    padding: 28px 20px;
+  }
+
+  .portfolio-overview {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .overview-card--primary {
+    grid-column: 1 / -1;
+  }
+}
+
+
+@media (max-width: 650px) {
+  .investments-page {
+    padding: 24px 14px;
+  }
+
+  .page-header {
+    align-items: flex-start;
+
+    flex-direction: column;
+
+    gap: 18px;
+  }
+
+  .market-status {
+    align-self: flex-start;
+  }
+
+  .portfolio-overview {
+    grid-template-columns: 1fr;
+  }
+
+  .overview-card--primary {
+    grid-column: auto;
+  }
+
+  .overview-card .main-value {
+    font-size: 30px;
+  }
+
+  .table-header {
+    padding: 20px;
+  }
+
+  .table-header p {
+    display: none;
+  }
+
+  th:first-child,
+  td:first-child {
+    padding-left: 20px;
+  }
+
+  th:last-child,
+  td:last-child {
+    padding-right: 20px;
+  }
+
+  .investments-card {
+    border-radius: 16px;
+  }
+}
+

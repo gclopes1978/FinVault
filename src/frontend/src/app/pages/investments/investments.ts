@@ -1,0 +1,224 @@
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { DecimalPipe } from '@angular/common';
+import { InvestmentsService } from '../../services/investments';
+import { Portfolio } from '../../models/portfolio';
+@Component({
+  selector: 'app-investments',
+  imports: [DecimalPipe],
+  templateUrl: './investments.html',
+  styleUrl: './investments.scss',
+})
+export class Investments implements OnInit {
+  portfolio: Portfolio[] = [];
+
+  get totalValue(): number {
+    return this.portfolio.reduce(
+      (total, investment) =>
+        total + (investment.currentValue ?? 0),
+      0
+    );
+  }
+
+  get totalInvested(): number {
+    return this.portfolio.reduce(
+      (total, investment) =>
+        total +
+        investment.quantity * investment.averageCost,
+      0
+    );
+  }
+
+  get totalReturn(): number {
+    return this.totalValue - this.totalInvested;
+  }
+
+  get totalReturnPercentage(): number {
+    if (this.totalInvested <= 0) {
+      return 0;
+    }
+
+    return (this.totalReturn / this.totalInvested) * 100;
+  }
+
+
+  constructor(
+    private readonly investmentsService: InvestmentsService,
+    private readonly changeDetectorRef: ChangeDetectorRef
+  ) {}
+
+  ngOnInit(): void {
+    this.loadPortfolio();
+  }
+
+
+  onXtbFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const file = input.files[0];
+
+    this.investmentsService.importXtbFile(file).subscribe({
+      next: (result) => {
+        console.log(
+          `XTB import successful: ${result.importedRecords} records imported`
+        );
+
+        this.loadPortfolio();
+        input.value = '';
+      },
+      error: (error) => {
+        console.error('Failed to import XTB CSV', error);
+        input.value = '';
+      }
+    });
+  }
+
+  onTrading212FileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const file = input.files[0];
+
+    this.investmentsService.importTrading212Csv(file).subscribe({
+      next: (result) => {
+        console.log(
+          `Trading 212 import successful: ${result.importedRecords} records imported`
+        );
+
+        this.loadPortfolio();
+        input.value = '';
+      },
+      error: (error) => {
+        console.error('Failed to import Trading 212 CSV', error);
+        input.value = '';
+      }
+    });
+  }
+
+
+  private loadPortfolio(): void {
+    this.investmentsService.getPortfolio().subscribe({
+      next: (portfolio) => {
+        this.portfolio = portfolio.map((investment) => ({
+          ...investment,
+          returnPercentage:
+            investment.averageCost > 0
+              ? ((investment.currentValue -
+                  investment.quantity * investment.averageCost) /
+                  (investment.quantity * investment.averageCost)) *
+                100
+              : 0
+        }));
+
+        portfolio.forEach((investment) => {
+          const marketSymbol = investment.symbol;
+          console.log('Portfolio recebido:', portfolio);
+
+          console.log(
+            'IGLN recebido:',
+            portfolio.find(x => x.symbol === 'IGLN.UK')
+          );
+          console.log(
+            `Symbol: ${investment.symbol} -> Market symbol: ${marketSymbol}`
+          );
+
+          this.loadMarketPrice(investment, marketSymbol);
+        });
+
+        this.changeDetectorRef.detectChanges();
+      },
+      error: (error) => {
+        console.error('Failed to load investments portfolio', error);
+      }
+    });
+  }
+
+  private loadMarketPrice(investment: Portfolio, marketSymbol: string): void {
+    const assetType = 'ETF';
+
+    this.investmentsService
+      .getMarketPrice(assetType, marketSymbol)
+      .subscribe({
+        next: (quote) => {
+          const investmentIndex = this.portfolio.findIndex(
+            item =>
+              item.symbol === investment.symbol &&
+              item.source === investment.source
+          );
+
+          if (investmentIndex === -1) {
+            return;
+          }
+
+          if (quote.currency === 'EUR') {
+            const currentValue =
+              this.portfolio[investmentIndex].quantity * quote.price;
+
+            const costBasis =
+              this.portfolio[investmentIndex].quantity *
+              this.portfolio[investmentIndex].averageCost;
+
+            this.portfolio[investmentIndex] = {
+              ...this.portfolio[investmentIndex],
+              currentPrice: quote.price,
+              currentValue,
+              returnPercentage:
+                costBasis > 0
+                  ? ((currentValue - costBasis) / costBasis) * 100
+                  : 0,
+              currency: 'EUR'
+            };
+
+            this.changeDetectorRef.detectChanges();
+            return;
+          }
+
+          this.investmentsService
+            .getExchangeRate(quote.currency, 'EUR')
+            .subscribe({
+              next: (exchangeRate) => {
+                const currentPrice = quote.price * exchangeRate;
+
+                const currentValue =
+                  this.portfolio[investmentIndex].quantity * currentPrice;
+
+                const costBasis =
+                  this.portfolio[investmentIndex].quantity *
+                  this.portfolio[investmentIndex].averageCost;
+
+                this.portfolio[investmentIndex] = {
+                  ...this.portfolio[investmentIndex],
+                  currentPrice,
+                  currentValue,
+                  returnPercentage:
+                    costBasis > 0
+                      ? ((currentValue - costBasis) / costBasis) * 100
+                      : 0,
+                  currency: 'EUR'
+                };
+
+                this.changeDetectorRef.detectChanges();
+              },
+              error: (error) => {
+                console.error(
+                  `Failed to convert ${quote.currency} to EUR for ${investment.symbol}`,
+                  error
+                );
+              }
+            });
+        },
+        error: (error) => {
+          console.error(
+            `Failed to load market price for ${investment.symbol}`,
+            error
+          );
+        }
+      });
+  }
+}

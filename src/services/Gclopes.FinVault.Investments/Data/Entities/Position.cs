@@ -4,6 +4,7 @@ public class Position
 {
     public int Id { get; set; }
     public string Symbol { get; set; } = string.Empty;
+    public string? Isin { get; set; }
     public BrokerSource Source { get; set; }
     public decimal Quantity { get; set; }
     public decimal AverageCost { get; set; }

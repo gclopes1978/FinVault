@@ -107,7 +107,17 @@ public class Program
         app.UseRouting();
 
         app.UseCors("AngularFrontendPolicy");
+        app.Use(async (context, next) =>
+        {
+            if (context.Request.Method == "OPTIONS")
+            {
+                context.Response.StatusCode = StatusCodes.Status204NoContent;
+                await context.Response.CompleteAsync();
+                return;
+            }
 
+            await next();
+        });
         app.UseAuthentication();
         app.UseAuthorization();
 

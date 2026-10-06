@@ -1,0 +1,263 @@
+<section class="investments-page">
+
+ <!-- Header -->
+<header class="page-header">
+  <div>
+    <span class="eyebrow">PORTFOLIO</span>
+
+    <h1>Investments</h1>
+
+    <p class="subtitle">
+      Track your positions, performance and portfolio value.
+    </p>
+  </div>
+
+  <div class="page-actions">
+    <label class="action-button secondary">
+      <span>Import XTB XLSX</span>
+
+      <input
+        type="file"
+        accept=".xlsx"
+        (change)="onXtbFileSelected($event)"
+        hidden
+      />
+    </label>
+
+    <label class="action-button secondary">
+      <span>Import Trading 212 CSV</span>
+
+      <input
+        type="file"
+        accept=".csv"
+        (change)="onTrading212FileSelected($event)"
+        hidden
+      />
+    </label>
+
+    <div class="market-status">
+      <span class="status-dot"></span>
+      Markets connected
+    </div>
+  </div>
+</header>
+
+
+  @if (portfolio.length === 0) {
+
+    <!-- Empty state -->
+    <div class="empty-state">
+      <div class="empty-icon">
+        ↗
+      </div>
+
+      <h2>No investments yet</h2>
+
+      <p>
+        Your portfolio is empty. Once you add an investment,
+        it will appear here.
+      </p>
+    </div>
+
+  } @else {
+
+    <!-- Portfolio overview -->
+    <section class="portfolio-overview">
+
+      <article class="overview-card overview-card--primary">
+        <div class="card-label">
+          <span>Portfolio value</span>
+          <span class="card-icon">◈</span>
+        </div>
+
+        <strong class="main-value">
+          {{ totalValue | number:'1.2-2' }} €
+        </strong>
+
+        <span class="card-meta">
+          Across {{ portfolio.length }} positions
+        </span>
+      </article>
+
+
+      <article class="overview-card">
+        <div class="card-label">
+          <span>Total invested</span>
+          <span class="card-icon">↗</span>
+        </div>
+
+        <strong>
+          {{ totalInvested | number:'1.2-2' }} €
+        </strong>
+
+        <span class="card-meta">
+          Cost basis
+        </span>
+      </article>
+
+
+      <article class="overview-card">
+        <div class="card-label">
+          <span>Total return</span>
+          <span class="card-icon">✦</span>
+        </div>
+
+        <strong
+          class="return-value"
+          [class.positive]="totalReturn >= 0"
+          [class.negative]="totalReturn < 0"
+        >
+          {{ totalReturn >= 0 ? '+' : '' }}
+          {{ totalReturn | number:'1.2-2' }} €
+        </strong>
+
+        <span
+          class="return-percentage"
+          [class.positive]="totalReturnPercentage >= 0"
+          [class.negative]="totalReturnPercentage < 0"
+        >
+          {{ totalReturnPercentage >= 0 ? '+' : '' }}
+          {{ totalReturnPercentage | number:'1.2-2' }}%
+        </span>
+      </article>
+
+    </section>
+
+
+    <!-- Positions -->
+    <section class="investments-card">
+
+      <div class="table-header">
+        <div>
+          <h2>Your positions</h2>
+
+          <p>
+            Current market value and performance
+          </p>
+        </div>
+
+        <span class="position-count">
+          {{ portfolio.length }}
+          {{ portfolio.length === 1 ? 'position' : 'positions' }}
+        </span>
+      </div>
+
+
+      <div class="table-wrapper">
+
+        <table>
+
+          <thead>
+            <tr>
+              <th>Asset</th>
+              <th>Broker</th>
+              <th class="numeric">Quantity</th>
+              <th class="numeric">Avg. Cost</th>
+              <th class="numeric">Price</th>
+              <th class="numeric">Value</th>
+              <th class="numeric">Return</th>
+            </tr>
+          </thead>
+
+
+          <tbody>
+
+            @for (
+              investment of portfolio;
+              track investment.symbol + investment.source
+            ) {
+
+              <tr>
+
+                <!-- Asset -->
+                <td>
+                  <div class="asset">
+
+                    <div class="asset-avatar">
+                      {{ investment.symbol.substring(0, 1) }}
+                    </div>
+
+                    <div class="asset-info">
+                      <strong>
+                        {{ investment.symbol }}
+                      </strong>
+
+                      <span>
+                        {{ investment.currency }}
+                      </span>
+                    </div>
+
+                  </div>
+                </td>
+
+
+                <!-- Broker -->
+                <td>
+                  <span class="broker-badge">
+                    {{ investment.source }}
+                  </span>
+                </td>
+
+
+                <!-- Quantity -->
+                <td class="numeric">
+                  {{ investment.quantity | number:'1.0-4' }}
+                </td>
+
+
+                <!-- Average cost -->
+                <td class="numeric">
+                  {{ investment.averageCost | number:'1.2-2' }}
+                  <span class="currency">€</span>
+                </td>
+
+
+                <!-- Current price -->
+                <td class="numeric price">
+                  {{ investment.currentPrice | number:'1.2-2' }}
+                  <span class="currency">€</span>
+                </td>
+
+
+                <!-- Current value -->
+                <td class="numeric value">
+                  {{ investment.currentValue | number:'1.2-2' }}
+                  <span class="currency">€</span>
+                </td>
+
+
+                <!-- Return -->
+                <td class="numeric">
+
+                  <span
+                    class="return-badge"
+                    [class.positive]="investment.returnPercentage >= 0"
+                    [class.negative]="investment.returnPercentage < 0"
+                  >
+
+                    <span class="return-arrow">
+                      {{ investment.returnPercentage >= 0 ? '↗' : '↘' }}
+                    </span>
+
+                    {{ investment.returnPercentage >= 0 ? '+' : '' }}
+                    {{ investment.returnPercentage | number:'1.2-2' }}%
+
+                  </span>
+
+                </td>
+
+              </tr>
+            }
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </section>
+
+  }
+
+</section>
+
