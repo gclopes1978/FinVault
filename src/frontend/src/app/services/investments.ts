@@ -21,7 +21,7 @@ export class InvestmentsService {
     return this.http.get<Transaction[]>(`${this.apiUrl}/portfolio/history`);
   }
 
-  importXtbCsv(file: File): Observable<{ importedRecords: number }> {
+  importXtbFile(file: File): Observable<{ importedRecords: number }> {
     const formData = new FormData();
     formData.append('file', file);
 
