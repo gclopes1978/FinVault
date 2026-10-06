@@ -1,22 +1,46 @@
 <section class="investments-page">
 
-  <!-- Header -->
-  <header class="page-header">
-    <div>
-      <span class="eyebrow">PORTFOLIO</span>
+ <!-- Header -->
+<header class="page-header">
+  <div>
+    <span class="eyebrow">PORTFOLIO</span>
 
-      <h1>Investments</h1>
+    <h1>Investments</h1>
 
-      <p class="subtitle">
-        Track your positions, performance and portfolio value.
-      </p>
-    </div>
+    <p class="subtitle">
+      Track your positions, performance and portfolio value.
+    </p>
+  </div>
+
+  <div class="page-actions">
+    <label class="action-button secondary">
+      <span>Import XTB XLSX</span>
+
+      <input
+        type="file"
+        accept=".xlsx"
+        (change)="onXtbFileSelected($event)"
+        hidden
+      />
+    </label>
+
+    <label class="action-button secondary">
+      <span>Import Trading 212 CSV</span>
+
+      <input
+        type="file"
+        accept=".csv"
+        (change)="onTrading212FileSelected($event)"
+        hidden
+      />
+    </label>
 
     <div class="market-status">
       <span class="status-dot"></span>
       Markets connected
     </div>
-  </header>
+  </div>
+</header>
 
 
   @if (portfolio.length === 0) {
