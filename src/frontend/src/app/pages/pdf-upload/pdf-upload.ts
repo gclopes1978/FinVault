@@ -1,5 +1,5 @@
 // Import Component/OnInit/OnDestroy from the Angular framework
-import { Component, OnDestroy, OnInit, ChangeDetectorRef  } from '@angular/core';
+import { Component, OnDestroy, OnInit, ChangeDetectorRef } from '@angular/core';
 // Import CommonModule for structural directives and pipes (date, currency, etc.)
 import { CommonModule } from '@angular/common';
 // Import FormsModule to support the two-way bound document type selector
@@ -81,7 +81,7 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
     private pdfUploadService: PdfUploadService,
     private documentProcessingHub: DocumentProcessingHubService,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   public ngOnInit(): void {
     console.log('PDF Upload Component INIT');
@@ -104,7 +104,7 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
   public debug(entry: any): null {
     console.log('%c[IMPORT HISTORY ENTRY]', 'color: #0af; font-weight: bold;', entry);
     return null; // garante que nada aparece no HTML
-}
+  }
 
   // Whether user interaction with the drop zone should currently be blocked
   public get isBusy(): boolean {
@@ -207,23 +207,38 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
           err.error
         );
         this.isHistoryLoading = false;
-       
+
       }
     });
   }
 
-  // Insert/replace a single row in the in-memory history list, used both by the live hub push
-  // and by the optimistic "just uploaded" refresh — avoids a full table reload on every event.
   private mergeHistoryItem(item: UploadHistoryItem): void {
     const index = this.importHistory.findIndex((existing) => existing.id === item.id);
+
     if (index >= 0) {
       this.importHistory[index] = item;
-      // Re-assign so Angular's default change detection picks up the mutated array content
       this.importHistory = [...this.importHistory];
+    } else {
+      this.importHistory = [item, ...this.importHistory].slice(0, 20);
+    }
+
+    const task = this.uploadTasks.find(
+      (uploadTask) => uploadTask.documentId === item.id
+    );
+
+    if (!task) {
       return;
     }
 
-    this.importHistory = [item, ...this.importHistory].slice(0, 20);
+    if (item.success === true) {
+      task.stage = 'success';
+      task.errorMessage = null;
+    } else if (item.success === false) {
+      task.stage = 'error';
+      task.errorMessage = item.errorMessage ?? 'Erro ao processar o PDF.';
+    }
+
+    this.uploadTasks = [...this.uploadTasks];
   }
 
   private handleFiles(files: File[]): void {
@@ -279,10 +294,8 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
               task.stage = 'parsing';
             }
           } else if (event.type === HttpEventType.Response) {
-            task.stage = 'success';
+            task.stage = 'parsing';
             task.documentId = event.body?.documentId ?? null;
-            // Show the new "Em processamento" row immediately; the hub will push the final
-            // Sucesso/Erro state once the PdfParser finishes with it.
             this.loadHistory();
             resolve();
           }
