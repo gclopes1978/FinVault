@@ -1,0 +1,198 @@
+<div class="pension-plans-page">
+    <header class="page-header">
+        <div class="page-header-content">
+            <span class="eyebrow">Retirement planning</span>
+
+            <h1>Pension Plans</h1>
+
+            <p class="page-description">
+                Monitor your pension contributions, plan balances and retirement savings.
+            </p>
+        </div>
+    </header>
+
+    <main class="pension-content">
+
+        <!-- Overview -->
+        <section class="overview-grid">
+
+            <article class="summary-card">
+                <div class="summary-card-header">
+                    <span class="summary-label">Pension fund</span>
+                    <span class="summary-icon">PF</span>
+                </div>
+
+                <div class="summary-card-body">
+                    <h2>€{{ latestFundMovement?.valuation | number:'1.2-2' }}</h2>
+                    <p>AR Banco Invest PPR</p>
+                </div>
+
+                <div class="summary-card-footer">
+                    <span>Current valuation</span>
+                    <span class="status-badge">Active</span>
+                </div>
+            </article>
+
+            <article class="summary-card">
+                <div class="summary-card-header">
+                    <span class="summary-label">Pension insurance</span>
+                    <span class="summary-icon">PI</span>
+                </div>
+
+                <div class="summary-card-body">
+                    <h2>€{{ latestInsuranceMovement?.balance | number:'1.2-2' }}</h2>
+                    <p>Lusitania Vida PPR</p>
+                </div>
+
+                <div class="summary-card-footer">
+                    <span>Current balance</span>
+                    <span class="status-badge">Active</span>
+                </div>
+            </article>
+
+        </section>
+
+
+        <!-- Pension Fund -->
+        <section class="pension-section">
+
+            <div class="section-header">
+                <div class="section-heading">
+                    <div class="section-title-row">
+                        <span class="product-indicator fund-indicator"></span>
+                        <span class="section-label">Pension fund</span>
+                    </div>
+
+                    <h2>AR Banco Invest PPR</h2>
+
+                    <p>
+                        Investment fund movements and current valuation.
+                    </p>
+                </div>
+
+                <span class="section-badge fund-badge">
+                    Pension Fund
+                </span>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th class="numeric">Quantity</th>
+                            <th class="numeric">Unit Price</th>
+                            <th class="numeric">Valuation</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @for (movement of fundMovements; track movement.id) {
+                        <tr>
+                            <td>
+                                <span class="date-primary">
+                                    {{ movement.date | date:'MMM d, y' }}
+                                </span>
+                            </td>
+
+                            <td class="numeric">
+                                {{ movement.quantity | number:'1.2-4' }}
+                            </td>
+
+                            <td class="numeric">
+                                €{{ movement.unitPrice | number:'1.2-4' }}
+                            </td>
+
+                            <td class="numeric">
+                                <strong class="value-emphasis">
+                                    €{{ movement.valuation | number:'1.2-2' }}
+                                </strong>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+
+        <!-- Pension Insurance -->
+        <section class="pension-section">
+
+            <div class="section-header">
+                <div class="section-heading">
+                    <div class="section-title-row">
+                        <span class="product-indicator insurance-indicator"></span>
+                        <span class="section-label">Pension insurance</span>
+                    </div>
+
+                    <h2>Lusitania Vida PPR</h2>
+
+                    <p>
+                        Premiums, account movements and accumulated balance.
+                    </p>
+                </div>
+
+                <span class="section-badge insurance-badge">
+                    Pension Insurance
+                </span>
+            </div>
+
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Movement</th>
+                            <th>Receipt</th>
+                            <th class="numeric">Debit</th>
+                            <th class="numeric">Credit</th>
+                            <th class="numeric">Balance</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+                        @for (movement of insuranceMovements; track $index) {
+                        <tr>
+                            <td>
+                                <span class="date-primary">
+                                    {{ movement.date | date:'MMM d, y' }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="movement-name">
+                                    {{ movement.movement }}
+                                </span>
+                            </td>
+
+                            <td>
+                                <span class="receipt">
+                                    {{ movement.receipt ?? '—' }}
+                                </span>
+                            </td>
+
+                            <td class="numeric">
+                                {{ movement.debit ?? 0 | number:'1.2-2' }}
+                            </td>
+
+                            <td class="numeric credit">
+                                {{ movement.credit ?? 0 | number:'1.2-2' }}
+                            </td>
+
+                            <td class="numeric">
+                                <strong class="value-emphasis">
+                                    €{{ movement.balance | number:'1.2-2' }}
+                                </strong>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        </section>
+
+    </main>
+</div>
