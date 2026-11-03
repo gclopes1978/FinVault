@@ -1,10 +1,10 @@
 @Gclopes.FinVault.MarketPrices_HostAddress = http://localhost:7013
 
-### Consultar preço de um ativo
+### retrieve the price of a stock
 GET {{Gclopes.FinVault.MarketPrices_HostAddress}}/api/marketprices/stock/AAPL
 Accept: application/json
 
-### Consultar taxa de câmbio
+### retrieve the exchange rate
 GET {{Gclopes.FinVault.MarketPrices_HostAddress}}/api/marketprices/exchange-rate/USD/EUR
 Accept: application/json
 ###
