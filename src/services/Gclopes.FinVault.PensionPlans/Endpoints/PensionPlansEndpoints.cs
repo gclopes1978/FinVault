@@ -10,8 +10,7 @@ public static class PensionPlansEndpoints
         // GET is intended for authenticated end users (e.g. the Angular frontend showing
         // the pension plan statement to the logged-in owner), so it stays behind the JWT
         // bearer authentication configured in Program.cs.
-        var movements = app.MapGroup("/api/pension-plans/movements")
-                   .WithOpenApi();
+        var movements = app.MapGroup("/api/pension-plans/movements");
 
         static async Task<IResult> GetAllMovements<T>(Func<Task<IEnumerable<T>>> serviceCall)
             => Results.Ok(await serviceCall());
