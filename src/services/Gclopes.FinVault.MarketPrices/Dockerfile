@@ -1,10 +1,10 @@
 
-FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS base
 WORKDIR /app
 ENV ASPNETCORE_HTTP_PORTS=8080
 EXPOSE 8080
 
-FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 WORKDIR /src
 
 COPY ["src/services/Gclopes.FinVault.MarketPrices/Gclopes.FinVault.MarketPrices.csproj", "src/services/Gclopes.FinVault.MarketPrices/"]
