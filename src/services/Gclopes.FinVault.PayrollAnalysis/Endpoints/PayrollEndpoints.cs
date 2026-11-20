@@ -15,20 +15,17 @@ public static class PayrollEndpoints
         // Called server-to-server by the PdfParser pipeline (FOLHASALARIAL_SERVICE_URL),
         // not exposed to end users through the Gateway, so it is intentionally unauthenticated.
         group.MapPost("/imports", ImportPayrollAsync)
-             .WithName("ImportPayroll")
-             .WithOpenApi();
+             .WithName("ImportPayroll");
 
         // GET /api/payroll-analysis/imports - Lists all imported payslips.
         group.MapGet("/imports", GetAllImportsAsync)
              .WithName("GetPayrollImports")
-             .RequireAuthorization()
-             .WithOpenApi();
+             .RequireAuthorization();
 
         // GET /api/payroll-analysis/imports/{sourceDocumentId} - Retrieves a specific import.
         group.MapGet("/imports/{sourceDocumentId:guid}", GetImportBySourceDocumentIdAsync)
              .WithName("GetPayrollImportBySourceDocument")
-             .RequireAuthorization()
-             .WithOpenApi();
+             .RequireAuthorization();
     }
 
     private static async Task<IResult> ImportPayrollAsync(
