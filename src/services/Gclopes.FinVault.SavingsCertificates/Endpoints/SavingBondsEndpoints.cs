@@ -12,28 +12,23 @@ public static class SavingsBondsEndpoints
     {
         var group = app.MapGroup("/api/savings-bonds")
             .WithName("SavingsBonds")
-            .RequireAuthorization()
-            .WithOpenApi();
+            .RequireAuthorization();
 
         group.MapGet("/", GetAllBondsAsync)
             .WithName("GetAllBonds")
-            .WithOpenApi()
             .Produces<List<SavingsBondResponseDto>>(StatusCodes.Status200OK);
 
         group.MapGet("/{id:guid}/valuation", GetBondValuationAsync)
             .WithName("GetBondValuation")
-            .WithOpenApi()
             .Produces<object>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status404NotFound);
 
         group.MapPost("/", CreateBondAsync)
             .WithName("CreateSavingsBond")
-            .WithOpenApi()
             .Produces<SavingsBond>(StatusCodes.Status201Created);
 
         group.MapDelete("/{id:guid}", DeleteBondAsync)
             .WithName("DeleteSavingsBond")
-            .WithOpenApi()
             .Produces(StatusCodes.Status204NoContent)
             .Produces(StatusCodes.Status404NotFound);
     }
