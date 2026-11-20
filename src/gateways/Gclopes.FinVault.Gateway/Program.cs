@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Polly;
 using Polly.CircuitBreaker;
 using Polly.Retry;
@@ -8,7 +8,7 @@ using System.Text;
 
 namespace Gclopes.FinVault.Gateway;
 
-public class Program
+public static class Program
 {
     public static void Main(string[] args)
     {
@@ -41,13 +41,11 @@ public class Program
                 Description = "Insira o token JWT: Bearer {token}"
             });
 
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
+            options.AddSecurityRequirement(document =>
+                new OpenApiSecurityRequirement
                 {
-                    new OpenApiSecurityScheme { Reference = new OpenApiReference { Type = ReferenceType.SecurityScheme, Id = "Bearer" } },
-                    Array.Empty<string>()
-                }
-            });
+                    [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+                });
         });
 
         // JWT Authentication
