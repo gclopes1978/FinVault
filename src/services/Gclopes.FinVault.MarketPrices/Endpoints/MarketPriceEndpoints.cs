@@ -9,17 +9,14 @@ public static class MarketPricesEndpoints
     {
         var group = app.MapGroup("/api/marketprices")
             .WithName("MarketPrices")
-            .RequireAuthorization()
-            .WithOpenApi();
+            .RequireAuthorization();
 
         group.MapGet("/{assetType}/{symbol}", GetMarketPriceAsync)
             .WithName("GetMarketPrice")
-            .WithOpenApi()
             .Produces<AssetQuoteDto>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest);
         group.MapGet("/exchange-rate/{fromCurrency}/{toCurrency}", GetExchangeRateAsync)
             .WithName("GetExchangeRate")
-            .WithOpenApi()
             .Produces<decimal>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest);
     }
