@@ -14,21 +14,28 @@ public class AuthControllerTests(IntegrationTestFixture factory) : IClassFixture
 {
     private readonly HttpClient _client = factory.CreateClient();
 
-    public async Task InitializeAsync()
+    public async ValueTask InitializeAsync()
     {
         using var scope = factory.Services.CreateScope();
-        var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+        var context = scope.ServiceProvider
+            .GetRequiredService<ApplicationDbContext>();
+
         await DatabaseHelper.ClearTablesAsync(context);
     }
 
-    public Task DisposeAsync() => Task.CompletedTask;
+    public ValueTask DisposeAsync()
+    {
+        GC.SuppressFinalize(this);
+        return ValueTask.CompletedTask;
+    }
 
     [Fact]
     public async Task Login_ShouldReturnBadRequest_WhenCredentialsAreInvalid()
     {
         var invalidLogin = new { Email = "wrong@test.com", Password = "wrongpassword" };
 
-        var response = await _client.PostAsJsonAsync("/api/v1/auth/login", invalidLogin);
+        var response = await _client.PostAsJsonAsync("/api/v1/auth/login", invalidLogin, TestContext.Current.CancellationToken);
 
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
@@ -40,15 +47,15 @@ public class AuthControllerTests(IntegrationTestFixture factory) : IClassFixture
         await DatabaseHelper.SeedUserAsync(factory);
         var validLogin = new { Email = "user@finvault.com", Password = "Password123!" };
 
-        var response = await _client.PostAsJsonAsync("/api/v1/auth/login", validLogin);
+        var response = await _client.PostAsJsonAsync("/api/v1/auth/login", validLogin, TestContext.Current.CancellationToken);
 
         response.IsSuccessStatusCode.Should().BeTrue();
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var result = await response.Content.ReadFromJsonAsync<AuthenticationResponse>();
+        var result = await response.Content.ReadFromJsonAsync<AuthenticationResponse>(TestContext.Current.CancellationToken);
 
         result.Should().NotBeNull();
-        result!.AccessToken.Should().NotBeNullOrEmpty();
+        result.AccessToken.Should().NotBeNullOrEmpty();
     }
 
     [Fact]
@@ -57,7 +64,7 @@ public class AuthControllerTests(IntegrationTestFixture factory) : IClassFixture
         var uniqueEmail = $"user_{Guid.NewGuid()}@finvault.com";
         var command = new { FullName = "Ana Silva", Email = uniqueEmail, Password = "Password123!", ConfirmPassword = "Password123!" };
 
-        var response = await _client.PostAsJsonAsync("/api/v1/auth/register", command);
+        var response = await _client.PostAsJsonAsync("/api/v1/auth/register", command, TestContext.Current.CancellationToken);
 
         response.IsSuccessStatusCode.Should().BeTrue();
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -69,7 +76,7 @@ public class AuthControllerTests(IntegrationTestFixture factory) : IClassFixture
         await DatabaseHelper.SeedUserAsync(factory);
         var command = new { FullName = "Ana Silva", Email = "user@finvault.com", Password = "Password123!", ConfirmPassword = "Password123!" };
 
-        var response = await _client.PostAsJsonAsync("/api/v1/auth/register", command);
+        var response = await _client.PostAsJsonAsync("/api/v1/auth/register", command, TestContext.Current.CancellationToken);
 
         response.IsSuccessStatusCode.Should().BeFalse();
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -84,7 +91,7 @@ public class AuthControllerTests(IntegrationTestFixture factory) : IClassFixture
     {
         var command = new { FullName = fullName, Email = email, Password = password, ConfirmPassword = confirmPassword };
 
-        var response = await _client.PostAsJsonAsync("/api/v1/auth/register", command);
+        var response = await _client.PostAsJsonAsync("/api/v1/auth/register", command, TestContext.Current.CancellationToken);
 
         response.IsSuccessStatusCode.Should().BeFalse($"because {reason}");
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
