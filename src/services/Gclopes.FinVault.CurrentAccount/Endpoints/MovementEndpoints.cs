@@ -13,33 +13,27 @@ public static class MovementEndpoints
 
         group.MapPatch("/{id}/note", UpdateMovementNoteAsync)
             .WithName("UpdateMovementNote")
-            .RequireAuthorization()
-            .WithOpenApi();
+            .RequireAuthorization();
 
         group.MapGet("/", GetMovementsAsync)
             .WithName("GetMovements")
-            .RequireAuthorization()
-            .WithOpenApi();
+            .RequireAuthorization();
 
         group.MapGet("/years", GetAvailableYearsAsync)
             .WithName("GetAvailableMovementYears")
-            .RequireAuthorization()
-            .WithOpenApi();
+            .RequireAuthorization();
 
         group.MapGet("/totals/year", GetTotalsByMonthAndYearAsync)
              .WithName("GetTotalsByMonthAndYear")
-             .RequireAuthorization()
-             .WithOpenApi();
+             .RequireAuthorization();
 
         group.MapGet("/totals", GetMovementTotalsAsync)
             .WithName("GetMovementTotals")
-            .RequireAuthorization()
-            .WithOpenApi();
+            .RequireAuthorization();
 
         group.MapPost("/", RegisterStatementAsync)
             .WithName("RegisterStatement")
-            .RequireAuthorization()
-            .WithOpenApi();
+            .RequireAuthorization();
     }
 
     private static async Task<IResult> GetAvailableYearsAsync(IMovementService movementService)
@@ -49,14 +43,18 @@ public static class MovementEndpoints
         return Results.Ok(years);
     }
 
-    public sealed class MovementEndpointsLog;
-
     private static async Task<IResult> GetTotalsByMonthAndYearAsync(
         int year,
         IMovementService movementService,
-        ILogger<MovementEndpointsLog> logger)
+        ILoggerFactory loggerFactory)
     {
-        logger.LogInformation("GetTotalsByMonthAndYearAsync --> {year}", year);
+        var logger = loggerFactory.CreateLogger("MovementEndpoints");
+
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation("Getting totals for year {Year}.", year);
+        }
+
         var result = await movementService.GetTotalsByYearMonthResponse(year);
 
         return Results.Ok(result);
@@ -66,33 +64,29 @@ public static class MovementEndpoints
     private static async Task<IResult> GetMovementsAsync(
         [AsParameters] MovementQueryParameters query,
         IMovementService movementService,
-        ILogger<MovementEndpointsLog> logger)
+        ILoggerFactory loggerFactory)
     {
+        var logger = loggerFactory.CreateLogger("MovementEndpoints");
         logger.LogInformation("Getting movements.");
 
-        logger.LogDebug(
-            "Movement query: {@Query}",
-            query);
+        
 
         var result = await movementService.GetMovementsAsync(query);
-
-        logger.LogDebug(
-            "Retrieved {Count} movements.",
-            result.Items?.Count ?? 0);
-
+        if (logger.IsEnabled(LogLevel.Debug))
+        {
+            logger.LogDebug("Retrieved {Count} movements.", result.Items?.Count ?? 0);
+        }
         return Results.Ok(result);
     }
 
     private static async Task<IResult> GetMovementTotalsAsync(
         [AsParameters] MovementQueryParameters query,
         IMovementService movementService,
-        ILogger<MovementEndpointsLog> logger)
+        ILoggerFactory loggerFactory)
     {
+        var logger = loggerFactory.CreateLogger("MovementEndpoints");
         logger.LogInformation("Getting movement totals.");
 
-        logger.LogDebug(
-            "Movement totals query: {@Query}",
-            query);
 
         var result = await movementService.GetMovementTotalsAsync(query);
 
