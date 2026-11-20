@@ -8,12 +8,13 @@ using Gclopes.FinVault.CurrentAccount.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
+using System.Reflection;
 using System.Text;
 
 namespace Gclopes.FinVault.CurrentAccount;
 
-public class Program
+public static class Program
 {
     public static void Main(string[] args)
     {
@@ -22,49 +23,40 @@ public class Program
 
         // Swagger (Swashbuckle only; the built-in .NET 9 OpenAPI is not used)
         builder.Services.AddEndpointsApiExplorer();
+
         builder.Services.AddSwaggerGen(options =>
         {
-            // With Type = Http and Scheme = Bearer, Swagger UI adds the "Bearer " prefix itself
-            options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+            const string schemeName = "Bearer";
+
+            options.AddSecurityDefinition(schemeName, new OpenApiSecurityScheme
             {
                 Name = "Authorization",
                 Type = SecuritySchemeType.Http,
-                Scheme = "Bearer",
+                Scheme = "bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Description = "Enter only the JWT token (without the 'Bearer' prefix)."
+                Description = "Enter your JWT token."
             });
 
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-            {
+            options.AddSecurityRequirement(document =>
+                new OpenApiSecurityRequirement
                 {
-                    new OpenApiSecurityScheme
-                    {
-                        Reference = new OpenApiReference
-                        {
-                            Type = ReferenceType.SecurityScheme,
-                            Id = "Bearer"
-                        }
-                    },
-                    Array.Empty<string>()
-                }
-            });
+                    [new OpenApiSecuritySchemeReference(schemeName, document)] = []
+                });
         });
 
         // CORS: open only in Development, explicit origins from configuration elsewhere
-        var allowedOrigins = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+        var allowedOrigins = builder.Configuration
+            .GetSection("Cors:AllowedOrigins")
+            .Get<string[]>() ?? [];
+
         builder.Services.AddCors(options =>
         {
             options.AddPolicy("Default", policy =>
             {
-                if (isDevelopment)
-                {
-                    policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader();
-                }
-                else
-                {
-                    policy.WithOrigins(allowedOrigins).AllowAnyMethod().AllowAnyHeader();
-                }
+                policy.WithOrigins(allowedOrigins)
+                      .AllowAnyMethod()
+                      .AllowAnyHeader();
             });
         });
 
@@ -72,7 +64,7 @@ public class Program
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
         // Registers all IValidator<T> found in this assembly
-        builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+        builder.Services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 
         var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
             ?? throw new InvalidOperationException("ConnectionStrings:DefaultConnection is missing!");
@@ -164,7 +156,9 @@ public class Program
     {
         using var scope = app.Services.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        var logger = scope.ServiceProvider
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger("DatabaseMigrations");
 
         try
         {
@@ -175,7 +169,6 @@ public class Program
         {
             // Fail fast: running against an out-of-sync schema is worse than not starting
             logger.LogCritical(ex, "Failed to apply database migrations.");
-            throw;
         }
     }
 }

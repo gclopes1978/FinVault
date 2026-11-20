@@ -51,11 +51,12 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/investments/investments').then(m => m.Investments)
   },
   {
-    // Lazy-loaded placeholder route for the Pension Plans module, reached from the Dashboard Hub and Sidebar
     path: 'pension-plans',
     canActivate: [authGuard],
     data: { moduleName: 'Pension Plans' },
-    loadComponent: () => import('./pages/module-placeholder/module-placeholder').then(m => m.ModulePlaceholderComponent)
+    loadComponent: () =>
+      import('./pages/pension-plans/pension-plans')
+        .then(m => m.PensionPlans)
   },
   {
     // Lazy-loaded placeholder route for the Savings Certificates module, reached from the Dashboard Hub and Sidebar

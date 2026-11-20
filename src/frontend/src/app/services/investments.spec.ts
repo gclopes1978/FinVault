@@ -1,13 +1,31 @@
 import { TestBed } from '@angular/core/testing';
+import { provideHttpClient } from '@angular/common/http';
+import {
+  HttpTestingController,
+  provideHttpClientTesting,
+} from '@angular/common/http/testing';
 
-import { Investments } from './investments';
+import { InvestmentsService } from './investments';
 
-describe('Investments', () => {
-  let service: Investments;
+describe('InvestmentsService', () => {
+  let service: InvestmentsService;
+  let httpMock: HttpTestingController;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(Investments);
+    TestBed.configureTestingModule({
+      providers: [
+        InvestmentsService,
+        provideHttpClient(),
+        provideHttpClientTesting(),
+      ],
+    });
+
+    service = TestBed.inject(InvestmentsService);
+    httpMock = TestBed.inject(HttpTestingController);
+  });
+
+  afterEach(() => {
+    httpMock.verify();
   });
 
   it('should be created', () => {

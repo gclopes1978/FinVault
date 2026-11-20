@@ -6,11 +6,12 @@ using Gclopes.FinVault.PensionPlans.Services.Interfaces;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using System.Text;
 
 namespace Gclopes.FinVault.PensionPlans;
-public class Program
+
+public static class Program
 {
     public static void Main(string[] args)
     {
@@ -26,44 +27,18 @@ public class Program
             {
                 Name = "Authorization",
                 Type = SecuritySchemeType.Http,
-                Scheme = "Bearer",
+                Scheme = "bearer",
                 BearerFormat = "JWT",
                 In = ParameterLocation.Header,
-                Description = "Enter 'Bearer' [space] and then your token in the text input below.\r\n\r\nExample: \"Bearer 12345abcdef\""
+                Description = "Enter your JWT token."
             });
 
-            // Require the Bearer scheme on protected endpoints so Swagger UI attaches the token automatically
-            options.AddSecurityRequirement(new OpenApiSecurityRequirement
-                                            {
-                                                {
-                                                    new OpenApiSecurityScheme
-                                                    {
-                                                        Reference = new OpenApiReference
-                                                        {
-                                                            Type = ReferenceType.SecurityScheme,
-                                                            Id = "Bearer"
-                                                        }
-                                                    },
-                                                    Array.Empty<string>()
-                                                }
-                                            });
+            options.AddSecurityRequirement(document =>
+                new OpenApiSecurityRequirement
+                {
+                    [new OpenApiSecuritySchemeReference("Bearer", document)] = []
+                });
         });
-
-        // CORS policy used by app.UseCors("AllowAll") below.
-        // TODO: restrict origins before deploying to any shared/cloud environment.
-        builder.Services.AddCors(options =>
-        {
-            options.AddPolicy("AllowAll", policy =>
-            {
-                policy.AllowAnyOrigin()
-                      .AllowAnyMethod()
-                      .AllowAnyHeader();
-            });
-        });
-
-        // Inject the required standard baseline ProblemDetails schema generating dependencies into app runtime
-        builder.Services.AddProblemDetails();
-
         // Register the custom global runtime crash exception handler service into the IoC injection infrastructure
         builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 
@@ -127,7 +102,6 @@ public class Program
 
         ApplyMigrations(app);
 
-        app.MapOpenApi();
         app.UseHttpsRedirection();
         app.UseCors("AllowAll");
         app.UseAuthentication();
@@ -142,26 +116,23 @@ public class Program
     static void ApplyMigrations(WebApplication app)
     {
         using var scope = app.Services.CreateScope();
+
         var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
-        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        var logger = scope.ServiceProvider
+            .GetRequiredService<ILoggerFactory>()
+            .CreateLogger("DatabaseMigrations");
 
         try
         {
-            // Instead of Migrate(), which relies on the history table,
-            // use EnsureCreated() to map the current DbContext model to the database.
-            // If tables exist, it does nothing; if they don't, it creates them.
-            if (context.Database.EnsureCreated())
-            {
-                logger.LogInformation("Database created successfully.");
-            }
-            else
-            {
-                logger.LogInformation("Database already exists. Schema verification complete.");
-            }
+            logger.LogInformation("Checking database migrations...");
+
+            context.Database.Migrate();
+
+            logger.LogInformation("Database migrations applied successfully.");
         }
         catch (Exception ex)
         {
-            logger.LogError(ex, "An error occurred while synchronizing the database schema.");
+            logger.LogCritical(ex, "Failed to apply database migrations.");
         }
     }
 }
