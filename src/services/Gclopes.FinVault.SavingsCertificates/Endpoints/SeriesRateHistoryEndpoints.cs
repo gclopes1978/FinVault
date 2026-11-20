@@ -15,25 +15,21 @@ public static class SeriesRateHistoryEndpoints
     {
         var group = app.MapGroup("/api/rate-history")
             .WithName("SeriesRateHistory")
-            .RequireAuthorization()
-            .WithOpenApi();
+            .RequireAuthorization();
 
         group.MapGet("/{series}", GetHistoryForSeriesAsync)
             .WithName("GetSeriesRateHistory")
-            .WithOpenApi()
             .Produces<List<SeriesRateHistoryDto>>(StatusCodes.Status200OK);
 
         // Upserts a single month's rate. Safe to call repeatedly for the same
         // series/month (e.g. re-importing) since it updates rather than duplicates.
         group.MapPost("/", UpsertRateAsync)
             .WithName("UpsertSeriesRate")
-            .WithOpenApi()
             .Produces(StatusCodes.Status204NoContent);
 
         // Bulk import, e.g. pasting a full year at once from the IGCP's published table.
         group.MapPost("/bulk", UpsertRatesBulkAsync)
             .WithName("UpsertSeriesRatesBulk")
-            .WithOpenApi()
             .Produces(StatusCodes.Status204NoContent);
     }
 
