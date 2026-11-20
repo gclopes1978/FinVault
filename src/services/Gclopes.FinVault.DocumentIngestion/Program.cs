@@ -1,6 +1,6 @@
 using MassTransit;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Gclopes.FinVault.DocumentIngestion.Data;
 using Gclopes.FinVault.DocumentIngestion.Hubs;
 using Gclopes.FinVault.DocumentIngestion.Services;
@@ -74,7 +74,7 @@ app.UseAuthorization();
 app.MapControllers();
 app.MapHub<DocumentProcessingHub>("/api/document/hub");
 
-app.Run();
+await app.RunAsync();
 
 static void ApplyMigrations(WebApplication app)
 {
