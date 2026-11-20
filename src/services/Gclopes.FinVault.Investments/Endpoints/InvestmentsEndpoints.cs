@@ -8,31 +8,26 @@ public static class InvestmentsEndpoints
     {
         var group = app.MapGroup("/api/investments")
             .WithName("Investments")
-            .RequireAuthorization()
-            .WithOpenApi();
+            .RequireAuthorization();
 
         group.MapPost("/import/xtb", ImportXtbAsync)
             .WithName("ImportXtbExcel")
             .DisableAntiforgery()
-            .WithOpenApi()
             .Produces<ImportResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest);
 
         group.MapPost("/import/trading212", ImportTrading212Async)
             .WithName("ImportTrading212Csv")
             .DisableAntiforgery()
-            .WithOpenApi()
             .Produces<ImportResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest);
 
         group.MapGet("/portfolio", GetPortfolioAsync)
             .WithName("GetPortfolio")
-            .WithOpenApi()
             .Produces<List<object>>(StatusCodes.Status200OK);
 
         group.MapGet("/portfolio/history", GetPortfolioHistoryAsync)
             .WithName("GetPortfolioHistory")
-            .WithOpenApi()
             .Produces<List<object>>(StatusCodes.Status200OK);
     }
 
