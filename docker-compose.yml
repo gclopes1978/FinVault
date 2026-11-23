@@ -9,16 +9,19 @@ services:
         limits:
           memory: 512M
     ports:
-      - "7050:8080" # Maps local port 7050 to the .NET 9 container port 8080
+      - "7050:8080" # Maps local port 7050 to the .NET 10 container port 8080
     env_file:
       - .env  # Isto força o Docker a ler este ficheiro para este serviço
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
-      - RABBITMQ_USER=${RABBITMQ_USER}
-      - RABBITMQ_PASS=${RABBITMQ_PASS}
-      - RABBITMQ_HOST=${RABBITMQ_HOST}
-      - StorageSettings__Path=/app/uploadPdf
-      - ConnectionStrings__DefaultConnection=${SQLSERVER_CONNECTION_DOCUMENT_INGESTION}
+      ASPNETCORE_ENVIRONMENT: Development
+      JwtSettings__Secret: ${JWT_SECRET:?JWT_SECRET is required}
+      JwtSettings__Issuer: ${JWT_ISSUER:?JWT_ISSUER is required}
+      JwtSettings__Audience: ${JWT_AUDIENCE:?JWT_AUDIENCE is required}
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      RABBITMQ_HOST: ${RABBITMQ_HOST}
+      StorageSettings__Path: /app/uploadPdf
+      ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_DOCUMENT_INGESTION}
     volumes:
       - ./data/uploads:/app/uploadPdf
     depends_on:
@@ -35,11 +38,14 @@ services:
       dockerfile: Dockerfile
     container_name: finvault-gateway
     ports:
-      - "5000:8080" # Maps public port 5000 to Gateway's .NET 9 port 8080
+      - "5000:8080" # Maps public port 5000 to Gateway's .NET 10 port 8080
     env_file:
       - .env  # Isto força o Docker a ler este ficheiro para este serviço
     environment:
-      - ASPNETCORE_ENVIRONMENT=Development
+      ASPNETCORE_ENVIRONMENT: Development
+      JwtSettings__Secret: ${JWT_SECRET:?JWT_SECRET is required}
+      JwtSettings__Issuer: ${JWT_ISSUER:?JWT_ISSUER is required}
+      JwtSettings__Audience: ${JWT_AUDIENCE:?JWT_AUDIENCE is required}
     depends_on:
       - document-ingestion
       - investments-service
