@@ -46,7 +46,6 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
   // The four PDF document types currently supported for manual import
   public documentTypes: DocumentTypeOption[] = [
     { value: 'ActivoBankStatement', label: 'Extrato ActivoBank (histórico)' },
-    { value: 'PayrollSlip', label: 'Recibo de Vencimento' },
     { value: 'LusitaniaPPR', label: 'PPR Lusitânia Vida' },
     { value: 'ARBancoInvestPPR', label: 'PPR AR Banco Invest' }
   ];
@@ -55,11 +54,9 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
   // so the history table reads correctly whichever one ended up stored (see UploadedDocument.DocumentType).
   private readonly documentTypeLabels: Record<string, string> = {
     ActivoBankStatement: 'Extrato ActivoBank (histórico)',
-    PayrollSlip: 'Recibo de Vencimento',
     LusitaniaPPR: 'PPR Lusitânia Vida',
     ARBancoInvestPPR: 'PPR AR Banco Invest',
     bank_statement: 'Extrato Bancário',
-    payroll: 'Recibo de Vencimento',
     pension_insurance: 'PPR Lusitânia Vida',
     pension_fund: 'PPR AR Banco Invest'
   };

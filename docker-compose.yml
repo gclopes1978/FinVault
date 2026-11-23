@@ -100,30 +100,6 @@ services:
       retries: 5
       start_period: 20s
 
-  finvault-oracle:
-    image: gvenzl/oracle-free:latest
-    container_name: finvault-oracle
-    ports:
-      - "1521:1521"
-    env_file:
-      - .env  # Isto força o Docker a ler este ficheiro para este serviço
-    environment:
-      ORACLE_PASSWORD: ${ORACLE_PASSWORD}
-      APP_USER: ${ORACLE_APP_USER}
-      APP_USER_PASSWORD: ${ORACLE_APP_USER_PASSWORD}
-    volumes:
-      - oracle_data:/opt/oracle/oradata
-    networks:
-      finvault-network:
-        aliases:
-          - oracle-host
-    healthcheck:
-      test: ["CMD", "healthcheck.sh"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      start_period: 60s
-
   currentaccount-service:
     image: finvault-currentaccount:latest
     container_name: finvault-currentaccount-api
@@ -225,30 +201,6 @@ services:
         condition: service_healthy
     restart: on-failure
 
-  payrollanalysis-service:
-    container_name: finvault-payrollanalysis-api
-    build:
-      context: .
-      dockerfile: src/services/Gclopes.FinVault.PayrollAnalysis/Dockerfile
-    ports:
-      - "7002:8080"
-    env_file:
-      - .env  # Isto força o Docker a ler este ficheiro para este serviço
-    environment:
-      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-      ConnectionStrings__DefaultConnection: ${ORACLE_CONNECTION_PAYROLL}
-      JwtSettings__Secret: ${JWT_SECRET}
-      JwtSettings__Issuer: ${JWT_ISSUER}
-      JwtSettings__Audience: ${JWT_AUDIENCE}
-    networks:
-      finvault-network:
-        aliases:
-          - payrollanalysis-api
-    depends_on:
-      finvault-oracle:
-        condition: service_healthy
-    restart: on-failure
-
   pdf-parser-service:
     container_name: finvault-pdf-parser
     build:
@@ -319,7 +271,6 @@ services:
 volumes:
   rabbitmq_data:
   sqlserver_data:
-  oracle_data:
 
 networks:
   finvault-network:

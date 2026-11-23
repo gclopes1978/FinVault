@@ -30,7 +30,7 @@ public class DocumentController(
         }
 
         // Single identifier for this document, used both as the stored filename prefix and as
-        // the idempotency key downstream services (e.g. PayrollAnalysis) key off.
+        // Idempotency key that downstream services use to identify duplicate requests.
         var documentId = Guid.NewGuid();
 
         // Define a storage path

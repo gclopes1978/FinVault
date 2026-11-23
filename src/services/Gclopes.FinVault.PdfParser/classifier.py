@@ -11,15 +11,11 @@ class DocumentClassifier:
         if "activobank" in text_lower and "extrato" in text_lower:
             return "bank_statement"
         
-        # 2. Check for Payroll / Payslip
-        if "recibo vencimento" in text_lower or "recibo de vencimento" in text_lower:
-            return "payroll"
-            
-        # 3. Check for Lusitânia Vida (Pension Insurance)
+        # 2. Check for Lusitânia Vida (Pension Insurance)
         if "movimento recibo data movimento débito crédito saldo" in text_lower:
             return "pension_insurance"
             
-        # 4. Check for AR PPR Banco Invest (Pension Fund)
+        # 3. Check for AR PPR Banco Invest (Pension Fund)
         if "bancoinvest" in text:
             return "pension_fund"
             
