@@ -6,6 +6,8 @@
 **/.vs/
 **/*.user
 **/.env
+**/.env.*
+!**/.env.example
 
 ########################################
 # Python (scripts auxiliares)
