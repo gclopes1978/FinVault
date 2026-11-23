@@ -105,28 +105,3 @@ Content-Type: text/csv
 
 < C:/Projects/FinVault/Data/uploads/insurance_data.csv
 --boundary--
-
-
-### ==========================================
-### PAYROLL ANALYSIS SERVICE (via YARP)
-### ==========================================
-
-### 1. GET - Listar todos os imports (Frontend via Gateway)
-GET {{HostAddress}}/api/v1/payroll-analysis/imports
-Authorization: Bearer {{Token}}
-Accept: application/json
-
-### 2. GET - Obter um import específico pelo ID (Frontend via Gateway)
-@DocumentId = 550e8400-e29b-41d4-a716-446655440000
-GET {{HostAddress}}/api/v1/payroll-analysis/imports/{{DocumentId}}
-Authorization: Bearer {{Token}}
-Accept: application/json
-
-### 3. POST - Importar (Server-to-Server)
-
-POST http://localhost:7002/api/payroll-analysis/imports
-Content-Type: application/json
-
-{
-  "data": "dados-processados-pelo-pdf-parser"
-}

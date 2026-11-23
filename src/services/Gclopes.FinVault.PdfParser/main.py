@@ -10,7 +10,6 @@ from fastapi import FastAPI, UploadFile, File, HTTPException, status
 import aio_pika
 from classifier import DocumentClassifier
 from parsers.bank_statement import BankStatementParser
-from parsers.payroll import PayrollParser
 from parsers.pension_insurance import PensionInsuranceParser
 from parsers.pension_fund import PensionFundParser
 
@@ -81,7 +80,6 @@ class PDFProcessorService:
     def _delegate_to_parser(self, doc_type: str, pdf: pdfplumber.PDF) -> dict:
         parsers = {
             "bank_statement": BankStatementParser.parse,
-            "payroll": PayrollParser.parse,
             "pension_insurance": PensionInsuranceParser.parse,
             "pension_fund": PensionFundParser.parse
         }
@@ -101,7 +99,6 @@ class PDFProcessorService:
 # Configuration
 processor = PDFProcessorService({
     "bank_statement": os.getenv("CURRENTACCOUNT_SERVICE_URL"),
-    "payroll": os.getenv("PAYROLL_SERVICE_URL"),
     "pension_insurance": os.getenv("PENSION_INSURANCE_SERVICE_URL"),
     "pension_fund": os.getenv("PENSION_FUND_SERVICE_URL"),
 })

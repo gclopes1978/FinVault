@@ -10,7 +10,6 @@ import { environment } from '../../environments/environment';
 // Define the four document types currently supported by the PDF Upload Centre
 export type PdfDocumentType =
   | 'ActivoBankStatement'
-  | 'PayrollSlip'
   | 'LusitaniaPPR'
   | 'ARBancoInvestPPR';
 
@@ -45,7 +44,7 @@ export interface UploadHistoryItem {
   providedIn: 'root'
 })
 export class PdfUploadService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // Upload a PDF file together with the selected document type hint, streaming progress events
   // so the UI can render a live progress bar followed by a "parsing" state.

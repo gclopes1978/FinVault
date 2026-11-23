@@ -32,7 +32,7 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/statement/statement').then(m => m.StatementComponent)
   },
   {
-    // PDF Upload Centre: centralised screen for all manual PDF imports (statements, payroll, PPR)
+    // PDF Upload Centre: centralised screen for all manual PDF imports (statements, PPR)
     path: 'pdf-upload',
     canActivate: [authGuard],
     loadComponent: () => import('./pages/pdf-upload/pdf-upload').then(m => m.PdfUploadComponent)
