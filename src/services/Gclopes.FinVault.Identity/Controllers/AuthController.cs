@@ -9,7 +9,7 @@ namespace Gclopes.FinVault.Identity.Controllers;
 public class AuthController(IMediator mediator) : ControllerBase
 {
     [HttpGet]
-    public IActionResult Get()
+    public ActionResult<string> Get()
     {
         return Ok("Auth Service is operational.");
     }
