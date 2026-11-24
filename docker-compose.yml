@@ -161,7 +161,7 @@ services:
     environment:
       ASPNETCORE_URLS: http://0.0.0.0:8080
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-      ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_IDENTITY}
+      ConnectionStrings__DefaultConnection: "Server=${SQLSERVER_HOST},${SQLSERVER_PORT};Database=${DB_NAME_IDENTITY};User Id=${DB_USER_IDENTITY};Password=${DB_PASSWORD_IDENTITY};TrustServerCertificate=True"
       JwtSettings__Secret: ${JWT_SECRET}
       JwtSettings__Issuer: ${JWT_ISSUER}
       JwtSettings__Audience: ${JWT_AUDIENCE}
