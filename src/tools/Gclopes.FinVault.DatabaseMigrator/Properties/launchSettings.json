@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Gclopes.FinVault.DatabaseMigrator": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}
