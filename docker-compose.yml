@@ -1,4 +1,25 @@
 services:
+  database-migrator:
+    container_name: finvault-database-migrator
+    build:
+      context: .
+      dockerfile: src/tools/Gclopes.FinVault.DatabaseMigrator/Dockerfile
+    env_file:
+      - .env
+    environment:
+      ConnectionStrings__Identity: "Server=${SQLSERVER_HOST},${SQLSERVER_PORT};Database=${DB_NAME_IDENTITY};User Id=${DB_USER_MIGRATOR};Password=${DB_PASSWORD_MIGRATOR};TrustServerCertificate=True"
+      ConnectionStrings__CurrentAccount: "Server=${SQLSERVER_HOST},${SQLSERVER_PORT};Database=${DB_NAME_CURRENTACCOUNT};User Id=${DB_USER_MIGRATOR};Password=${DB_PASSWORD_MIGRATOR};TrustServerCertificate=True"
+      ConnectionStrings__Investments: "Server=${SQLSERVER_HOST},${SQLSERVER_PORT};Database=${DB_NAME_INVESTMENTS};User Id=${DB_USER_MIGRATOR};Password=${DB_PASSWORD_MIGRATOR};TrustServerCertificate=True"
+      ConnectionStrings__PensionPlans: "Server=${SQLSERVER_HOST},${SQLSERVER_PORT};Database=${DB_NAME_PENSIONPLANS};User Id=${DB_USER_MIGRATOR};Password=${DB_PASSWORD_MIGRATOR};TrustServerCertificate=True"
+      ConnectionStrings__SavingsCertificates: "Server=${SQLSERVER_HOST},${SQLSERVER_PORT};Database=${DB_NAME_SAVINGSCERTIFICATES};User Id=${DB_USER_MIGRATOR};Password=${DB_PASSWORD_MIGRATOR};TrustServerCertificate=True"
+      ConnectionStrings__DocumentIngestion: "Server=${SQLSERVER_HOST},${SQLSERVER_PORT};Database=${DB_NAME_DOCUMENTINGESTION};User Id=${DB_USER_MIGRATOR};Password=${DB_PASSWORD_MIGRATOR};TrustServerCertificate=True"
+      Logging__LogLevel__Default: Information
+    depends_on:
+      finvault-sqlserver:
+        condition: service_healthy
+    networks:
+      - finvault-network
+  
   document-ingestion:
     build:
       context: ./src/services/Gclopes.FinVault.DocumentIngestion
@@ -21,7 +42,7 @@ services:
       RABBITMQ_PASS: ${RABBITMQ_PASS}
       RABBITMQ_HOST: ${RABBITMQ_HOST}
       StorageSettings__Path: /app/uploadPdf
-      ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_DOCUMENT_INGESTION}
+      ConnectionStrings__DefaultConnection: "Server=${SQLSERVER_HOST},${SQLSERVER_PORT};Database=${DB_NAME_DOCUMENTINGESTION};User Id=${DB_USER_DOCUMENTINGESTION};Password=${DB_PASSWORD_DOCUMENTINGESTION};TrustServerCertificate=True"
     volumes:
       - ./data/uploads:/app/uploadPdf
     depends_on:
@@ -111,8 +132,9 @@ services:
     env_file:
       - .env  # Isto força o Docker a ler este ficheiro para este serviço
     environment:
+      Cors__AllowedOrigins__0: ${FRONTEND_ORIGIN}
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-      ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_CURRENTACCOUNT}
+      ConnectionStrings__DefaultConnection: "Server=${SQLSERVER_HOST},${SQLSERVER_PORT};Database=${DB_NAME_CURRENTACCOUNT};User Id=${DB_USER_CURRENTACCOUNT};Password=${DB_PASSWORD_CURRENTACCOUNT};TrustServerCertificate=True"
       JwtSettings__Secret: ${JWT_SECRET}
       JwtSettings__Issuer: ${JWT_ISSUER}
       JwtSettings__Audience: ${JWT_AUDIENCE}
@@ -137,6 +159,7 @@ services:
     env_file:
       - .env  # Isto força o Docker a ler este ficheiro para este serviço
     environment:
+      ASPNETCORE_URLS: http://0.0.0.0:8080
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
       ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_IDENTITY}
       JwtSettings__Secret: ${JWT_SECRET}
@@ -163,7 +186,7 @@ services:
       - .env  # Isto força o Docker a ler este ficheiro para este serviço
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-      ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_INVESTMENTS}
+      ConnectionStrings__DefaultConnection: "Server=${SQLSERVER_HOST},${SQLSERVER_PORT};Database=${DB_NAME_INVESTMENTS};User Id=${DB_USER_INVESTMENTS};Password=${DB_PASSWORD_INVESTMENTS};TrustServerCertificate=True"
       JwtSettings__Secret: ${JWT_SECRET}
       JwtSettings__Issuer: ${JWT_ISSUER}
       JwtSettings__Audience: ${JWT_AUDIENCE}
@@ -188,7 +211,7 @@ services:
       - .env  # Isto força o Docker a ler este ficheiro para este serviço
     environment:
       ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
-      ConnectionStrings__DefaultConnection: ${SQLSERVER_CONNECTION_PENSIONPLANS}
+      ConnectionStrings__DefaultConnection: "Server=${SQLSERVER_HOST},${SQLSERVER_PORT};Database=${DB_NAME_PENSIONPLANS};User Id=${DB_USER_PENSIONPLANS};Password=${DB_PASSWORD_PENSIONPLANS};TrustServerCertificate=True"
       JwtSettings__Secret: ${JWT_SECRET}
       JwtSettings__Issuer: ${JWT_ISSUER}
       JwtSettings__Audience: ${JWT_AUDIENCE}
@@ -225,6 +248,7 @@ services:
       finvault-rabbitmq:
         condition: service_healthy
     restart: unless-stopped
+
   savings-bonds-service:
     container_name: finvault-savings-bonds-api
     build:
@@ -235,11 +259,12 @@ services:
     env_file:
       - .env
     environment:
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-      - ConnectionStrings__DefaultConnection=${SQLSERVER_CONNECTION_SAVINGS_BONDS}
-      - JwtSettings__Secret=${JWT_SECRET}
-      - JwtSettings__Issuer=${JWT_ISSUER}
-      - JwtSettings__Audience=${JWT_AUDIENCE}
+      Cors__AllowedOrigins__0: ${FRONTEND_ORIGIN}
+      ASPNETCORE_ENVIRONMENT: ${ASPNETCORE_ENVIRONMENT}
+      ConnectionStrings__DefaultConnection: "Server=${SQLSERVER_HOST},${SQLSERVER_PORT};Database=${DB_NAME_SAVINGSCERTIFICATES};User Id=${DB_USER_SAVINGSCERTIFICATES};Password=${DB_PASSWORD_SAVINGSCERTIFICATES};TrustServerCertificate=True"
+      JwtSettings__Secret: ${JWT_SECRET}
+      JwtSettings__Issuer: ${JWT_ISSUER}
+      JwtSettings__Audience: ${JWT_AUDIENCE}
     networks:
       finvault-network:
         aliases:

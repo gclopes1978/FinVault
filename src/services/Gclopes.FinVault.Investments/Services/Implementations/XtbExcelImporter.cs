@@ -1,6 +1,7 @@
 ﻿using ClosedXML.Excel;
 using Gclopes.FinVault.Investments.Data.Entities;
 using Gclopes.FinVault.Investments.Extensions;
+using Gclopes.FinVault.Investments.Extensions.DependencyInjection;
 using Gclopes.FinVault.Investments.Services.Interfaces;
 
 namespace Gclopes.FinVault.Investments.Services.Implementations;
