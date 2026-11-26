@@ -21,22 +21,27 @@ public class InvestmentsService(
         var trading212Positions = await CalculateTrading212PositionsAsync(
             cancellationToken);
 
+        var cryptoPositions = await CalculateTrading212CryptoPositionsAsync(cancellationToken);
+
         var positions = xtbPositions
             .Concat(trading212Positions)
+            .Concat(cryptoPositions)
             .ToList();
 
+
         return [.. positions.Select(p => new PortfolioDto
-    {
-        Id = p.Id,
-        Symbol = p.Symbol,
-        Isin = p.Isin,
-        Source = p.Source.ToString(),
-        Quantity = p.Quantity,
-        AverageCost = p.AverageCost,
-        CurrentPrice = p.CurrentPrice,
-        CurrentValue = p.CurrentValue,
-        LastUpdated = p.LastUpdated
-    })];
+        {
+            Id = p.Id,
+            Symbol = p.Symbol,
+            Isin = p.Isin,
+            Source = p.Source.ToString(),
+            AssetClass = p.AssetClass,
+            Quantity = p.Quantity,
+            AverageCost = p.AverageCost,
+            CurrentPrice = p.CurrentPrice,
+            CurrentValue = p.CurrentValue,
+            LastUpdated = p.LastUpdated
+        })];
     }
 
     public async Task<List<TransactionDto>> GetPortfolioHistoryAsync(CancellationToken cancellationToken = default)
@@ -253,6 +258,58 @@ public class InvestmentsService(
                 Symbol = group.Key.Ticker,
                 Isin = group.Key.Isin,
                 Source = BrokerSource.Trading212,
+                Quantity = quantity,
+                AverageCost = totalCost / quantity,
+                CurrentPrice = 0,
+                LastUpdated = DateTime.UtcNow,
+                CreatedAt = DateTime.UtcNow
+            });
+        }
+
+        return positions;
+    }
+
+    private async Task<List<Position>> CalculateTrading212CryptoPositionsAsync(
+    CancellationToken cancellationToken)
+    {
+        var transactions = await dbContext.Trading212CryptoTransactions
+            .AsNoTracking()
+            .OrderBy(t => t.Time)
+            .ToListAsync(cancellationToken);
+
+        var positions = new List<Position>();
+
+        foreach (var group in transactions.GroupBy(t => t.AssetSymbol))
+        {
+            decimal quantity = 0;
+            decimal totalCost = 0;
+
+            foreach (var transaction in group)
+            {
+                if (transaction.Direction.Equals("Buy", StringComparison.OrdinalIgnoreCase))
+                {
+                    quantity += transaction.Quantity;
+                    totalCost += transaction.Quantity * transaction.ExecutionPrice;
+                }
+                else if (transaction.Direction.Equals("Sell", StringComparison.OrdinalIgnoreCase))
+                {
+                    var averageCost = quantity > 0
+                        ? totalCost / quantity
+                        : 0;
+
+                    quantity -= transaction.Quantity;
+                    totalCost -= transaction.Quantity * averageCost;
+                }
+            }
+
+            if (quantity <= 0 || string.IsNullOrWhiteSpace(group.Key))
+                continue;
+
+            positions.Add(new Position
+            {
+                Symbol = group.Key,
+                Source = BrokerSource.Trading212,
+                AssetClass = AssetClass.Crypto,
                 Quantity = quantity,
                 AverageCost = totalCost / quantity,
                 CurrentPrice = 0,
