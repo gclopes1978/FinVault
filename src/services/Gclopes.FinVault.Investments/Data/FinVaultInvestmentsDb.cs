@@ -10,7 +10,7 @@ public class FinVaultInvestmentsDb(
     public DbSet<Position> Positions => Set<Position>();
     public DbSet<XtbTransaction> XtbTransactions => Set<XtbTransaction>();
     public DbSet<Trading212Transaction> Trading212Transactions => Set<Trading212Transaction>();
-
+    public DbSet<Trading212CryptoTransaction> Trading212CryptoTransactions => Set<Trading212CryptoTransaction>();
     public DbSet<XtbClosedPosition> XtbClosedPositions => Set<XtbClosedPosition>();
     public DbSet<XtbCashOperation> XtbCashOperations => Set<XtbCashOperation>();
     public DbSet<XtbOpenPosition> XtbOpenPositions => Set<XtbOpenPosition>();
