@@ -18,7 +18,12 @@ public class PositionConfiguration
         entity.Property(x => x.Source)
             .IsRequired();
 
-        entity.HasIndex(x => new { x.Symbol, x.Source })
+        entity.HasIndex(x => new
+        {
+            x.Symbol,
+            x.Source,
+            x.AssetClass
+        })
             .IsUnique();
     }
 }
