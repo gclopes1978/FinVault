@@ -1,4 +1,6 @@
-﻿namespace Gclopes.FinVault.Investments.DTO;
+﻿using Gclopes.FinVault.Investments.Data;
+
+namespace Gclopes.FinVault.Investments.DTO;
 
 public class PortfolioDto
 {
@@ -6,6 +8,7 @@ public class PortfolioDto
     public string Symbol { get; set; } = string.Empty;
     public string? Isin { get; set; }
     public string Source { get; set; } = string.Empty;
+    public AssetClass? AssetClass { get; set; }
     public decimal Quantity { get; set; }
     public decimal AverageCost { get; set; }
     public decimal CurrentPrice { get; set; }
