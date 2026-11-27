@@ -16,8 +16,6 @@ public static class ApplicationServiceCollectionExtensions
     {
         services.AddScoped<IInvestmentsService, InvestmentsService>();
 
-        services.AddScoped<ITrading212CsvImporter, Trading212CsvImporter>();
-
         services.AddScoped<IXtbExcelImporter, XtbExcelImporter>();
 
         return services;
