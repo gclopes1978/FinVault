@@ -16,7 +16,7 @@ public interface IInvestmentsService
         CancellationToken cancellationToken = default);
 
 
-    Task<int> ImportTrading212CsvAsync(
-        Stream csvStream,
+    Task<int> ImportTrading212StatementAsync(
+        Trading212StatementImportRequest request,
         CancellationToken cancellationToken = default);
 }
