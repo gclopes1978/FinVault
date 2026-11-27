@@ -23,7 +23,7 @@ public class Program
             .AddInvestmentsSwagger()
             .AddInvestmentsApplication()
             .AddInvestmentsPersistence(builder.Configuration)
-            .AddInvestmentsApplication();
+            .AddInvestmentsAuthentication(builder.Configuration);
 
         var app = builder.Build();
 
