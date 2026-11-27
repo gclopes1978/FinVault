@@ -7,11 +7,12 @@ import { Observable } from 'rxjs';
 // Import the environment configuration to resolve the API Gateway base address
 import { environment } from '../../environments/environment';
 
-// Define the four document types currently supported by the PDF Upload Centre
+// Define the document types currently supported by the PDF Upload Centre
 export type PdfDocumentType =
   | 'ActivoBankStatement'
   | 'LusitaniaPPR'
-  | 'ARBancoInvestPPR';
+  | 'ARBancoInvestPPR'
+  | 'Trading212Statement';
 
 // Define a type-safe contract for the response returned once the document has been accepted.
 // NOTE: the DocumentIngestion service (api/v1/document/upload) returns message/documentId/path
