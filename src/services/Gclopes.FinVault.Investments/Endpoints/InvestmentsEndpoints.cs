@@ -1,4 +1,5 @@
 ﻿using Gclopes.FinVault.Investments.Services.Interfaces;
+using Gclopes.FinVault.Investments.DTO;
 
 namespace Gclopes.FinVault.Investments.Endpoints;
 
@@ -17,7 +18,7 @@ public static class InvestmentsEndpoints
             .Produces(StatusCodes.Status400BadRequest);
 
         group.MapPost("/import/trading212", ImportTrading212Async)
-            .WithName("ImportTrading212Csv")
+            .WithName("ImportTrading212PdfStatement")
             .DisableAntiforgery()
             .Produces<ImportResponse>(StatusCodes.Status200OK)
             .Produces(StatusCodes.Status400BadRequest);
@@ -32,17 +33,24 @@ public static class InvestmentsEndpoints
     }
 
     private static async Task<IResult> ImportTrading212Async(
-    IFormFile file,
+    Trading212StatementImportRequest request,
     IInvestmentsService investmentsService,
     ILogger<Program> logger,
     CancellationToken cancellationToken)
     {
-        return await HandleCsvImportAsync(
-            file,
-            investmentsService.ImportTrading212CsvAsync,
-            "Trading212",
-            logger,
-            cancellationToken);
+        try
+        {
+            var importedCount = await investmentsService.ImportTrading212StatementAsync(
+                request,
+                cancellationToken);
+
+            return Results.Ok(new ImportResponse { ImportedRecords = importedCount });
+        }
+        catch (ArgumentException ex)
+        {
+            logger.LogWarning(ex, "Invalid Trading 212 PDF statement payload.");
+            return Results.BadRequest(new { message = ex.Message });
+        }
     }
 
     private static async Task<IResult> ImportXtbAsync(
@@ -57,44 +65,6 @@ public static class InvestmentsEndpoints
         "XTB",
         logger,
         cancellationToken);
-    }
-
-    private static async Task<IResult> HandleCsvImportAsync(
-    IFormFile file,
-    Func<Stream, CancellationToken, Task<int>> importFunction,
-    string sourceName,
-    ILogger<Program> logger,
-    CancellationToken cancellationToken)
-    {
-        if (file == null || file.Length == 0)
-        {
-            return Results.BadRequest(new { message = "No file uploaded" });
-        }
-
-        try
-        {
-            using var stream = file.OpenReadStream();
-
-            var importedCount = await importFunction(
-                stream,
-                cancellationToken);
-
-            return Results.Ok(
-                new ImportResponse
-                {
-                    ImportedRecords = importedCount
-                });
-        }
-        catch (Exception ex)
-        {
-            logger.LogError(
-                ex,
-                "Error importing {SourceName} CSV",
-                sourceName);
-
-            return Results.BadRequest(
-                new { message = ex.Message });
-        }
     }
 
     private static async Task<IResult> HandleExcelImportAsync(
