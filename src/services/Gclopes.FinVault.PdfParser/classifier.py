@@ -5,8 +5,13 @@ class DocumentClassifier:
     
     @staticmethod
     def classify(text: str) -> str:
-        text_lower = text.lower()
-        print(f"[DocumentClassifier] Classifying document based on text: {text_lower}...")  
+        text_lower = re.sub(r"\s+", " ", text.lower())
+
+        if re.search(r"\btrading\s*212\b", text_lower) and (
+            "conta invest" in text_lower or "conta crypto" in text_lower
+        ):
+            return "trading212_statement"
+
         # 1. Check for Bank Statement (activobank)
         if "activobank" in text_lower and "extrato" in text_lower:
             return "bank_statement"
