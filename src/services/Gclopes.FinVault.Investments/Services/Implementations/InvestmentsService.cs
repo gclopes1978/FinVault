@@ -3,13 +3,13 @@ using Gclopes.FinVault.Investments.Data.Entities;
 using Gclopes.FinVault.Investments.DTO;
 using Gclopes.FinVault.Investments.Services.Interfaces;
 using Microsoft.EntityFrameworkCore;
+using System.Text.Json;
 
 namespace Gclopes.FinVault.Investments.Services.Implementations;
 
 public class InvestmentsService(
     FinVaultInvestmentsDb dbContext,
     IXtbExcelImporter xtbExcelImporter,
-    ITrading212CsvImporter trading212CsvImporter,
     ILogger<InvestmentsService> logger) : IInvestmentsService
 {
 
@@ -142,74 +142,117 @@ public class InvestmentsService(
             position.CreatedAt = DateTime.UtcNow;
 
         await dbContext.XtbOpenPositions.AddRangeAsync(newOpenPositions, cancellationToken);
-        
+
 
         var importedCount = await dbContext.SaveChangesAsync(
             cancellationToken);
-
-        logger.LogInformation(
-            "Successfully imported {Count} new records from XTB Excel",
-            importedCount);
+        if (logger.IsEnabled(LogLevel.Information))
+        {
+            logger.LogInformation(
+                "Successfully imported {Count} new records from XTB Excel",
+                importedCount);
+        }
 
         return importedCount;
     }
 
-    public async Task<int> ImportTrading212CsvAsync(
-        Stream csvStream,
+    public async Task<int> ImportTrading212StatementAsync(
+        Trading212StatementImportRequest request,
         CancellationToken cancellationToken = default)
     {
-        var records = await trading212CsvImporter.ParseCsvAsync(
-            csvStream,
-            cancellationToken);
+        ArgumentNullException.ThrowIfNull(request);
 
-        var existingT212Ids = await dbContext.Trading212Transactions
-            .Select(t => t.T212Id)
-            .ToHashSetAsync(cancellationToken);
-
-        var importedCount = 0;
-
-        foreach (var record in records)
+        if (string.IsNullOrWhiteSpace(request.SourceDocumentId) ||
+            request.SourceDocumentId.Length > 128)
         {
-            if (existingT212Ids.Contains(record.Id))
-                continue;
+            throw new ArgumentException(
+                "sourceDocumentId must contain between 1 and 128 characters.",
+                nameof(request));
+        }
 
-            var transaction = new Trading212Transaction
+        var recordCount = CountTrading212Records(request.Data);
+        var dataJson = request.Data.GetRawText();
+        var statement = await dbContext.Trading212PdfStatements
+            .SingleOrDefaultAsync(
+                item => item.SourceDocumentId == request.SourceDocumentId,
+                cancellationToken);
+
+        if (statement is null)
+        {
+            statement = new Trading212PdfStatement
             {
-                T212Id = record.Id,
-                Action = record.Action,
-                Time = record.Time,
-                Isin = record.Isin,
-                Ticker = record.Ticker,
-                Name = record.Name,
-                Notes = record.Notes,
-                NumberOfShares = record.NumberOfShares,
-                PricePerShare = record.PricePerShare,
-                CurrencyPricePerShare = record.CurrencyPricePerShare,
-                ExchangeRate = record.ExchangeRate,
-                Total = record.Total,
-                CurrencyTotal = record.CurrencyTotal,
-                WithholdingTax = record.WithholdingTax,
-                CurrencyWithholdingTax = record.CurrencyWithholdingTax,
-                StampDutyReserveTax = record.StampDutyReserveTax,
-                CurrencyStampDutyReserveTax = record.CurrencyStampDutyReserveTax,
-                CurrencyConversionFee = record.CurrencyConversionFee,
-                CurrencyCurrencyConversionFee = record.CurrencyCurrencyConversionFee,
-                CreatedAt = DateTime.UtcNow
+                SourceDocumentId = request.SourceDocumentId,
+                DataJson = dataJson,
+                ImportedAtUtc = DateTime.UtcNow
             };
-
-            dbContext.Trading212Transactions.Add(transaction);
-            existingT212Ids.Add(record.Id);
-
-            importedCount++;
+            dbContext.Trading212PdfStatements.Add(statement);
+        }
+        else
+        {
+            statement.DataJson = dataJson;
+            statement.ImportedAtUtc = DateTime.UtcNow;
         }
 
         await dbContext.SaveChangesAsync(cancellationToken);
 
         logger.LogInformation(
-            "Successfully imported {Count} NEW transactions from Trading212 CSV",
-            importedCount);
+            "Persisted Trading 212 statement {SourceDocumentId} with {RecordCount} extracted records.",
+            request.SourceDocumentId,
+            recordCount);
 
-        return importedCount;
+        return recordCount;
+    }
+
+    private static int CountTrading212Records(JsonElement data)
+    {
+        string[] requiredSections =
+        [
+            "investTransactions",
+            "investPositions",
+            "investCashTransactions",
+            "dividends",
+            "cryptoTransactions",
+            "cryptoPositions",
+            "cryptoCashTransactions"
+        ];
+
+        if (data.ValueKind != JsonValueKind.Object)
+        {
+            throw new ArgumentException("data must be a JSON object.");
+        }
+
+        var recordCount = 0;
+        foreach (var section in requiredSections)
+        {
+            if (!data.TryGetProperty(section, out var tables) ||
+                tables.ValueKind != JsonValueKind.Array)
+            {
+                throw new ArgumentException(
+                    $"data must contain the '{section}' array.");
+            }
+
+            foreach (var table in tables.EnumerateArray())
+            {
+                if (table.ValueKind != JsonValueKind.Object ||
+                    !table.TryGetProperty("records", out var records) ||
+                    records.ValueKind != JsonValueKind.Array)
+                {
+                    throw new ArgumentException(
+                        $"Every table in '{section}' must contain a records array.");
+                }
+
+                if (records.EnumerateArray().Any(record =>
+                        record.ValueKind != JsonValueKind.Object))
+                {
+                    throw new ArgumentException(
+                        $"Every record in '{section}' must be a JSON object.");
+                }
+
+                recordCount += records.GetArrayLength();
+            }
+        }
+
+        return recordCount;
     }
 
     private async Task<List<Position>> CalculateTrading212PositionsAsync(
@@ -229,7 +272,7 @@ public class InvestmentsService(
         {
             decimal quantity = 0;
             decimal totalCost = 0;
-            
+
             foreach (var transaction in group)
             {
                 if (transaction.Action == "Market buy")
