@@ -3,8 +3,11 @@ import io
 import json
 import asyncio
 import base64
+import uuid
+from datetime import datetime, timedelta, timezone
 import pdfplumber
 import httpx
+import jwt
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, UploadFile, File, HTTPException, status
 import aio_pika
@@ -12,6 +15,7 @@ from classifier import DocumentClassifier
 from parsers.bank_statement import BankStatementParser
 from parsers.pension_insurance import PensionInsuranceParser
 from parsers.pension_fund import PensionFundParser
+from parsers.trading212_statement import Trading212StatementParser
 
 # Base URL of the DocumentIngestion service's completion callback, e.g.
 # "http://document-ingestion:8080/api/document". Called directly over the internal Docker
@@ -46,11 +50,40 @@ async def notify_document_ingestion(source_document_id: str, success: bool, docu
         print(f"[DocumentIngestion] Failed to report completion for {source_document_id}: {e}")
 
 
+def create_internal_service_token() -> str:
+    secret = os.getenv("JWT_SECRET")
+    issuer = os.getenv("JWT_ISSUER")
+    audience = os.getenv("JWT_AUDIENCE")
+    if not secret or not issuer or not audience:
+        raise RuntimeError("JWT_SECRET, JWT_ISSUER, and JWT_AUDIENCE must be configured.")
+    if len(secret.encode("utf-8")) < 32:
+        raise RuntimeError("JWT_SECRET must be at least 32 bytes long for HS256.")
+
+    now = datetime.now(timezone.utc)
+    return jwt.encode(
+        {
+            "iss": issuer,
+            "aud": audience,
+            "sub": "finvault-pdf-parser",
+            "iat": now,
+            "exp": now + timedelta(minutes=5),
+        },
+        secret,
+        algorithm="HS256",
+    )
+
+
 class PDFProcessorService:
     def __init__(self, service_urls: dict):
         self.service_urls = service_urls
 
-    async def process_pdf(self, file_bytes: bytes, filename: str, source_document_id: str) -> dict:
+    async def process_pdf(
+        self,
+        file_bytes: bytes,
+        filename: str,
+        source_document_id: str,
+        report_completion: bool = True,
+    ) -> dict:
         doc_type = None
         try:
             if not filename.endswith('.pdf'):
@@ -58,7 +91,6 @@ class PDFProcessorService:
 
             with pdfplumber.open(io.BytesIO(file_bytes)) as pdf:
                 first_page_text = pdf.pages[0].extract_text() or ""
-                print(f"[PDFProcessor] Extracted text from first page of {filename}: {first_page_text[:100]}...")  # Log first 100 chars
                 doc_type = DocumentClassifier.classify(first_page_text)
 
                 if doc_type == "unknown":
@@ -66,22 +98,24 @@ class PDFProcessorService:
 
                 payload = self._delegate_to_parser(doc_type, pdf)
                 envelope = {"sourceDocumentId": source_document_id, "data": payload}
-                print(f"envelope--> {envelope}")
                 # The downstream .NET services expect the full envelope
                 # ({ sourceDocumentId, data }), not the bare parser payload.
                 await self._forward_to_dotnet_service(doc_type, envelope)
 
-            await notify_document_ingestion(source_document_id, True, doc_type, None)
+            if report_completion:
+                await notify_document_ingestion(source_document_id, True, doc_type, None)
             return {"status": "success", "documentType": doc_type, "data": envelope}
         except Exception as e:
-            await notify_document_ingestion(source_document_id, False, doc_type, str(e))
+            if report_completion:
+                await notify_document_ingestion(source_document_id, False, doc_type, str(e))
             raise
 
     def _delegate_to_parser(self, doc_type: str, pdf: pdfplumber.PDF) -> dict:
         parsers = {
             "bank_statement": BankStatementParser.parse,
             "pension_insurance": PensionInsuranceParser.parse,
-            "pension_fund": PensionFundParser.parse
+            "pension_fund": PensionFundParser.parse,
+            "trading212_statement": Trading212StatementParser.parse,
         }
         if doc_type not in parsers:
             raise ValueError(f"Parser for {doc_type} not implemented.")
@@ -93,7 +127,12 @@ class PDFProcessorService:
             raise Exception(f"Target URL for {doc_type} configuration missing.")
         
         async with httpx.AsyncClient() as client:
-            response = await client.post(target_url, json=payload, timeout=30.0)
+            response = await client.post(
+                target_url,
+                json=payload,
+                headers={"Authorization": f"Bearer {create_internal_service_token()}"},
+                timeout=30.0,
+            )
             response.raise_for_status()
 
 # Configuration
@@ -101,6 +140,7 @@ processor = PDFProcessorService({
     "bank_statement": os.getenv("CURRENTACCOUNT_SERVICE_URL"),
     "pension_insurance": os.getenv("PENSION_INSURANCE_SERVICE_URL"),
     "pension_fund": os.getenv("PENSION_FUND_SERVICE_URL"),
+    "trading212_statement": os.getenv("INVESTMENTS_SERVICE_URL"),
 })
 
 async def consume_rabbitmq():
@@ -165,6 +205,14 @@ app = FastAPI(title="FinVault PDF Parser", lifespan=lifespan)
 async def parse_http(file: UploadFile = File(...), sourceDocumentId: str = "manual-upload"):
     try:
         content = await file.read()
-        return await processor.process_pdf(content, file.filename, sourceDocumentId)
+        is_manual_upload = sourceDocumentId == _MANUAL_UPLOAD_SENTINEL
+        if is_manual_upload:
+            sourceDocumentId = str(uuid.uuid4())
+        return await processor.process_pdf(
+            content,
+            file.filename,
+            sourceDocumentId,
+            report_completion=not is_manual_upload,
+        )
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
