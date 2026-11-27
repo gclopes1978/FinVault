@@ -7,10 +7,13 @@ import pdfplumber
 from parsers.bank_statement import BankStatementParser
 from parsers.pension_insurance import PensionInsuranceParser
 from parsers.pension_fund import PensionFundParser
-
+from parsers.trading212_statement import Trading212StatementParser
 
 def classify_document(text: str) -> str:
     text_lower = text.lower()
+
+    if "trading 212" in text_lower:
+        return "trading212_statement"
 
     if "activobank" in text_lower and "extrato" in text_lower:
         return "bank_statement"
@@ -33,6 +36,7 @@ def extract_document(file_path: str) -> dict:
         document_type = classify_document(first_page_text)
 
         parsers = {
+            "trading212_statement": Trading212StatementParser.parse,
             "bank_statement": BankStatementParser.parse,
             "pension_insurance": PensionInsuranceParser.parse,
             "pension_fund": PensionFundParser.parse,
