@@ -43,11 +43,12 @@ interface UploadTask {
   styleUrl: './pdf-upload.scss'
 })
 export class PdfUploadComponent implements OnInit, OnDestroy {
-  // The four PDF document types currently supported for manual import
+  // The PDF document types currently supported for manual import
   public documentTypes: DocumentTypeOption[] = [
     { value: 'ActivoBankStatement', label: 'Extrato ActivoBank (histórico)' },
     { value: 'LusitaniaPPR', label: 'PPR Lusitânia Vida' },
-    { value: 'ARBancoInvestPPR', label: 'PPR AR Banco Invest' }
+    { value: 'ARBancoInvestPPR', label: 'PPR AR Banco Invest' },
+    { value: 'Trading212Statement', label: 'Extrato Trading 212' }
   ];
 
   // Maps both the frontend type hints and the PdfParser's own classifier labels to display text,
@@ -56,9 +57,11 @@ export class PdfUploadComponent implements OnInit, OnDestroy {
     ActivoBankStatement: 'Extrato ActivoBank (histórico)',
     LusitaniaPPR: 'PPR Lusitânia Vida',
     ARBancoInvestPPR: 'PPR AR Banco Invest',
+    Trading212Statement: 'Extrato Trading 212',
     bank_statement: 'Extrato Bancário',
     pension_insurance: 'PPR Lusitânia Vida',
-    pension_fund: 'PPR AR Banco Invest'
+    pension_fund: 'PPR AR Banco Invest',
+    trading212_statement: 'Extrato Trading 212'
   };
 
   public selectedDocumentType: PdfDocumentType = this.documentTypes[0].value;
