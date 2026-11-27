@@ -17,7 +17,7 @@ namespace Gclopes.FinVault.Investments.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "9.0.17")
+                .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
@@ -61,7 +61,7 @@ namespace Gclopes.FinVault.Investments.Migrations
                     b.HasIndex("Symbol", "Source")
                         .IsUnique();
 
-                    b.ToTable("Positions");
+                    b.ToTable("Positions", (string)null);
                 });
 
             modelBuilder.Entity("Gclopes.FinVault.Investments.Data.Entities.Trading212Transaction", b =>
@@ -163,7 +163,35 @@ namespace Gclopes.FinVault.Investments.Migrations
                     b.HasIndex("T212Id")
                         .IsUnique();
 
-                    b.ToTable("Trading212Transactions");
+                    b.ToTable("Trading212Transactions", (string)null);
+                });
+
+            modelBuilder.Entity("Gclopes.FinVault.Investments.Data.Entities.Trading212PdfStatement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("DataJson")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("ImportedAtUtc")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("SourceDocumentId")
+                        .IsRequired()
+                        .HasMaxLength(128)
+                        .HasColumnType("nvarchar(128)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SourceDocumentId")
+                        .IsUnique();
+
+                    b.ToTable("Trading212PdfStatements", (string)null);
                 });
 
             modelBuilder.Entity("Gclopes.FinVault.Investments.Data.Entities.XtbCashOperation", b =>
@@ -231,7 +259,7 @@ namespace Gclopes.FinVault.Investments.Migrations
 
                     b.HasIndex("Time");
 
-                    b.ToTable("XtbCashOperations");
+                    b.ToTable("XtbCashOperations", (string)null);
                 });
 
             modelBuilder.Entity("Gclopes.FinVault.Investments.Data.Entities.XtbClosedPosition", b =>
@@ -357,7 +385,7 @@ namespace Gclopes.FinVault.Investments.Migrations
 
                     b.HasIndex("Ticker");
 
-                    b.ToTable("XtbClosedPositions");
+                    b.ToTable("XtbClosedPositions", (string)null);
                 });
 
             modelBuilder.Entity("Gclopes.FinVault.Investments.Data.Entities.XtbOpenPosition", b =>
@@ -457,7 +485,7 @@ namespace Gclopes.FinVault.Investments.Migrations
 
                     b.HasIndex("Ticker");
 
-                    b.ToTable("XtbOpenPositions");
+                    b.ToTable("XtbOpenPositions", (string)null);
                 });
 
             modelBuilder.Entity("Gclopes.FinVault.Investments.Data.Entities.XtbTransaction", b =>
@@ -502,7 +530,7 @@ namespace Gclopes.FinVault.Investments.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("XtbTransactions");
+                    b.ToTable("XtbTransactions", (string)null);
                 });
 #pragma warning restore 612, 618
         }
